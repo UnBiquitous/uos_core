@@ -1,0 +1,66 @@
+- Criar email do grupo e colocar no jenkins
+- Criar novas dependências sem api
+- HSQLDB não faz mais sentido no core
+- Core não devia depender do BasicAuthAPI
+
+- Trocar os NetworkDevices (DeviceManager e EventDriver) por UpNetworkInterface
+- Tirar os prefixos (Up, Uos) dos nomes das classes.
+- Os JSON que convertem as mensagens podem ser concentrados em um parser.
+- Trocar os pacotes de "br.unb.unbiquitous.ubiquitos.uos" para "org.unbiquitous.uos"
+- Trocar o group-id para "org.unbiquitous.uos" (no caso dos uos stuff)
+- No MessageHandler temos um tratamento quen devia ser da camada de rede (envio de mensagem)
+	
+- Estudar uma nova forma de "externalizar" os dados da pesquisa de Drivers
+	- Apenas checar se o DriverModel não devia ser igual ao DriverData
+	- ? O DriverModel deveria ser igual ao DriverData ?
+
+- O ServiceCall e ServiceResponse estão externando como mapa de parâmetros um "<String, String>" devemos trocar por um mapa "<String, Object>" ou um JsonObject mesmo.
+
+- As coisas tem que ser "Injetadas" começar por onde já está "mexido" (DriverManager)
+	- Dessa forma o UOSApplicationContext vira uma Factory e devemos ter um ciclo de vida para a montagem do contexto.
+	- Assim a idéia seria um ciclo por camada:
+		0 - Instanciação por demanda (sem parâmetros, só construtores crus pra evitar os ciclos)
+		1 - Rede / Definião do currentDevice
+		2 - Mensagens
+		3 - Adaptabilidade
+		4 - Drivers
+		5 - Aplicações
+
+- Refatorar os Plugins de Rede para possuir uma melhor interface. 
+		
+- Próximos "alvos" de teste:
+	- Adaptability Engine
+		- Falta a parte de Stream
+	- Camada de Rede
+	- Teste de integração
+		- Podemos criar duas instâncias com um plugin de rede loopback que conecte-as.
+			Assim seria possível estimular um "caso de uso" de integração bem completo
+			Ex: 
+				1 - Ambas as Instâncias são iniciadas (uma com um driver e outro com um aplicação)
+				2 - É provocado o radar para denunciar que uma delas está presente (Aqui estimulamos o device entered/left e o processo de handshake)
+				3 - Isso deve ativar o handshake e o list drivers
+				4 - Ativa-se a aplicação para usar o driver (testar chamadas sync/async , discretas/contínuas) 
+	
+- Colocar no github
+- O listDrivers pertence realmente ao DriverManager ?
+- Deveriam as aplicações serem consideradas Drivers externalizando interfaces de comunicação?
+- Repensar a forma que os eventos são gerenciados. Não seria melhor deixar isso com o middlewar, no lugar dos prórprios devices?
+
+
+##############################
+
+OK - Trocar o código do Json da api pelo maven do json.org
+
+OK - Daos: Ajustar pro DeviceManager/DeviceDriver/RegisterDriver usar outros Daos
+	- DriverManager -> OK
+	- DeviceManager -> OK 
+	- DeviceDriver -> Não precisa mais
+
+- Próximos "alvos" de teste:
+	OK - Reflection Service Caller
+	OK - DeviceManager
+	OK - Message Engine
+
+OK - Eliminar os TODOS
+OK - Eliminar Warnings
+OK - Se livrar da uos.api

@@ -1,0 +1,10 @@
+* 2.2.0:
+	- ExecutionDriver : Support for Remote Execution using Lua scripts. (Ongoing) TODO: Reference to Wiki
+		- Support a Remote Evaluation (beginning)
+	- Change in the model for listing drivers (Ongoing) TODO: Reference to Wiki
+	- Ontologies .... (Ongoing) TODO: Reference to Wiki
+	- Refactoring of Daos
+	- The code of org.json is now referenced by maven and not direct in the code anymore.
+	- The uso.api is not needed anymore. Just the uos.core.
+	- BugFixes:
+		- Gateway.listDrivers(): Was not listing local drivers properly.
