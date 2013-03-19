@@ -9,7 +9,9 @@ package br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception;
  * @author anaozaki
  */
 public class CycleException extends Exception {
-        public CycleException() {
+	private static final long serialVersionUID = -1163152457897404794L;
+
+	public CycleException() {
 		super();
 	}
 

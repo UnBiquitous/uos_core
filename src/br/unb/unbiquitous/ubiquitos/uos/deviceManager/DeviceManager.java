@@ -288,7 +288,7 @@ public class DeviceManager implements RadarListener {
 				if (responseDevice != null){
 					UpDevice remoteDevice = new JSONDevice(responseDevice).getAsObject();
 					registerDevice(remoteDevice);
-
+					logger.info("Registered device "+remoteDevice.getName());
 					return remoteDevice;
 				}else{
 					logger.error("Not possible complete handshake with device '"+device.getNetworkDeviceName()+"' for no device on the handshake response.");

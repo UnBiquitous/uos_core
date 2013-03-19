@@ -1,79 +1,52 @@
 package br.unb.unbiquitous.ubiquitos.uos.driverManager;
 
-import static br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverModel.DEVICE;
-import static br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverModel.ID;
-import static br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverModel.NAME;
-import static br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverModel.ROW_ID;
-import static br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverModel.TABLE;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpDriver;
-import br.unb.unbiquitous.ubiquitos.uos.persistence.Dao;
-import br.unb.unbiquitous.ubiquitos.uos.persistence.HsqldbConnectionController;
 
-public class DriverDao extends Dao {
-
-	private static Logger logger = Logger.getLogger(DriverDao.class);
-	
+public class DriverDao {
 	private HashMap<String, UpDriver> driverMap;
 	private HashMap<String, Integer> driverCount;
+	private HashMap<String, List<DriverModel>> driverByDeviceMap;
+	private HashMap<String, List<DriverModel>> driverByTypeMap;
+	private HashMap<Long, DriverModel> modelMap;
+	private HashMap<String, DriverModel> modelByIdMap;
 	
 	public DriverDao(ResourceBundle bundle) {
-		super(TABLE, new HsqldbConnectionController(bundle));
+		createMaps();
+	}
+
+	private static long rowid = 0;
+	
+	private static synchronized long newId(){ return rowid ++; }
+
+	private void createMaps() {
 		driverMap = new HashMap<String, UpDriver>();
 		driverCount = new HashMap<String, Integer>();
-		
-		StringBuffer script = new StringBuffer();
-		script.append("create table ").append(TABLE).append(" ( ");
-		script.append(ROW_ID).append(" IDENTITY ,");
-		script.append(ID).append(" varchar(256) , ");
-		script.append(NAME).append(" varchar(256) ,");
-		script.append(DEVICE).append(" varchar(256) ,");
-		script.append(" UNIQUE (").append(ID).append(" , ").append(DEVICE).append(") ");
-		script.append(");");
-		
-		try {create(script.toString());	} 
-		catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
-		}
+		driverByDeviceMap = new HashMap<String, List<DriverModel>>();
+		modelMap =  new HashMap<Long, DriverModel>();
+		driverByTypeMap = new HashMap<String, List<DriverModel>>();
+		modelByIdMap = new HashMap<String, DriverModel>();
 	}
 	
 	
 	public void insert(DriverModel driver) {
-		try {
-			String insert = "insert into "+TABLE+" ("+ID+","+NAME+","+DEVICE
-								+") values (?,?,?)";
-			Connection con = connectionController.connect();
-			PreparedStatement ps = con.prepareStatement(insert);
-			ps.setString(1, driver.id());
-			ps.setString(2, driver.driver().getName());
-			ps.setString(3, driver.device());
-			ps.executeUpdate();
-			ResultSet rs = con.prepareStatement("SELECT "+ROW_ID+" from "+TABLE+" where "+ROW_ID+" = IDENTITY()").executeQuery();
-			if(rs.next()){
-				driver.rowid(rs.getLong(1));
-			}
+		if (retrieve(driver.id(), driver.device()) == null){
+			driver.rowid(newId());
 			insertOnMap(driver);
-			
-			con.close();
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
+		}else{
+			throw new RuntimeException("Device "+driver.device()+
+					" already has a driver with id "+ driver.id());
 		}
 	}
 
 	public List<DriverModel> list() {
-		return list(null);
+		return list(null, null);
 	}
 
 	public List<DriverModel> list(String name) {
@@ -81,89 +54,127 @@ public class DriverDao extends Dao {
 	}
 
 	public List<DriverModel> list(String name, String device) {
-		try {
-			Connection con = connectionController.connect();
-			PreparedStatement ps = createListQuery(null, name, device, con);
-			ArrayList<DriverModel> list = populateList(ps.executeQuery());
-			con.close();
-			return list;
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
+		List<DriverModel> result = null;
+		if (device == null) {
+			if(name == null) {
+				result =  listAll();
+			}else{
+				List<DriverModel> listByDriver = listByDriver(name);
+				result = listByDriver;
+			}
+		}else{
+			List<DriverModel> listByDevice = listByDevice(device);
+			
+			if (name != null){
+				result =  listByDeviceAndDriver(name, listByDevice);
+			}else{
+				result = listByDevice;
+			}
 		}
+		
+		Collections.sort(result, new Comparator<DriverModel>() {
+			public int compare(DriverModel m1, DriverModel m2) {
+				return m1.id().compareTo(m2.id());
+			}
+		});
+		
+		return new ArrayList<DriverModel>(result);
 	}
 
-	private ArrayList<DriverModel> populateList(ResultSet rs)
-			throws SQLException {
-		ArrayList<DriverModel> list = new ArrayList<DriverModel>();
-		while (rs.next()) {
-			list.add(new DriverModel(rs.getLong(1), rs.getString(2), driverMap.get(rs.getString(3)), rs.getString(4)));
-		}
-		return list;
+	private ArrayList<DriverModel> listAll() {
+		return new ArrayList<DriverModel>(modelMap.values());
+	}
+	
+	private List<DriverModel> listByDriver(String name) {
+		List<DriverModel> listByDriver = driverByTypeMap.get(name.toLowerCase());
+		if (listByDriver == null) return new ArrayList<DriverModel>();
+		return listByDriver;
+	}
+	
+	private List<DriverModel> listByDevice(String device) {
+		List<DriverModel> listByDevice = driverByDeviceMap.get(device.toLowerCase());
+		if (listByDevice == null) return new ArrayList<DriverModel>();
+		return listByDevice;
 	}
 
-	private PreparedStatement createListQuery(String id, String name,
-			String device, Connection con) throws SQLException {
-		String query = "select "+ROW_ID+","+ID+","+NAME+","+DEVICE
-							+" from "+TABLE +" where 1=1 "; 
-		if (name != null)	query += " and UCASE("+NAME+") LIKE ?";
-		if (device != null)	query += " and UCASE("+DEVICE+") LIKE ?";
-		if (id != null)		query += " and UCASE("+ID+") LIKE ?";
-
-		query += " ORDER BY "+ID+","+NAME+","+DEVICE;
-		
-		PreparedStatement ps = con.prepareStatement(query);
-		
-		int argCount = 1;
-		if (name != null)	ps.setString(argCount++, name.toUpperCase());
-		if (device != null)	ps.setString(argCount++, device.toUpperCase());
-		if (id != null)	ps.setString(argCount++, id.toUpperCase());
-		
-		return ps;
+	private List<DriverModel> listByDeviceAndDriver(String name,
+			List<DriverModel> listByDevice) {
+		List<DriverModel> listByDeviceAndDriver = new ArrayList<DriverModel>();
+		for (DriverModel d: listByDevice){
+			if(name.equalsIgnoreCase((d.driver().getName()))){
+				listByDeviceAndDriver.add(d);
+			}
+		}
+		return listByDeviceAndDriver;
 	}
 
 	public void clear() {
-		executeUpdateQuery("delete from "+TABLE);
+		createMaps();
 	}
 
 	public void delete(String id, String device) {
 		DriverModel driver = retrieve(id, device);
-		executeUpdateQuery("delete from "+TABLE+" where "+ID+" = ? and "+DEVICE+" = ?", id,device);
 		removeFromMap(driver);
 	}
 
 
 	private void removeFromMap(DriverModel driver) {
-		String name = driver.driver().getName();
-		driverCount.put(name, driverCount.get(name)-1);
+		modelMap.remove(driver.rowid());
+		modelByIdMap.remove(driver.id());
+		
+		String name = driver.driver().getName().toLowerCase();
 		if (driverCount.get(name).equals(0)){
 			driverCount.remove(name);
 			driverMap.remove(name);
 		}
+		driverCount.put(name, driverCount.get(name)-1);
+		driverByTypeMap.get(name).remove(driver.rowid());
+		
+		String deviceName = driver.device().toLowerCase();
+		driverByDeviceMap.get(deviceName).remove(driver);
 	}
 	
 	private void insertOnMap(DriverModel driver) {
-		String name = driver.driver().getName();
+		modelMap.put(driver.rowid(), driver);
+		modelByIdMap.put(driver.id(), driver);
+		
+		String name = driver.driver().getName().toLowerCase();
 		if (!driverMap.containsKey(name)){
 			driverMap.put(name, driver.driver());
 			driverCount.put(name, 0);
+			driverByTypeMap.put(name, new ArrayList<DriverModel>());
 		}
 		driverCount.put(name, driverCount.get(name)+1);
+		driverByTypeMap.get(name).add(driver);
+		
+		String deviceName = driver.device().toLowerCase();
+		if (!driverByDeviceMap.containsKey(deviceName)){
+			driverByDeviceMap.put(deviceName, new ArrayList<DriverModel>());
+		}
+		driverByDeviceMap.get(deviceName).add(driver);
+		
 	}
 	
 	public DriverModel retrieve(String id, String device) {
-		try {
-			Connection con = connectionController.connect();
-			PreparedStatement ps = createListQuery(id, null, device, con);
-			ArrayList<DriverModel> list = populateList(ps.executeQuery());
-			con.close();
-			if (list.isEmpty())
-				return null;
-			return list.get(0);
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
+		// find by id
+		if (id != null && device == null){
+			return modelByIdMap.get(id);
+		}else if (device != null){ 
+			List<DriverModel> drivers = driverByDeviceMap.get(device.toLowerCase());
+			if (drivers != null && !drivers.isEmpty()){
+				// find by driver
+				if (id == null){
+					return drivers.get(0);
+				}
+				// find by driver and id
+				for (DriverModel d : drivers){
+					if (id.equals(d.id())){
+						return d;
+					}
+				}
+			}
 		}
+		return null;
 	}
 
 }

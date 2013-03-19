@@ -203,6 +203,7 @@ public class DeviceManagerTest {
 
 	// null device or device data (addr and type)
 	@Test
+	@SuppressWarnings("unchecked")
 	public void ifTheDeviceIsNullShouldDoNothing() throws Exception {
 		assertEquals(1, dao.list().size());
 		deviceManager.deviceEntered(null);
@@ -213,6 +214,7 @@ public class DeviceManagerTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void ifTheDeviceProvidesNoDatalShouldDoNothing() throws Exception {
 		assertEquals(1, dao.list().size());
 		deviceManager.deviceEntered(mock(NetworkDevice.class));
@@ -814,11 +816,19 @@ public class DeviceManagerTest {
 		
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		
+		//TODO: This
 		assertEquals(2, newGuyDrivers.size());
-		assertEquals("iddummy1", newGuyDrivers.get(0).id());
-		assertEquals(dummy1, newGuyDrivers.get(0).driver());
-		assertEquals("iddummy2", newGuyDrivers.get(1).id());
-		assertEquals(dummy2, newGuyDrivers.get(1).driver());
+		if (newGuyDrivers.get(0).id().equals("iddummy1")){
+			assertEquals("iddummy1", newGuyDrivers.get(0).id());
+			assertEquals(dummy1, newGuyDrivers.get(0).driver());
+			assertEquals("iddummy2", newGuyDrivers.get(1).id());
+			assertEquals(dummy2, newGuyDrivers.get(1).driver());
+		}else{
+			assertEquals("iddummy2", newGuyDrivers.get(0).id());
+			assertEquals(dummy2, newGuyDrivers.get(0).driver());
+			assertEquals("iddummy1", newGuyDrivers.get(1).id());
+			assertEquals(dummy1, newGuyDrivers.get(1).driver());
+		}
 	}
 
 	@Test

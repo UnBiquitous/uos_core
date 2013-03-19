@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -354,17 +355,18 @@ public class DriverManager {
 	 */
 	public List<DriverData> listDrivers(String driverName, String deviceName) {
 		List<DriverModel> list = driverDao.list(driverName, deviceName);
+		Set<DriverModel> baseSet = new LinkedHashSet<DriverModel>(list);
 
 		TreeNode driverNode = driverHash.get(driverName);
 		if(driverNode != null) {
 			List<TreeNode> equivalentDrivers = driverNode.getChildren();
-			list.addAll(findAllEquivalentDrivers(equivalentDrivers));
+			baseSet.addAll(findAllEquivalentDrivers(equivalentDrivers));
 		}
-		if (list == null || list.isEmpty()){
+		if (baseSet == null || baseSet.isEmpty()){
 			return null;
 		}
 		List<DriverData> ret = new ArrayList<DriverData>();
-		for (DriverModel dm : list) {
+		for (DriverModel dm : baseSet) {
 			ret.add(new DriverData(dm.driver(), deviceDao.find(dm.device()), dm.id()));
 		}
 

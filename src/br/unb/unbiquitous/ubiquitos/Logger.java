@@ -14,6 +14,9 @@ public class Logger {
 	public Logger( Class clazz) {
 		this.clazz = clazz;
 		logger = java.util.logging.Logger.getLogger(clazz.getName());
+		logger.setLevel(Level.FINE);
+//		java.util.logging.Logger.getGlobal().setLevel(Level.FINE);
+//		logger.setParent(java.util.logging.Logger.getGlobal());
 	}
 	
 	public void error(Throwable e){
@@ -43,12 +46,12 @@ public class Logger {
 	
 	public void debug(String msg){
 //		logger.fine(msg);
-		logger.log(Level.OFF, msg);
+		logger.log(Level.INFO, msg);
 	}
 	
 	public void debug(String msg, Throwable e){
-//		logger.log(Level.FINE,msg, e);
-		logger.log(Level.OFF,msg, e);
+		logger.log(Level.FINE,msg, e);
+//		logger.log(Level.INFO,msg, e);
 	}
 	
 	public void info(String msg){
