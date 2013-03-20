@@ -56,19 +56,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>1.8.0.10</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ubiquitos</groupId>
-			<artifactId>uos.basic_auth.api</artifactId>
-			<version>2.1.2</version>
-			<type>jar</type>
-		</dependency>
-
-		<dependency>
 			<groupId>owlapi</groupId>
 			<artifactId>owlapi</artifactId>
 			<version>3.2.4</version>
