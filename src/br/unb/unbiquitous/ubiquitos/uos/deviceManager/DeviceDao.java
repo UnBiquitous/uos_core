@@ -1,66 +1,52 @@
 package br.unb.unbiquitous.ubiquitos.uos.deviceManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpDevice;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpNetworkInterface;
-import br.unb.unbiquitous.ubiquitos.uos.persistence.HsqldbConnectionController;
 
-public class DeviceDao extends br.unb.unbiquitous.ubiquitos.uos.persistence.Dao {
-	private static Logger logger = Logger.getLogger(DeviceDao.class);
-	
-	private static final String NETWORKTYPE = "networktype";
-	private static final String ADDRESS = "address";
-	private static final String TABLE = "DEVICE";
-	private static final String ROWID = "rowid";
-	private static final String NAME = "name";
-	
-	private Map<String,UpDevice> deviceMap = new HashMap<String, UpDevice>();
+public class DeviceDao {
+	private Map<String,UpDevice>		deviceMap;
+	private Map<String,UpDevice>		interfaceMap;
+	private Map<String,List<UpDevice>> networkTypeMap;
+	private Map<String,List<UpDevice>> addressMap;
 	
 	public DeviceDao(ResourceBundle bundle) {
-		super(TABLE,new HsqldbConnectionController(bundle));
-		StringBuffer script = new StringBuffer();
-		script.append("create table ").append(TABLE).append(" ( ");
-		script.append(ROWID).append(" IDENTITY ,");
-		script.append(NAME).append(" varchar(256) , ");
-		script.append(ADDRESS).append(" varchar(256) , ");
-		script.append(NETWORKTYPE).append(" varchar(256) ");
-		script.append(");");
-		try {create(script.toString());}
-		catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
-		}
+		deviceMap		= new HashMap<String, UpDevice>();
+		interfaceMap	= new HashMap<String, UpDevice>();
+		networkTypeMap	= new HashMap<String, List<UpDevice>>();
+		addressMap	= new HashMap<String, List<UpDevice>>();
 	}
 	
 	public void save(UpDevice device) {
-		try {
-			Connection con = connectionController.connect();
-			if (find(device.getName()) != null){
-				throw new RuntimeException("Atempt to insert a device with same name.");
-			}
-			if (device.getNetworks() != null){
-				for (UpNetworkInterface ni : device.getNetworks()){
-					insert(device.getName(),ni.getNetworkAddress(),ni.getNetType(),con);
-				}
-			}else{
-				insert(device.getName(),null,null,con);
-			}
-			deviceMap.put(device.getName(),device);
-			con.close();
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
+		if (find(device.getName()) != null){
+			throw new RuntimeException("Atempt to insert a device with same name.");
 		}
+		if (device.getNetworks() != null){
+			for (UpNetworkInterface ni : device.getNetworks()){
+				interfaceMap.put(createInterfaceKey(ni), device);
+				
+				if(!networkTypeMap.containsKey(ni.getNetType())){
+					networkTypeMap.put(ni.getNetType(), new ArrayList<UpDevice>());
+				}
+				networkTypeMap.get(ni.getNetType()).add(device);
+				
+				if(!addressMap.containsKey(ni.getNetworkAddress())){
+					addressMap.put(ni.getNetworkAddress(), new ArrayList<UpDevice>());
+				}
+				addressMap.get(ni.getNetworkAddress()).add(device);
+			}
+		}
+		deviceMap.put(device.getName().toLowerCase(),device);
+	}
+
+	private static String createInterfaceKey(UpNetworkInterface ni) {
+		return ni.getNetworkAddress()+"@"+ni.getNetType();
 	}
 
 	public void update(String oldname, UpDevice device) {
@@ -69,19 +55,15 @@ public class DeviceDao extends br.unb.unbiquitous.ubiquitos.uos.persistence.Dao 
 	}
 	
 	public void delete(String name) {
-		executeUpdateQuery("delete from "+TABLE+" where "+NAME+" = ?", name);
-		deviceMap.remove(name);
-	}
-	
-	private Connection insert(String name, String address, String networkType, Connection con) throws SQLException {
-		String insert = "insert into "+TABLE+" ("+NAME+","+ADDRESS+","+NETWORKTYPE+
-				") values (?,?,?)";
-		PreparedStatement ps = con.prepareStatement(insert);
-		ps.setString(1, name);
-		ps.setString(2, address);
-		ps.setString(3, networkType);
-		ps.executeUpdate();
-		return con;
+		UpDevice device = find(name);
+		if (device.getNetworks() != null){
+			for (UpNetworkInterface ni : device.getNetworks()){
+				interfaceMap.remove(createInterfaceKey(ni));
+				networkTypeMap.get(ni.getNetType()).remove(device);
+				addressMap.get(ni.getNetworkAddress()).remove(device);
+			}
+		}
+		deviceMap.remove(name.toLowerCase());
 	}
 	
 	public List<UpDevice> list() {
@@ -89,62 +71,34 @@ public class DeviceDao extends br.unb.unbiquitous.ubiquitos.uos.persistence.Dao 
 	}
 	
 	public List<UpDevice> list(String address, String networktype) {
-		List<UpDevice> ret = new ArrayList<UpDevice>();
-		try {
-			Connection con = connectionController.connect();
-			PreparedStatement ps = createListQuery(null,address,networktype, con);
-			ResultSet rs = ps.executeQuery();
-			
-			while (rs.next()){
-				ret.add(deviceMap.get(rs.getString(1)));
+		if (address != null && networktype != null){
+			String key = createInterfaceKey(new UpNetworkInterface(networktype, address));
+			UpDevice upDevice = interfaceMap.get(key);
+			List<UpDevice> ret = new ArrayList<UpDevice>();
+			ret.add(upDevice);
+			return ret;
+		}else if (address != null ){
+			if(addressMap.containsKey(address)){
+				return new ArrayList<UpDevice>(new HashSet<UpDevice>(addressMap.get(address)));
 			}
-			con.close();
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
+		}else if (networktype != null ){
+			if(networkTypeMap.containsKey(networktype)){
+				return new ArrayList<UpDevice>(new HashSet<UpDevice>(networkTypeMap.get(networktype)));
+			}
+		}else{
+			return list();
 		}
-		return ret;
+		return new ArrayList<UpDevice>();
 	}
 
 	public UpDevice find(String name) {
-		try {
-			Connection con = connectionController.connect();
-			PreparedStatement ps = createListQuery(name,null,null, con);
-			ResultSet rs = ps.executeQuery();
-			if (rs.next()){
-				return deviceMap.get(rs.getString(1));
-			}
-			con.close();
-		} catch (SQLException e) {
-			logger.error(e);
-			throw new RuntimeException(e);
-		}
-		return null;
+		return deviceMap.get(name.toLowerCase());
 	}
 	
 	public void clear(){
-		executeUpdateQuery("delete from "+TABLE);
 		deviceMap.clear();
+		interfaceMap.clear();
+		addressMap.clear();
+		networkTypeMap.clear();
 	}
-	
-	
-	
-	private PreparedStatement createListQuery(String name, String address, String networkType, Connection con) throws SQLException {
-		String query = "select DISTINCT "+NAME+" from "+TABLE +" where 1=1 "; 
-		if (name != null)		query += " and UCASE("+NAME+") LIKE ?";
-		if (address != null)	query += " and UCASE("+ADDRESS+") LIKE ?";
-		if (networkType != null)query += " and UCASE("+NETWORKTYPE+") LIKE ?";
-
-		PreparedStatement ps = con.prepareStatement(query);
-		
-		int argCount = 1;
-		if (name != null)		ps.setString(argCount++, name.toUpperCase());
-		if (address != null)	ps.setString(argCount++, address.toUpperCase());
-		if (networkType != null)ps.setString(argCount++, networkType.toUpperCase());
-		
-		return ps;
-	}
-
-
-	
 }
