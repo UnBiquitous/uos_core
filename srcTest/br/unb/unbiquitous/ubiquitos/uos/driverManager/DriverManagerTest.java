@@ -7,11 +7,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +22,6 @@ import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpService;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpService.ParameterType;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
-import br.unb.unbiquitous.ubiquitos.uos.persistence.HsqldbConnectionController;
 
 public class DriverManagerTest {
 	
@@ -44,10 +41,6 @@ public class DriverManagerTest {
 		driver = new DriverSpy();
 	}
 	
-	@After
-	public void tearDown() throws SQLException{
-		new HsqldbConnectionController(null).clear();
-	}
 	
 	@Test
 	public void shouldCallServiceOnDriverUsingInstanceId() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException {

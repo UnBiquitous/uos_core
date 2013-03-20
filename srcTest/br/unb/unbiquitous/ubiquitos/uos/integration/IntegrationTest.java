@@ -56,7 +56,6 @@ public class IntegrationTest {
 					{"ubiquitos.message.response.retry", "30"},//Optional
 					{"ubiquitos.connectionManager", "br.unb.unbiquitous.ubiquitos.uos.integration.IntegrationConnectionManager"},
 					{"ubiquitos.uos.deviceName", deviceName}, //TODO: Should not be mandatory, and could be automatic
-					{"ubiquitos.persistence.hsqldb.database", "db_"+deviceName}, 
 					{"ubiquitos.driver.deploylist", "br.unb.unbiquitous.ubiquitos.uos.driver.DeviceDriverImpl"}, //TODO: Should not be mandatory
 					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"}, //TODO: Should not be mandatory
 		        };
