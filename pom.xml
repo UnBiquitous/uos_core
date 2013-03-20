@@ -6,7 +6,7 @@
 	<artifactId>uos.core</artifactId>
 	<name>uOS Core</name>
 	<packaging>jar</packaging>
-	<version>2.2.1</version>
+	<version>2.2.1_DEV</version>
 
 
 	<properties>
