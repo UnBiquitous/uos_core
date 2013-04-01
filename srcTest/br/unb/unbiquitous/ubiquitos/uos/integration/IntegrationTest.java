@@ -1,5 +1,6 @@
 package br.unb.unbiquitous.ubiquitos.uos.integration;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ListResourceBundle;
@@ -16,6 +17,7 @@ public class IntegrationTest {
 	//TODO: Better explain the purpose of this test
 	@Test public void life() throws Exception{
 		//Driver Side
+		// TODO: This bypass does not test how the middleware instantiates drivers and applications
 		UOSApplicationContext pc = startContext("my.pc");
 		EchoDriver echo = new EchoDriver();
 		pc.getDriverManager().deployDriver(echo.getDriver(), echo);
@@ -28,6 +30,9 @@ public class IntegrationTest {
 		
 		//promote radar handshake		
 		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice("my.pc"));
+		
+		//Test if handshake was successfull
+		assertNotNull(cell.getGateway().listDrivers(echo.getDriver().getName()));
 		
 		//TODO: remove sync by time, do somethign plugable
 		Thread.sleep(5000);//Some time to things set up straight

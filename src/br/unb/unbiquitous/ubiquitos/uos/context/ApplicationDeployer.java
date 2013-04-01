@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 
+import br.unb.unbiquitous.ubiquitos.ClassLoaderUtils;
 import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
 import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
@@ -130,9 +131,8 @@ public class ApplicationDeployer {
             APPLICATION_PATH = DEFAULT_APPLICATION_PATH;
         }
         try {
-			ClassLoader classLoader = new URLClassLoader(
-					new URL[] { new File(APPLICATION_PATH).toURI().toURL() },
-					ClassLoader.getSystemClassLoader());
+        	ClassLoader classLoader = ClassLoaderUtils.builder
+											.createClassLoader(APPLICATION_PATH);
 			
 			Class<?> clazz = classLoader.loadClass(applicationClass);
 			UosApplication applicationInstance = (UosApplication) clazz.newInstance();

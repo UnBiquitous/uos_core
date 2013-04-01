@@ -21,7 +21,7 @@ public class Logger {
 	
 	public void error(Throwable e){
 		//TODO: discover calling method
-		logger.throwing(clazz.getName(), "", e);
+		logger.log(Level.SEVERE,clazz.getName(), e);
 	}
 	
 	public void error(String msg, Throwable e){
@@ -29,7 +29,7 @@ public class Logger {
 	}
 	
 	public void error(String msg){
-		logger.severe(msg);
+		logger.log(Level.SEVERE,msg);
 	}
 	
 	public void fatal(String msg){
@@ -41,7 +41,7 @@ public class Logger {
 	}
 	
 	public void warn(String msg){
-		logger.warning(msg);
+		logger.log(Level.WARNING,msg);
 	}
 	
 	public void debug(String msg){
@@ -50,12 +50,12 @@ public class Logger {
 	}
 	
 	public void debug(String msg, Throwable e){
-		logger.log(Level.FINE,msg, e);
-//		logger.log(Level.INFO,msg, e);
+//		logger.log(Level.FINE,msg, e);
+		logger.log(Level.INFO,msg, e);
 	}
 	
 	public void info(String msg){
-		logger.info(msg);
+		logger.log(Level.INFO,msg);
 	}
 	
 	public void info(Throwable e){

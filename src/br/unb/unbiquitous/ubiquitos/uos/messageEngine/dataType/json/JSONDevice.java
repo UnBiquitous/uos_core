@@ -1,6 +1,7 @@
 package br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.json;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import br.unb.unbiquitous.json.JSONArray;
@@ -9,10 +10,12 @@ import br.unb.unbiquitous.json.JSONObject;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpDevice;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpNetworkInterface;
 
+//TODO: all conversion from JSON to object is not tested
 public class JSONDevice extends JSONObject{
 
-	private static final String PROP_NETWORKS = "networks";
-	private static final String PROP_NAME = "name";
+	private static final String 	PROP_NAME	= "name";
+	private static final String PROP_NETWORKS	= "networks";
+	private static final String 	PROP_META	= "meta";
 
 	public JSONDevice(String source) throws JSONException {
 		super(source);
@@ -32,10 +35,12 @@ public class JSONDevice extends JSONObject{
 			this.put(PROP_NETWORKS, (Object)null);
 		}
 		
+		this.put(PROP_META, bean.getMeta());
 	}
 
 	
 	
+//	@SuppressWarnings("rawtypes")
 	public UpDevice getAsObject() throws JSONException{
 		UpDevice device = new UpDevice();
 		
@@ -50,6 +55,14 @@ public class JSONDevice extends JSONObject{
 				networks.add(jsonNI.getAsObject());
 			}
 			device.setNetworks(networks);
+		}
+		JSONObject metaJson = this.optJSONObject(PROP_META);
+		if (metaJson != null){
+			Iterator keys = metaJson.keys();
+			while (keys.hasNext() ){
+				String key = (String) keys.next();
+				device.addProperty(key, metaJson.optString(key));
+			}
 		}
 		return device;
 	}

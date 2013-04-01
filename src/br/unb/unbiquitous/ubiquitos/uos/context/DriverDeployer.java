@@ -5,6 +5,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ResourceBundle;
 
+import br.unb.unbiquitous.ubiquitos.ClassLoaderUtils;
 import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.application.UOSMessageContext;
 import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverManager;
@@ -22,6 +23,7 @@ import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
  * @author Fabricio Nogueira Buzeto
  *
  */
+//TODO: Untested class
 public class DriverDeployer {
 	
 	private static Logger logger = Logger.getLogger(DriverDeployer.class);
@@ -62,7 +64,7 @@ public class DriverDeployer {
 	 * @throws DriverNotFoundException 
 	 */
 	public void deployDrivers() throws DriverManagerException {
-		logger.info("Iniatialize Driver Deploy.");
+		logger.info("Deploying Drivers.");
 		if (driverManager != null  && resourceBundle != null){
 			String deployList = null;
 			try {
@@ -160,10 +162,8 @@ public class DriverDeployer {
 		}
 		
 		try {
-			//TODO: This classload logic is duplicated with ApplicationDeployer
-			ClassLoader classLoader = new URLClassLoader(
-					new URL[] { new File(DRIVER_PATH).toURI().toURL() },
-					ClassLoader.getSystemClassLoader());
+			ClassLoader classLoader = ClassLoaderUtils.builder
+												.createClassLoader(DRIVER_PATH);
 			Class<?> clazz = classLoader.loadClass(driverClass);
 			UosDriver driver = (UosDriver) clazz.newInstance();
 			try {
@@ -178,6 +178,7 @@ public class DriverDeployer {
 				}
 			}
 		} catch (Exception e) {
+			logger.error(e);
 			// TODO Auto-generated catch block
 			new RuntimeException(e);
 		} 

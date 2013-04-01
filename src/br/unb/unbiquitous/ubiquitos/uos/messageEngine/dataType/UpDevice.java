@@ -86,4 +86,12 @@ public class UpDevice {
 		if (meta == null) meta = new HashMap<String, String>();
 		meta.put(key, value);
 	}
+
+	public Map<String, String> getMeta() {
+		return meta;
+	}
+	
+	public void setMeta(Map<String, String> meta) {
+		this.meta = meta;
+	}
 }
