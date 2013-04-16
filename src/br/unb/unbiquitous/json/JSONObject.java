@@ -28,10 +28,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeSet;
 
 /**
@@ -1413,4 +1416,26 @@ public class JSONObject {
     		return this.myHashMap.hashCode();
     	}
     }
+     
+     //FIXME: Untested and ugly
+     public Map<String, Object> toMap() throws JSONException{
+    	Map<String, Object> clone = (Map<String, Object>) this.myHashMap.clone();
+    	for(Entry<String, Object> e: clone.entrySet()){
+    		if (e.getValue() instanceof JSONObject){
+    			clone.put(e.getKey(),((JSONObject)e.getValue()).toMap());
+    		}else if (e.getValue() instanceof JSONArray){
+    			List list = new ArrayList();
+    			JSONArray array = (JSONArray)e.getValue();
+    			for(int i = 0 ; i < array.length(); i++){
+    				if (array.get(i) instanceof JSONObject){
+    					list.add(array.getJSONObject(i).toMap());
+    				}else {
+    					list.add(array.get(i));
+    				}
+    			}
+    			clone.put(e.getKey(),list);
+    		}
+    	}
+		return clone;
+     }
 }

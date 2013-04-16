@@ -26,6 +26,11 @@ public class JSONServiceCall extends JSONMessage  {
 		super(source);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public JSONServiceCall(Map map) throws JSONException {
+		super(map);
+	}
+	
 	
 	public JSONServiceCall(ServiceCall bean) throws JSONException {
 		super((Message)bean);
@@ -69,13 +74,18 @@ public class JSONServiceCall extends JSONMessage  {
 		serviceCall.setChannelType(this.optString(PROP_CHANNEL_TYPE));
 		
 		if (!this.isNull(PROP_PARAMETERS)){
-			Map map = new HashMap();
-			JSONObject obj = (JSONObject)this.get(PROP_PARAMETERS);
-			if (obj != null){
-				Iterator<String>it = obj.sortedKeys();
-				while (it.hasNext() ){
-					String prop = it.next();
-					map.put(prop, obj.get(prop));
+			Map map ;
+			if (this.get(PROP_PARAMETERS) instanceof Map){
+				map = (Map) this.get(PROP_PARAMETERS);
+			}else{
+				map = new HashMap();
+				JSONObject obj = (JSONObject)this.get(PROP_PARAMETERS);
+				if (obj != null){
+					Iterator<String>it = obj.sortedKeys();
+					while (it.hasNext() ){
+						String prop = it.next();
+						map.put(prop, obj.get(prop));
+					}
 				}
 			}
 			serviceCall.setParameters(map);

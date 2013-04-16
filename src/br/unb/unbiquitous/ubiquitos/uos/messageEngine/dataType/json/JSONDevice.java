@@ -3,6 +3,7 @@ package br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.json;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import br.unb.unbiquitous.json.JSONArray;
 import br.unb.unbiquitous.json.JSONException;
@@ -20,8 +21,11 @@ public class JSONDevice extends JSONObject{
 	public JSONDevice(String source) throws JSONException {
 		super(source);
 	}
-
-
+	
+	@SuppressWarnings("rawtypes")
+	public JSONDevice(Map map) {
+		super(map);
+	}
 
 	public JSONDevice(UpDevice bean) throws JSONException {
 		this.put(PROP_NAME,bean.getName());
