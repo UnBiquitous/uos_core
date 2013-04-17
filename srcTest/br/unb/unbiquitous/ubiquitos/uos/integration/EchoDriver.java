@@ -52,7 +52,6 @@ public class EchoDriver implements UosEventDriver {
 	public void registerListener(ServiceCall call, ServiceResponse response,
 			final UOSMessageContext ctx) {
 		// if (call.getParameter("event").equals(reminder)){ //TODO:Validate the event
-		System.out.println(ctx.getCallerDevice().getNetworkDeviceName()+" trying to register on "+ gateway.getCurrentDevice().getName());
 		new Thread() {
 			public void run() {
 				try {

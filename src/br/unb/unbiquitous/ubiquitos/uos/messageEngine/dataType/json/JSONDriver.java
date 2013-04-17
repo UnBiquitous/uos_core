@@ -83,7 +83,6 @@ public class JSONDriver extends JSONObject {
 			JSONArray array = (JSONArray)this.opt(PROP_EQUIVALENT_DRIVERS);
 			for (int i = 0 ; i < array.length() ; i ++){
 				Object o = array.get(i);
-				System.out.println("driver equivalente: " + o.toString());
 				equivalentDrivers.add(o.toString());
 			}
 			driver.setEquivalentDrivers(equivalentDrivers);

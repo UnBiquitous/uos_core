@@ -907,9 +907,7 @@ public class DeviceManagerTest {
 				new ServiceResponse().addParameter("driverList",
 						driverList.toString()));
 		
-		System.out.println("---------------------- AQUI EMBAIXO ----------------------");
 		deviceManager.deviceEntered(enteree);
-		System.out.println("---------------------- AQUI EM CIMA ----------------------");
 	}
 	
 
