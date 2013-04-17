@@ -3,8 +3,8 @@ package br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine;
 import java.util.List;
 import java.util.Map;
 
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationDeployer;
 import br.unb.unbiquitous.ubiquitos.uos.connectivity.ConnectivityManager;
-import br.unb.unbiquitous.ubiquitos.uos.context.ApplicationDeployer;
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceManager;
 import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverData;
 import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverManager;

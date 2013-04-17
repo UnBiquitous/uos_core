@@ -1,6 +1,9 @@
 * 3.0.0:
+	- Gateway now have a listDevices method
+	- Applications can receive service calls, just like drivers
 	* minor_fixes:
 		- Multiple handshakes don't fail
+		
 		
 * 2.2.1:
 	- The uos.api is not needed anymore.

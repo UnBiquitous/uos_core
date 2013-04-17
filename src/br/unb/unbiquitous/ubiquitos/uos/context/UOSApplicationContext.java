@@ -18,6 +18,7 @@ import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.AdaptabilityEngine;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.EventManager;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.SmartSpaceGateway;
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationDeployer;
 import br.unb.unbiquitous.ubiquitos.uos.connectivity.ConnectivityManager;
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceDao;
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceManager;

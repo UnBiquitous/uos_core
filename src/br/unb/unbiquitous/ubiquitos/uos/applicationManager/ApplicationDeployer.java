@@ -1,4 +1,4 @@
-package br.unb.unbiquitous.ubiquitos.uos.context;
+package br.unb.unbiquitous.ubiquitos.uos.applicationManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import br.unb.unbiquitous.ubiquitos.ClassLoaderUtils;
 import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
 import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
+import br.unb.unbiquitous.ubiquitos.uos.context.ContextException;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.Ontology;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyStart;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception.ReasonerNotDefinedException;

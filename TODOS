@@ -40,3 +40,7 @@
 	
 - Deveriam as aplicações serem consideradas Drivers externalizando interfaces de comunicação?
 - Repensar a forma que os eventos são gerenciados. Não seria melhor deixar isso com o middlewar, no lugar dos prórprios devices?
+
+- Diminuir o uso de mocks (deixá-los apenas para a rede e outros recursos intestáveis)
+- trocar o ResourceBundle por um objeto de Configuração (com valores default) ou um mapa
+- Mudar o nome do application context
