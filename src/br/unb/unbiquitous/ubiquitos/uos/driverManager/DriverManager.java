@@ -34,12 +34,6 @@ public class DriverManager {
 	
 	private static Logger logger = Logger.getLogger(DriverManager.class);
 	
-	private static final String DEVICE_DRIVER_NAME = "br.unb.unbiquitous.ubiquitos.driver.DeviceDriver";
-	
-	private static final String DRIVER_NAME_KEY = "driverName";
-	
-	private static final String INTERFACE_KEY = "interface";
-	
 	private ReflectionServiceCaller serviceCaller;
 	
 	private DriverDao driverDao;

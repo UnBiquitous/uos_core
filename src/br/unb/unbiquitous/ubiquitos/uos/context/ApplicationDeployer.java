@@ -1,8 +1,5 @@
 package br.unb.unbiquitous.ubiquitos.uos.context;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

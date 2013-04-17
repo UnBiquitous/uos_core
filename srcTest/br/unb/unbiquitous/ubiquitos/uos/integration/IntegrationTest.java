@@ -15,7 +15,7 @@ import br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext;
 public class IntegrationTest {
 	
 	//TODO: Better explain the purpose of this test
-	@Test public void life() throws Exception{
+	@Test public void execute() throws Exception{
 		//Driver Side
 		// TODO: This bypass does not test how the middleware instantiates drivers and applications
 		UOSApplicationContext pc = startContext("my.pc");

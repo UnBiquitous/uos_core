@@ -44,7 +44,6 @@ public class SmartSpaceGateway implements Gateway {
 		this.ontology = ontology;
 	}
 
-	@Override
 	public ServiceResponse callService(UpDevice device, String serviceName,
 			String driverName, String instanceId, String securityType,
 			Map<String, String> parameters) throws ServiceCallException {
@@ -53,20 +52,17 @@ public class SmartSpaceGateway implements Gateway {
 				instanceId, securityType, parameters);
 	}
 
-	@Override
 	public ServiceResponse callService(UpDevice device, ServiceCall serviceCall)
 			throws ServiceCallException {
 		return adaptabilityEngine.callService(device, serviceCall);
 	}
 
-	@Override
 	public void registerForEvent(UosEventListener listener, UpDevice device,
 			String driver, String eventKey) throws NotifyException {
 		adaptabilityEngine.registerForEvent(listener, device, driver, null,
 				eventKey);
 	}
 
-	@Override
 	public void registerForEvent(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
@@ -74,39 +70,28 @@ public class SmartSpaceGateway implements Gateway {
 				instanceId, eventKey);
 	}
 
-	@Override
 	public List<DriverData> listDrivers(String driverName) {
 		return driverManager.listDrivers(driverName, null);
 	}
 
-	/**
-	 * @see br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway#getCurrentDevice()
-	 */
+	public List<UpDevice> listDevices() {
+		return deviceManager.listDevices();
+	}
+	
 	public UpDevice getCurrentDevice() {
 		return currentDevice;
 	}
 
-	/**
-	 * @see br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway#sendEventNotify(Notify,
-	 *      UpDevice)
-	 */
 	public void sendEventNotify(Notify notify, UpDevice device)
 			throws NotifyException {
 		adaptabilityEngine.sendEventNotify(notify, device);
 	}
 
-	/**
-	 * @see br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway#unregisterForEvent(UosEventListener)
-	 */
 	public void unregisterForEvent(UosEventListener listener)
 			throws NotifyException {
 		adaptabilityEngine.unregisterForEvent(listener);
 	}
 
-	/**
-	 * @see br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway#unregisterForEvent(UosEventListener,
-	 *      UpDevice, String, String, String)
-	 */
 	public void unregisterForEvent(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
@@ -114,59 +99,35 @@ public class SmartSpaceGateway implements Gateway {
 				instanceId, eventKey);
 	}
 
-	/**
-	 * @return The current SecurityManager available in the middleware instance.
-	 */
 	public SecurityManager getSecurityManager() {
 		return securityManager;
 	}
 
-	/**
-	 * @return The ConnectivityManager used by the middleware for managing the
-	 *         network layer.
-	 */
 	public ConnectivityManager getConnectivityManager() {
 		return connectivityManager;
 	}
 
-	/**
-	 * @return The DeviceManager responsible for the device database on this
-	 *         instance.
-	 */
 	public DeviceManager getDeviceManager() {
 		return deviceManager;
 	}
 
-	/**
-	 * @return The DriverManager responsible for the driver database on this
-	 *         instance.
-	 */
 	public DriverManager getDriverManager() {
 		return driverManager;
 	}
 
-	/**
-	 * @return The ApplicationDeployer responsible for the applications running
-	 *         on this instance.
-	 */
 	public ApplicationDeployer getApplicationDeployer() {
 		return applicationDeployer;
 	}
 
-	/**
-	 * @return The OntologyReasoner responsible for returning information from
-	 *         the ontology.
-	 */
 	public StartReasoner getOntologyReasoner() {
-            if(ontology!=null){
-                
-		return ontology.getOntologyReasoner();
-            }
-        
-            return null;
+		if (ontology != null) {
+			return ontology.getOntologyReasoner();
+		}
+		return null;
 	}
-        
-        public Ontology getOntology(){
-            return ontology;
-        }
+
+	public Ontology getOntology() {
+		return ontology;
+	}
+
 }

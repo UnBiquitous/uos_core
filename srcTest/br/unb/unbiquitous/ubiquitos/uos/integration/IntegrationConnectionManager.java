@@ -74,7 +74,6 @@ public class IntegrationConnectionManager implements ConnectionManager {
 						return new DataInputStream(pcIn);
 					}
 					public void closeConnection() throws IOException {
-						System.out.println("Reload Stream");//TODO: remove all these prints
 						loadStreams();
 					}
 					public boolean isConnected() {
@@ -98,15 +97,12 @@ public class IntegrationConnectionManager implements ConnectionManager {
 		public ClientConnection openActiveConnection(String networkDeviceName)
 				throws NetworkException, IOException {
 			if(networkDeviceName.equals("my.pc")){
-				System.out.println(">>>> : Calling PC");
 				pcManager.connectionListener.handleClientConnection(toCellConn);
 				return toPcConn;
 			}else if(networkDeviceName.equals("my.cell")){
-				System.out.println(">>>> : Calling Cell");
 				cellManager.connectionListener.handleClientConnection(toPcConn);
 				return toCellConn;
 			}
-			System.out.println(">>>> : Calling NoOne");
 			return null;
 		}
 		

@@ -5,11 +5,13 @@
 package br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception;
 
 /**
- *
+ * 
  * @author anaozaki
  */
 public class DeclarationException extends Exception {
-        public DeclarationException() {
+	private static final long serialVersionUID = 542203298479248754L;
+
+	public DeclarationException() {
 		super();
 	}
 

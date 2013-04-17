@@ -49,7 +49,6 @@ public class UserDriverTest {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		System.out.println("\tSetup test");
 		uosApplicationContext = new UOSApplicationContext();
 		uosApplicationContext.init("ubiquitos_test");
 		// uosApplicationContext.init();
@@ -58,7 +57,6 @@ public class UserDriverTest {
 
 	@Test
 	public void should_list_my_driver() throws Exception {
-		System.out.println("\tList my driver test");
 		List<UosDriver> listDrivers = uosApplicationContext.getDriverManager().listDrivers();
 
 		Assert.assertNotNull(listDrivers);
@@ -68,7 +66,6 @@ public class UserDriverTest {
 
 	@Test
 	public void should_return_empty_user_data() throws Exception {
-		System.out.println("\tReturn empty user data test");
 
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
@@ -84,14 +81,12 @@ public class UserDriverTest {
 	@Test
 	public void should_receive_user_added() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException, ServiceCallException, JSONException {
-		System.out.println("\tAdd user test");
 
 		DummyEventListener dummyNewEventListener = new DummyEventListener();
 		gateway.registerForEvent(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
 
 		createUser(LABEL);
 
-		System.out.println("\t\tSynchronous test...");
 		Assert.assertEquals(1, dummyNewEventListener.getLastEventCount());
 		Assert.assertEquals(dummyNewEventListener.getLastEvent().getEventKey(), UserDriver.NEW_USER_EVENT_KEY);
 		Assert.assertEquals(NAME, dummyNewEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
@@ -101,7 +96,6 @@ public class UserDriverTest {
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
-		System.out.println("\t\tAsynchronous test...");
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
@@ -116,14 +110,12 @@ public class UserDriverTest {
 	@Test
 	public void should_receive_user_changed() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException, ServiceCallException, JSONException {
-		System.out.println("\tChange information test");
 
 		DummyEventListener dummyEventListener = new DummyEventListener();
 		gateway.registerForEvent(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
 
 		updateUser(LABEL, 0.99f, 1f, 2f, 3f);
 
-		System.out.println("\t\tSynchronous test...");
 		Assert.assertEquals(1, dummyEventListener.getLastEventCount());
 		Assert.assertEquals(dummyEventListener.getLastEvent().getEventKey(), UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
 		Assert.assertEquals(NAME, dummyEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
@@ -133,7 +125,6 @@ public class UserDriverTest {
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
-		System.out.println("\t\tAsynchronous test...");
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 
@@ -152,14 +143,12 @@ public class UserDriverTest {
 	@Test
 	public void should_receive_user_losted() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException, ServiceCallException {
-		System.out.println("\tLost user test...");
 
 		DummyEventListener dummyLostEventListener = new DummyEventListener();
 		gateway.registerForEvent(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
 
 		removeUser(LABEL);
 
-		System.out.println("\t\tSynchronous test...");
 		Assert.assertEquals(1, dummyLostEventListener.getLastEventCount());
 		Assert.assertEquals(dummyLostEventListener.getLastEvent().getEventKey(), UserDriver.LOST_USER_EVENT_KEY);
 		Assert.assertEquals(NAME, dummyLostEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
@@ -169,7 +158,6 @@ public class UserDriverTest {
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
-		System.out.println("\t\tAsynchronous test...");
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
@@ -181,7 +169,6 @@ public class UserDriverTest {
 		// Buscando bytes da frame de teste
 		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("sampleImage.bmp");
 		int availableInput = inputStream.available();
-		System.out.println(availableInput);
 		byte[] imageData = new byte[availableInput];
 		inputStream.read(imageData);
 
@@ -255,7 +242,6 @@ public class UserDriverTest {
 		String returnData = response.getResponseData(UserDriver.RETURN_PARAM);
 		Assert.assertNotNull(returnData);
 
-		System.out.println(returnData);
 	}
 
 	@AfterClass
@@ -320,7 +306,6 @@ class DummyEventListener implements UosEventListener {
 	@Override
 	public void handleEvent(Notify event) {
 		// stores the last recieved event
-		System.out.println("\t Receive event in listener for event '" + event.getEventKey() + "' and name '" + event.getParameter(UserDriver.NAME_PARAM) + "'");
 		lastEvent = event;
 		lasteventCount++;
 	}

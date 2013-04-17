@@ -5,11 +5,13 @@
 package br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception;
 
 /**
- *
+ * 
  * @author anaozaki
  */
 public class DisjunctionException extends Exception {
-        public DisjunctionException() {
+	private static final long serialVersionUID = -441149317808260191L;
+
+	public DisjunctionException() {
 		super();
 	}
 

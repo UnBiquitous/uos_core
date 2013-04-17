@@ -1,5 +1,6 @@
 package br.unb.unbiquitous.ubiquitos.uos.deviceManager;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -141,6 +142,20 @@ public class DeviceManagerTest {
 		assertNull(deviceManager.retrieveDevice("127.0.0.2", "Ethernet:UDP"));
 	}
 
+	
+	@Test
+	public void listsAllRegisteredDevices() {
+		UpDevice first = new UpDevice("firstDevice")
+						.addNetworkInterface("127.0.0.1", "Ethernet:TCP");
+		deviceManager.registerDevice(first);
+		UpDevice second = new UpDevice("secondDevice")
+						.addNetworkInterface("127.0.0.2", "Ethernet:TCP");
+		deviceManager.registerDevice(second);
+		assertThat(deviceManager.listDevices()).containsOnly(currentDevice,first,second);
+	}
+	
+	//TODO: two devices with the same name == trouble
+	
 	@Test
 	public void shouldRetrieveMultipleInstancesByDriverName()
 			throws DriverManagerException, DriverNotFoundException {
@@ -186,6 +201,7 @@ public class DeviceManagerTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void ifTheDeviceIsAlreadyKnownShouldDoNothing() throws Exception {
 		deviceManager.registerDevice(new UpDevice("IShouldKnow")
 				.addNetworkInterface("ADDR_KNOWN", "UNEXISTANT"));
@@ -255,6 +271,22 @@ public class DeviceManagerTest {
 				.thenReturn(
 						new ServiceResponse().addParameter("device",
 								newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
+		assertEquals(2, dao.list().size());
+		assertEquals(newGuy, dao.find(newGuy.getName()));
+	}
+	
+	@Test
+	public void IfTheHandShakeHappensTwiceDoNothing() throws Exception {
+		NetworkDevice enteree = createKnownNetworkDevice();
+		UpDevice newGuy = new UpDevice("TheNewGuy")
+			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		when(gatewayHandshakeCall())
+				.thenReturn(
+						new ServiceResponse().addParameter("device",
+								newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
 		assertEquals(newGuy, dao.find(newGuy.getName()));
@@ -875,9 +907,7 @@ public class DeviceManagerTest {
 				new ServiceResponse().addParameter("driverList",
 						driverList.toString()));
 		
-		System.out.println("---------------------- AQUI EMBAIXO ----------------------");
 		deviceManager.deviceEntered(enteree);
-		System.out.println("---------------------- AQUI EM CIMA ----------------------");
 	}
 	
 

@@ -10,13 +10,38 @@ import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.Notify;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
 
+/**
+ * The Gateway represents a way to access the Smart Space capabilities 
+ * provided through the middleware.
+ * 
+ * @author Fabricio Buzeto
+ *
+ */
 public interface Gateway {
 
+	/**
+	 * Makes a Service Call according to the informed parameters.
+	 * 
+	 * @param device The Device which you'll make the call. Null if local.
+	 * @param serviceName Name of the service to be called.
+	 * @param driverName Driver Name on which the service resides.
+	 * @param instanceId Optional instance id. If not informed, the middleware will choose.
+	 * @param securityType Optional if crypto is being used.
+	 * @param parameters Service Parameters.
+	 * @return Response of the execution.
+	 */
 	public ServiceResponse callService(UpDevice device,
 			String serviceName, String driverName, String instanceId,
 			String securityType, Map<String, String> parameters)
 			throws ServiceCallException;
 
+	/**
+	 * Makes a Service Call according to the informed parameters.
+	 * 
+	 * @param device The Device which you'll make the call. Null if local.
+	 * @param serviceCall	Call Object.
+	 * @return Response of the execution.
+	 */
 	public ServiceResponse callService(UpDevice device,
 			ServiceCall serviceCall) throws ServiceCallException;
 
@@ -81,11 +106,16 @@ public interface Gateway {
 	public UpDevice getCurrentDevice();
 	
 	/**
-	 * Returns the list of drivers know in the database.
+	 * Returns the list of drivers known in the database.
 	 * 
 	 * @param driverName Optional filter for the query.
 	 * @return list of drivers known in the database.
 	 */
 	public List<DriverData> listDrivers(String driverName);
+	
+	/**
+	 * Returns all known devices in the Smart Space.
+	 */
+	public List<UpDevice> listDevices();
 
 }

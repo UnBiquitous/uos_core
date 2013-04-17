@@ -9,8 +9,9 @@ package br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception;
  * @author anaozaki
  */
 public class RemovalException extends Exception {
+	private static final long serialVersionUID = -1515850575662378936L;
 
-    public RemovalException() {
+	public RemovalException() {
         super();
     }
 

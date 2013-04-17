@@ -157,6 +157,7 @@ public class DeviceManager implements RadarListener {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void doDriversRegistry(NetworkDevice device, UpDevice upDevice) {
 		try {
 			ServiceResponse response = gateway.callService(upDevice, new ServiceCall(DEVICE_DRIVER_NAME,"listDrivers"));
@@ -327,5 +328,9 @@ public class DeviceManager implements RadarListener {
 			logger.info("Device not found in database.");
 		}
 
+	}
+
+	public List<UpDevice> listDevices() {
+		return deviceDao.list();
 	}
 }

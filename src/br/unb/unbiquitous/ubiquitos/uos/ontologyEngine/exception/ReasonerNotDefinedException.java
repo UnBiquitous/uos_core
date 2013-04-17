@@ -9,7 +9,9 @@ package br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception;
  * @author anaozaki
  */
 public class ReasonerNotDefinedException extends Exception {
-    public ReasonerNotDefinedException() {
+	private static final long serialVersionUID = -1148156680804824595L;
+
+	public ReasonerNotDefinedException() {
 		super();
 	}
 

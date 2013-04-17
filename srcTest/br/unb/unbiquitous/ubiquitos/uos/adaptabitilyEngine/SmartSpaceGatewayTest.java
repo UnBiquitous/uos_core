@@ -2,13 +2,18 @@ package br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceManager;
+import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverData;
 import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverManager;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpDevice;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.Notify;
@@ -81,8 +86,17 @@ public class SmartSpaceGatewayTest {
 		verify(engine).unregisterForEvent(listener,target,"d","i","e");
 	}
 	
-	@Test public void listDriversDelegatesToDeviceManagerConsideringAllDevices(){
-		gateway.listDrivers("d");
+	@Test public void listDriversDelegatesToDriverManagerConsideringAllDevices(){
+		List<DriverData> data = new ArrayList<DriverData>();
+		when(driverManager.listDrivers("d", null)).thenReturn(data);
+		assertThat(gateway.listDrivers("d")).isSameAs(data);
 		verify(driverManager).listDrivers("d", null);
+	}
+	
+	@Test public void listDevicesDelegatesToDeviceManager(){
+		List<UpDevice> data = new ArrayList<UpDevice>();
+		when(deviceManager.listDevices()).thenReturn(data);
+		assertThat(gateway.listDevices()).isSameAs(data);
+		verify(deviceManager).listDevices();
 	}
 }
