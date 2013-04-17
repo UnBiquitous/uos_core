@@ -1,3 +1,13 @@
+* 3.0.0:
+	* minor_fixes:
+		- Multiple handshakes don't fail
+		
+* 2.2.1:
+	- The uos.api is not needed anymore.
+	- We don't use HSQLDB or any other dependency other than OWL API on uos.core
+	- No more BasicAuthAPI
+	- The code is available at github.com/unbiquitous
+
 * 2.2.0:
 	- ExecutionDriver : Support for Remote Execution using Lua scripts. (Ongoing) TODO: Reference to Wiki
 		- Support a Remote Evaluation (beginning)

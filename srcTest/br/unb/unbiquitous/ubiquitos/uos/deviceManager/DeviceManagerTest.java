@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,6 +142,20 @@ public class DeviceManagerTest {
 		assertNull(deviceManager.retrieveDevice("127.0.0.2", "Ethernet:UDP"));
 	}
 
+	
+	@Test
+	public void listsAllRegisteredDevices() {
+		UpDevice first = new UpDevice("firstDevice")
+						.addNetworkInterface("127.0.0.1", "Ethernet:TCP");
+		deviceManager.registerDevice(first);
+		UpDevice second = new UpDevice("secondDevice")
+						.addNetworkInterface("127.0.0.2", "Ethernet:TCP");
+		deviceManager.registerDevice(second);
+		assertThat(deviceManager.listDevices()).containsOnly(currentDevice,first,second);
+	}
+	
+	//TODO: two devices with the same name == trouble
+	
 	@Test
 	public void shouldRetrieveMultipleInstancesByDriverName()
 			throws DriverManagerException, DriverNotFoundException {
