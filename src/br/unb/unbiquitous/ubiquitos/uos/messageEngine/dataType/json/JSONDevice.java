@@ -44,7 +44,7 @@ public class JSONDevice extends JSONObject{
 
 	
 	
-//	@SuppressWarnings("rawtypes")
+	@SuppressWarnings("rawtypes")
 	public UpDevice getAsObject() throws JSONException{
 		UpDevice device = new UpDevice();
 		

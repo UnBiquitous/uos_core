@@ -74,7 +74,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                         try {
                             while (protectArea > 1) {
                                 protectArea--;
-                                Thread.currentThread().sleep(100);
+                                Thread.sleep(100);
                                 protectArea++;
                             }
                           
@@ -120,7 +120,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                     try {
                         while (protectArea > 1) {
                             protectArea--;
-                            Thread.currentThread().sleep(100);
+                            Thread.sleep(100);
                             protectArea++;
                         }
 

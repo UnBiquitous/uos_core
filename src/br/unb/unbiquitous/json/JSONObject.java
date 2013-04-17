@@ -1418,7 +1418,8 @@ public class JSONObject {
     }
      
      //FIXME: Untested and ugly
-     public Map<String, Object> toMap() throws JSONException{
+     @SuppressWarnings("unchecked")
+	public Map<String, Object> toMap() throws JSONException{
     	Map<String, Object> clone = (Map<String, Object>) this.myHashMap.clone();
     	for(Entry<String, Object> e: clone.entrySet()){
     		if (e.getValue() instanceof JSONObject){

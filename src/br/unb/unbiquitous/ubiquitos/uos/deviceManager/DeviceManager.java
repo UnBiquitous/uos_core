@@ -157,6 +157,7 @@ public class DeviceManager implements RadarListener {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void doDriversRegistry(NetworkDevice device, UpDevice upDevice) {
 		try {
 			ServiceResponse response = gateway.callService(upDevice, new ServiceCall(DEVICE_DRIVER_NAME,"listDrivers"));

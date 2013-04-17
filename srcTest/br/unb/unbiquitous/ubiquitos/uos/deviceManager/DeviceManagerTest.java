@@ -1,5 +1,6 @@
 package br.unb.unbiquitous.ubiquitos.uos.deviceManager;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -11,7 +12,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.fest.assertions.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -201,6 +201,7 @@ public class DeviceManagerTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void ifTheDeviceIsAlreadyKnownShouldDoNothing() throws Exception {
 		deviceManager.registerDevice(new UpDevice("IShouldKnow")
 				.addNetworkInterface("ADDR_KNOWN", "UNEXISTANT"));
@@ -270,6 +271,22 @@ public class DeviceManagerTest {
 				.thenReturn(
 						new ServiceResponse().addParameter("device",
 								newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
+		assertEquals(2, dao.list().size());
+		assertEquals(newGuy, dao.find(newGuy.getName()));
+	}
+	
+	@Test
+	public void IfTheHandShakeHappensTwiceDoNothing() throws Exception {
+		NetworkDevice enteree = createKnownNetworkDevice();
+		UpDevice newGuy = new UpDevice("TheNewGuy")
+			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		when(gatewayHandshakeCall())
+				.thenReturn(
+						new ServiceResponse().addParameter("device",
+								newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
 		assertEquals(newGuy, dao.find(newGuy.getName()));
