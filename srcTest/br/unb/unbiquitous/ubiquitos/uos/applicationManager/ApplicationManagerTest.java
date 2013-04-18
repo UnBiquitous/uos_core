@@ -13,10 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
-import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
-import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyDeploy;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyStart;
-import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyUndeploy;
 
 public class ApplicationManagerTest {
 
@@ -243,52 +240,6 @@ public class ApplicationManagerTest {
 			time += 10;
 		}
 		assertTrue(msg,assertion.assertion());
-	}
-	
-	
-	
-}
-
-class DummyApp implements UosApplication{
-	
-	boolean inited;
-	int	initedCount;
-	boolean started;
-	int	startedCount;
-	boolean stoped;
-	int	stopedCount;
-	boolean finished;
-	int	finishedCount;
-	OntologyDeploy initOntology;
-	OntologyStart startOntology;
-	OntologyUndeploy teardownOntology;
-	Gateway gateway;
-	
-	@Override
-	public void init(OntologyDeploy ontology) {
-		this.initOntology = ontology;
-		inited = true;
-		initedCount ++;
-	}
-	
-	public void start(Gateway gateway, OntologyStart ontology) {
-		this.gateway = gateway;
-		this.startOntology = ontology;
-		started= true;
-		startedCount++;
-	}
-
-	@Override
-	public void stop() throws Exception {
-		stoped = true;
-		stopedCount++;
-	}
-
-	@Override
-	public void tearDown(OntologyUndeploy ontology) throws Exception {
-		this.teardownOntology = ontology;
-		finished = true;
-		finishedCount++;
 	}
 	
 }

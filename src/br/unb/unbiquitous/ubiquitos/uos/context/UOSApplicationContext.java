@@ -19,6 +19,7 @@ import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.EventManager;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.SmartSpaceGateway;
 import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationDeployer;
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationManager;
 import br.unb.unbiquitous.ubiquitos.uos.connectivity.ConnectivityManager;
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceDao;
 import br.unb.unbiquitous.ubiquitos.uos.deviceManager.DeviceManager;
@@ -71,6 +72,8 @@ public class UOSApplicationContext {
 	private EventManager eventManager;
     private Ontology ontology;
     private ResourceBundle resourceBundle;
+
+	private ApplicationManager applicationManager;
         
 	/**
 	 * Initializes the components of the uOS middleware using 'ubiquitos' as the
@@ -303,9 +306,10 @@ public class UOSApplicationContext {
 
 	private void initApplications(ResourceBundle resourceBundle, Gateway gateway)
 			throws ContextException {
-		applicationDeployer = new ApplicationDeployer(resourceBundle, 
-				gateway);
+		applicationManager = new ApplicationManager(resourceBundle, gateway);
+		applicationDeployer = new ApplicationDeployer(resourceBundle,applicationManager);
 		applicationDeployer.deployApplications();
+		applicationManager.startApplications();
 	}
 
         private void initOntology(ResourceBundle resourceBundle, DeviceManager deviceManager) {
@@ -327,8 +331,8 @@ public class UOSApplicationContext {
 
 		// inform the applications about the teardown process
 		try {
-			applicationDeployer.stopApplications();
-		} catch (ContextException e) {
+			applicationManager.tearDown();
+		} catch (Exception e) {
 			logger.error(e);
 		}
 
@@ -391,8 +395,8 @@ public class UOSApplicationContext {
 	 * @return The ApplicationDeployer used to deploy applications dynamically
 	 *         into the middleware.
 	 */
-	public ApplicationDeployer getApplicationDeployer() {
-		return applicationDeployer;
+	public ApplicationManager getApplicationManager() {
+		return applicationManager;
 	}
 
 	/**
