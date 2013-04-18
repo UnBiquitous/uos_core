@@ -1,9 +1,8 @@
 package br.unb.unbiquitous.ubiquitos.uos.applicationManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import br.unb.unbiquitous.ubiquitos.Logger;
@@ -15,7 +14,7 @@ import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception.ReasonerNotDefi
 public class ApplicationManager {
 	private static final Logger logger = Logger.getLogger(ApplicationManager.class); 
 	
-	private List<UosApplication> toInitialize = new ArrayList<UosApplication>();
+	private Map<String, UosApplication> toInitialize = new HashMap<String, UosApplication>();
 	private Map<String, UosApplication> deployed = new HashMap<String, UosApplication>();
 	private final ResourceBundle properties;
 
@@ -27,13 +26,17 @@ public class ApplicationManager {
 	}
 
 	public void add(UosApplication app) {
-		this.toInitialize.add(app);
+		add(app, assignAName(app, null));
+	}
+	
+	public void add(UosApplication app, String id) {
+		toInitialize.put(id, app);
 	}
 
 	public void startApplications() {
-		for (final UosApplication app : toInitialize) {
+		for (Entry<String, UosApplication> e : toInitialize.entrySet()) {
 			//TODO: The ontology rules are not enforced by tests
-			deploy(app);
+			deploy(e.getValue(),e.getKey());
 		}
 		toInitialize.clear();
 	}
@@ -43,9 +46,23 @@ public class ApplicationManager {
 	}
 	
 	public void deploy(UosApplication app, String id) {
+		id = assignAName(app, id);
 		initApp(app);
 		startApp(app);
 		deployed.put(id, app);
+	}
+
+	private String assignAName(UosApplication app, String id) {
+		int appCount = appCount();
+		if (id == null){
+			id = app.getClass().getName()+appCount;
+		}
+		return id;
+	}
+	
+	private int _appCount = 0;
+	private synchronized int appCount(){
+		return _appCount ++;
 	}
 	
 	private void startApp(final UosApplication app) {
@@ -90,7 +107,7 @@ public class ApplicationManager {
 	}
 	
 	public void tearDown() throws Exception {
-		for (final UosApplication app : toInitialize) {
+		for (final UosApplication app : deployed.values()) {
 			Ontology ontology = createUndeployOntology(app);
 			app.stop();
 			app.tearDown(ontology);
@@ -98,6 +115,7 @@ public class ApplicationManager {
 				ontology.saveChanges();
 			}
 		}
+		deployed.clear();
 	}
 
 	private Ontology createUndeployOntology(final UosApplication app) {
@@ -115,4 +133,5 @@ public class ApplicationManager {
 	public UosApplication findApplication(String id) {
 		return deployed.get(id);
 	}
+
 }

@@ -155,6 +155,7 @@ public class ApplicationManagerTest {
 		final DummyApp app2 = new DummyApp();
 		manager.add(app1);
 		manager.add(app2);
+		manager.startApplications();
 		manager.tearDown();
 		assertThat(app1.stoped).isTrue();
 		assertThat(app1.finished).isTrue();
@@ -162,9 +163,20 @@ public class ApplicationManagerTest {
 		assertThat(app2.finished).isTrue();
 	}
 	
+	@Test public void tearDownStopsAndTearDownApplicationstwice() throws Exception{
+		final DummyApp app = new DummyApp();
+		manager.add(app);
+		manager.startApplications();
+		manager.tearDown();
+		manager.tearDown();
+		assertThat(app.stopedCount).isEqualTo(1);
+		assertThat(app.finishedCount).isEqualTo(1);
+	}
+	
 	@Test public void tearsDownTheAppWithTheProperOntology() throws Exception{
 		final DummyApp app = new DummyApp();
 		manager.add(app);
+		manager.startApplications();
 		manager.tearDown();
 		assertThat(app.teardownOntology).isNotNull();
 	}
@@ -183,8 +195,34 @@ public class ApplicationManagerTest {
 		DummyApp app2 = new DummyApp();
 		manager.deploy(app2,"app2");
 		assertThat(manager.findApplication("app1")).isSameAs(app1);
+		assertThat(manager.findApplication("app2")).isSameAs(app2);
 	}
-
+	
+	@Test public void findAddedApps() throws Exception{
+		DummyApp app1 = new DummyApp();
+		manager.add(app1,"app1");
+		DummyApp app2 = new DummyApp();
+		manager.add(app2,"app2");
+		manager.startApplications();
+		assertThat(manager.findApplication("app1")).isSameAs(app1);
+		assertThat(manager.findApplication("app2")).isSameAs(app2);
+	}
+	
+	@Test public void deployingAppsAutoAsingIds() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app);
+		assertThat(manager.findApplication(DummyApp.class.getName()+"0"))
+															.isSameAs(app);
+	}
+	
+	@Test public void addingAppsAutoAsingIds() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.add(app);
+		manager.startApplications();
+		assertThat(manager.findApplication(DummyApp.class.getName()+"0"))
+															.isSameAs(app);
+	}
+	
 	private void waitToStart(final DummyApp app) throws InterruptedException {
 		assertEventuallyTrue("Must start a Thread with the app", 1000, 
 				new EventuallyAssert() {
@@ -218,7 +256,9 @@ class DummyApp implements UosApplication{
 	boolean started;
 	int	startedCount;
 	boolean stoped;
+	int	stopedCount;
 	boolean finished;
+	int	finishedCount;
 	OntologyDeploy initOntology;
 	OntologyStart startOntology;
 	OntologyUndeploy teardownOntology;
@@ -241,12 +281,14 @@ class DummyApp implements UosApplication{
 	@Override
 	public void stop() throws Exception {
 		stoped = true;
+		stopedCount++;
 	}
 
 	@Override
 	public void tearDown(OntologyUndeploy ontology) throws Exception {
 		this.teardownOntology = ontology;
 		finished = true;
+		finishedCount++;
 	}
 	
 }
