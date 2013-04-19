@@ -44,18 +44,22 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 	private EventManager eventManager;
 	
 	private ConnectivityManager connectivityManager;
-	
+
+	private UOSApplicationContext context;
+
+	//TODO: this is a hell lot of dependencies
 	public void init(
 				ConnectionManagerControlCenter connectionManagerControlCenter, 
 				DriverManager driverManager, 
 				UpDevice currentDevice,
-				UOSApplicationContext applicationContext,
+				UOSApplicationContext context,
 				MessageEngine messageEngine,
 				ConnectivityManager connectivityManager,
 				EventManager eventManager) {
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		this.driverManager = driverManager;
 		this.currentDevice = currentDevice;
+		this.context = context;
 		this.messageEngine = messageEngine;
 		this.eventManager = eventManager;
 		this.connectivityManager = connectivityManager;
@@ -104,7 +108,6 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 			throw new IllegalArgumentException("Service Driver or Service Name is empty");
 		}
 		
-		
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
 		UOSMessageContext messageContext = new UOSMessageContext();
@@ -120,37 +123,50 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 		/* Verify Device Name or the main device object itself
 		 * If the device corresponds to the current device instance, make a local service call
 		 */
-		if (device == null ||
-				device.getName() == null ||
-				device.getName().equalsIgnoreCase(currentDevice.getName())){
-			
-			logger.info("Handling Local ServiceCall");
-			
-			try {
-				// in the case of a local service call, must inform that the current device is the same.
-				//FIXME : AdaptabilityEngine : Must set the local device  
-				//messageContext.setCallerDevice(callerDevice)
-				ServiceResponse response = driverManager.handleServiceCall(serviceCall,messageContext);
-				response.setMessageContext(messageContext);
-				
-				return response;
-			} catch (DriverManagerException e) {
-				// if there was an opened stream channel, it must be closed
-				closeStreamChannels(streamConnectionThreadeds);
-				throw new ServiceCallException(e);
-			} finally{
-			}
+		if (isLocalCall(device)){
+			return localServiceCall(serviceCall, streamConnectionThreadeds, messageContext);
 		}else{
-			// If not a local service call, delegate to the serviceHandler
-			try{
-				ServiceResponse response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
-				response.setMessageContext(messageContext);
-				
-				return response;
-			}catch (MessageEngineException e){
-				closeStreamChannels(streamConnectionThreadeds);
-				throw new ServiceCallException(e);
-			}
+			return remoteServiceCall(device, serviceCall,streamConnectionThreadeds, messageContext);
+		}
+	}
+
+	private boolean isLocalCall(UpDevice device) {
+		return device == null || device.getName() == null ||
+				device.getName().equalsIgnoreCase(currentDevice.getName());
+	}
+
+	private ServiceResponse remoteServiceCall(UpDevice device,
+			ServiceCall serviceCall,
+			StreamConnectionThreaded[] streamConnectionThreadeds,
+			UOSMessageContext messageContext) throws ServiceCallException {
+		// If not a local service call, delegate to the serviceHandler
+		try{
+			ServiceResponse response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			response.setMessageContext(messageContext);
+			return response;
+		}catch (MessageEngineException e){
+			closeStreamChannels(streamConnectionThreadeds);
+			throw new ServiceCallException(e);
+		}
+	}
+
+	private ServiceResponse localServiceCall(ServiceCall serviceCall,
+			StreamConnectionThreaded[] streamConnectionThreadeds,
+			UOSMessageContext messageContext) throws ServiceCallException {
+		logger.info("Handling Local ServiceCall");
+		
+		try {
+			// in the case of a local service call, must inform that the current device is the same.
+			//FIXME : AdaptabilityEngine : Must set the local device  
+			//messageContext.setCallerDevice(callerDevice)
+			ServiceResponse response = driverManager.handleServiceCall(serviceCall,messageContext);
+			response.setMessageContext(messageContext);
+			
+			return response;
+		} catch (DriverManagerException e) {
+			// if there was an opened stream channel, it must be closed
+			closeStreamChannels(streamConnectionThreadeds);
+			throw new ServiceCallException(e);
 		}
 	}
 
@@ -310,6 +326,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 	@Override
 	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext)
 			throws DriverManagerException {
-		return driverManager.handleServiceCall(serviceCall, messageContext);
+		if (isApplicationCall(serviceCall)){
+			return context.getApplicationManager().handleServiceCall(serviceCall, messageContext);
+		}else{
+			return driverManager.handleServiceCall(serviceCall, messageContext);
+		}
+	}
+
+	private boolean isApplicationCall(ServiceCall serviceCall) {
+		return serviceCall.getDriver() != null && serviceCall.getDriver().equals("app");
 	}
 }

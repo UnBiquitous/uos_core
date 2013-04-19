@@ -2,6 +2,7 @@ package br.unb.unbiquitous.ubiquitos.uos.driverManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.network.connectionManager.ConnectionManagerControlCenter;
@@ -9,6 +10,7 @@ import br.unb.unbiquitous.ubiquitos.network.exceptions.NetworkException;
 import br.unb.unbiquitous.ubiquitos.network.model.NetworkDevice;
 import br.unb.unbiquitous.ubiquitos.network.model.connection.ClientConnection;
 import br.unb.unbiquitous.ubiquitos.uos.application.UOSMessageContext;
+import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
 import br.unb.unbiquitous.ubiquitos.uos.connectivity.proxying.ProxyDriver;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall.ServiceType;
@@ -108,5 +110,20 @@ public class ReflectionServiceCaller {
 				+ ") on Driver (" + serviceCall.getDriver()
 				+ ") in instance ("
 				+ serviceCall.getInstanceId() + ")",e);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public ServiceResponse callServiceOnApp(UosApplication app,ServiceCall call) {
+		ServiceResponse response = new ServiceResponse();
+		try {
+			Method method = app.getClass().getMethod(call.getService(), Map.class);
+			Map responseMap = (Map) method.invoke(app, call.getParameters());
+			response.setResponseData(responseMap);
+			return response;
+		} catch (Exception e) {
+			logger.error("Internal Failure", e);
+			response.setError("Not possible to make call because "+e.getMessage());
+		} 
+		return response;
 	}
 }

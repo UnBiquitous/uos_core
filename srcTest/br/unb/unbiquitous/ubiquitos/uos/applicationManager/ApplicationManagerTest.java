@@ -7,12 +7,17 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
+import org.fest.assertions.data.MapEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
+import br.unb.unbiquitous.ubiquitos.uos.application.UOSMessageContext;
+import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall;
+import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyStart;
 
 public class ApplicationManagerTest {
@@ -218,6 +223,71 @@ public class ApplicationManagerTest {
 		manager.startApplications();
 		assertThat(manager.findApplication(DummyApp.class.getName()+"0"))
 															.isSameAs(app);
+	}
+	
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceConvertsToAMethodCall() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		manager.handleServiceCall(serviceCall,new UOSMessageContext());
+		
+		assertThat(app.callbackMap).isSameAs(parameters);
+	}
+	
+	@Test public void handleServiceReturnsMapAsResponse() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall call = new ServiceCall("app","callback","myId")
+									.addParameter("echo", "ping");
+		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		
+		assertThat(r.getResponseData())
+									.contains(MapEntry.entry("echo", "ping"));
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceFailsOnUnexistendId() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall call = new ServiceCall("app","callback","NotMyId");
+		call.setParameters(new TreeMap());
+		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		
+		assertThat(app.callbackMap).isNull();
+		assertThat(r.getError()).isNotNull();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceFailsOnUnexistendMethod() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		call.setParameters(new TreeMap());
+		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		
+		assertThat(app.callbackMap).isNull();
+		assertThat(r.getError()).isNotNull();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceFailsOnIncorrectMethodInterface() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		call.setParameters(new TreeMap());
+		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		
+		assertThat(app.callbackMap).isNull();
+		assertThat(r.getError()).isNotNull();
 	}
 	
 	private void waitToStart(final DummyApp app) throws InterruptedException {

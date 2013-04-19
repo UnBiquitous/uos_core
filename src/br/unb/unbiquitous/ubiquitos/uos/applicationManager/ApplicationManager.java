@@ -7,7 +7,11 @@ import java.util.ResourceBundle;
 
 import br.unb.unbiquitous.ubiquitos.Logger;
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
+import br.unb.unbiquitous.ubiquitos.uos.application.UOSMessageContext;
 import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
+import br.unb.unbiquitous.ubiquitos.uos.driverManager.ReflectionServiceCaller;
+import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceCall;
+import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.Ontology;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.exception.ReasonerNotDefinedException;
 
@@ -132,6 +136,12 @@ public class ApplicationManager {
 
 	public UosApplication findApplication(String id) {
 		return deployed.get(id);
+	}
+
+	public ServiceResponse handleServiceCall(ServiceCall serviceCall,
+			UOSMessageContext messageContext) {
+		ReflectionServiceCaller caller = new ReflectionServiceCaller(null);
+		return caller.callServiceOnApp(findApplication(serviceCall.getInstanceId()),serviceCall);
 	}
 
 }

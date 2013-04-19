@@ -1,5 +1,7 @@
 package br.unb.unbiquitous.ubiquitos.uos.applicationManager;
 
+import java.util.Map;
+
 import br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine.Gateway;
 import br.unb.unbiquitous.ubiquitos.uos.application.UosApplication;
 import br.unb.unbiquitous.ubiquitos.uos.ontologyEngine.api.OntologyDeploy;
@@ -20,6 +22,7 @@ public class DummyApp implements UosApplication{
 	public OntologyStart startOntology;
 	public OntologyUndeploy teardownOntology;
 	public Gateway gateway;
+	public Map<String,Object> callbackMap;
 	
 	public static DummyApp lastInstance;
 	
@@ -52,6 +55,10 @@ public class DummyApp implements UosApplication{
 		this.teardownOntology = ontology;
 		finished = true;
 		finishedCount++;
+	}
+	
+	public Map<String,Object> callback(Map<String,Object> parameter){
+		return callbackMap = parameter;
 	}
 	
 }
