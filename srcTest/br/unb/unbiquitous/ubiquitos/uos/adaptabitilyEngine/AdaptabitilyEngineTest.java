@@ -1,5 +1,6 @@
 package br.unb.unbiquitous.ubiquitos.uos.adaptabitilyEngine;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyObject;
@@ -7,10 +8,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ListResourceBundle;
+import java.util.ResourceBundle;
+import java.util.TreeMap;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import br.unb.unbiquitous.ubiquitos.uos.application.UOSMessageContext;
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationManager;
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.DummyApp;
+import br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext;
 import br.unb.unbiquitous.ubiquitos.uos.driverManager.DriverManager;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.MessageEngine;
 import br.unb.unbiquitous.ubiquitos.uos.messageEngine.dataType.UpDevice;
@@ -22,9 +33,24 @@ import br.unb.unbiquitous.ubiquitos.uos.messageEngine.messages.ServiceResponse;
 public class AdaptabitilyEngineTest {
 
 	private AdaptabilityEngine engine ;
+	private ResourceBundle properties;
 	
-	@Before public void setUp(){
+	
+	@Before public void setUp() throws IOException{
 		engine = new AdaptabilityEngine();
+		new File("resources/owl/uoscontext.owl").createNewFile();
+		properties = new ListResourceBundle() {
+			protected Object[][] getContents() {
+				return new Object[][] {
+						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+//						{"ubiquitos.ontology.reasonerFactory","br.unb.unbiquitous.ubiquitos.ontology.OntologyReasonerTest"},
+				};
+			}
+		};
+	}
+	
+	@After public void tearDown(){
+		new File("resources/owl/uoscontext.owl").delete();
 	}
 	
 //	public void init(
@@ -67,6 +93,26 @@ public class AdaptabitilyEngineTest {
 		
 		ServiceCall call = new ServiceCall("my.driver","myService");
 		assertEquals(response,engine.callService(null, call));
+	}
+	
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
+		ApplicationManager manager = new ApplicationManager(properties, null);
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		UOSApplicationContext ctx = mock(UOSApplicationContext.class);
+		when(ctx.getApplicationManager()).thenReturn(manager);
+		
+		engine.init(null, null, null, ctx, null, null, null);
+		
+		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		engine.callService(null,serviceCall);
+		
+		assertThat(app.callbackMap).isSameAs(parameters);
 	}
 	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForCurrentDevice() throws Exception {
@@ -171,6 +217,25 @@ public class AdaptabitilyEngineTest {
 		UOSMessageContext messageContext = new UOSMessageContext();
 		engine.handleServiceCall(serviceCall,messageContext);
 		verify(driverManager).handleServiceCall(serviceCall,messageContext);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceCall_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
+		ApplicationManager manager = new ApplicationManager(properties, null);
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		UOSApplicationContext ctx = mock(UOSApplicationContext.class);
+		when(ctx.getApplicationManager()).thenReturn(manager);
+		
+		engine.init(null, null, null, ctx, null, null, null);
+		
+		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		engine.handleServiceCall(serviceCall,new UOSMessageContext());
+		
+		assertThat(app.callbackMap).isSameAs(parameters);
 	}
 	
 }

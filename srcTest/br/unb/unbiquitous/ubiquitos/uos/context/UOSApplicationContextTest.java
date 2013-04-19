@@ -1,19 +1,33 @@
 package br.unb.unbiquitous.ubiquitos.uos.context;
 
 import static org.junit.Assert.assertEquals;
+import static org.fest.assertions.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.ApplicationDeployer;
+import br.unb.unbiquitous.ubiquitos.uos.applicationManager.DummyApp;
 
 public class UOSApplicationContextTest {
 
 	private UOSApplicationContext ctx;
 	
-	@After public void tearDown(){ctx.tearDown();}
+	@Before public void setUp() throws IOException{
+		new File("resources/owl/uoscontext.owl").createNewFile();
+	}
+	
+	@After public void tearDown(){
+		ctx.tearDown();
+		new File("resources/owl/uoscontext.owl").delete();
+	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
 		ctx = new UOSApplicationContext();
@@ -45,6 +59,21 @@ public class UOSApplicationContextTest {
 		// TODO: Should use other in case of "localhost" like on android devices
 		assertEquals("When deviceName is specified use it","MyName",
 														ctx.device().getName()); 
+	}
+	
+	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
+		ctx = new UOSApplicationContext();
+		ResourceBundle prop = new ListResourceBundle() {
+			protected Object[][] getContents() {
+				return new Object[][] {
+					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
+					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+				};
+			}
+		};
+		ctx.init(prop);
+		
+		assertThat(DummyApp.lastInstance.inited).isTrue();
 	}
 	
 }

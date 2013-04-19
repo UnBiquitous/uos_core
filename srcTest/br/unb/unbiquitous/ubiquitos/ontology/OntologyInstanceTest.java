@@ -4,6 +4,8 @@
  */
 package br.unb.unbiquitous.ubiquitos.ontology;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -11,6 +13,7 @@ import java.util.logging.Logger;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +37,15 @@ public class OntologyInstanceTest {
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;
+    
+    @Before public void setUp() throws IOException{
+		new File("resources/owl/uoscontext.owl").createNewFile();
+	}
+	
+	@After public void tearDown(){
+		new File("resources/owl/uoscontext.owl").delete();
+	}
+    
     @Before 
     public void setup(){
         try {

@@ -3,16 +3,28 @@ package br.unb.unbiquitous.ubiquitos.uos.integration;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ListResourceBundle;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import br.unb.unbiquitous.ubiquitos.uos.context.ContextException;
 import br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext;
 
 public class IntegrationTest {
+	
+    @Before public void setUp() throws IOException{
+		new File("resources/owl/uoscontext.owl").createNewFile();
+	}
+	
+	@After public void tearDown(){
+		new File("resources/owl/uoscontext.owl").delete();
+	}
 	
 	//TODO: Better explain the purpose of this test
 	@Test public void execute() throws Exception{
@@ -26,7 +38,7 @@ public class IntegrationTest {
 		//App side
 		UOSApplicationContext cell = startContext("my.cell");
 		PingApp ping = new PingApp();
-		cell.getApplicationDeployer().deployApplication(ping, "pingApp"); //TODO: id should be plausibly auto assigned
+		cell.getApplicationManager().deploy(ping, "pingApp"); //TODO: id should be plausibly auto assigned
 		
 		//promote radar handshake		
 		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice("my.pc"));
