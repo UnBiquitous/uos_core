@@ -159,7 +159,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 			// in the case of a local service call, must inform that the current device is the same.
 			//FIXME : AdaptabilityEngine : Must set the local device  
 			//messageContext.setCallerDevice(callerDevice)
-			ServiceResponse response = driverManager.handleServiceCall(serviceCall,messageContext);
+			ServiceResponse response = handleServiceCall(serviceCall, messageContext);
 			response.setMessageContext(messageContext);
 			
 			return response;

@@ -95,6 +95,26 @@ public class AdaptabitilyEngineTest {
 		assertEquals(response,engine.callService(null, call));
 	}
 	
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
+		ApplicationManager manager = new ApplicationManager(properties, null);
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		UOSApplicationContext ctx = mock(UOSApplicationContext.class);
+		when(ctx.getApplicationManager()).thenReturn(manager);
+		
+		engine.init(null, null, null, ctx, null, null, null);
+		
+		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		engine.callService(null,serviceCall);
+		
+		assertThat(app.callbackMap).isSameAs(parameters);
+	}
+	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForCurrentDevice() throws Exception {
 		DriverManager driverManager = mock(DriverManager.class);
 		ServiceResponse response = new ServiceResponse();
