@@ -121,6 +121,9 @@ public class ServiceCall extends Message {
 		}
 		return null;
 	}
+	public String getParameterString(String key){
+		return (String) getParameter(key);
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
