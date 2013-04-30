@@ -8,7 +8,7 @@ import org.unbiquitous.uos.core.application.UOSMessageContext;
 
 public class ServiceResponse extends Message{
 	
-	private Map<String,String> responseData;
+	private Map<String,Object> responseData;
 	
 	private UOSMessageContext messageContext;
 	
@@ -16,24 +16,28 @@ public class ServiceResponse extends Message{
 		setType(Message.Type.SERVICE_CALL_RESPONSE);
 	}
 
-	public Map<String,String> getResponseData() {
+	public Map<String,Object> getResponseData() {
 		return responseData;
 	}
 	
-	public String getResponseData(String key) {
+	public Object getResponseData(String key) {
 		if (responseData != null)
 			return responseData.get(key);
 		else
 			return null;
 	}
+	
+	public String getResponseString(String key) {
+		return (String) getResponseData(key);
+	}
 
-	public void setResponseData(Map<String,String> responseData) {
+	public void setResponseData(Map<String,Object> responseData) {
 		this.responseData = responseData;
 	}
 	
 	public ServiceResponse addParameter(String key, String value){
 		if (responseData == null){
-			responseData = new HashMap<String, String>();
+			responseData = new HashMap<String, Object>();
 		}
 		responseData.put(key, value);
 		return this;

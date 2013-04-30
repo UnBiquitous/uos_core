@@ -76,7 +76,7 @@ public class UserDriverTest {
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
-		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
+		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNull(string_user);
 	}
 
@@ -100,7 +100,7 @@ public class UserDriverTest {
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
-		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
+		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNotNull(string_user);
 
 		JSONObject jsonObject = new JSONObject(string_user);
@@ -130,7 +130,7 @@ public class UserDriverTest {
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 
-		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
+		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNotNull(string_user);
 		JSONObject jsonObject = new JSONObject(string_user);
 
@@ -162,7 +162,7 @@ public class UserDriverTest {
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
-		String string_user = response.getResponseData().get(UserDriver.USER_PARAM);
+		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNull(string_user);
 	}
 
@@ -241,7 +241,7 @@ public class UserDriverTest {
 
 		response = gateway.callService(gateway.getCurrentDevice(), "listKnownUsers", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
-		String returnData = response.getResponseData(UserDriver.RETURN_PARAM);
+		String returnData = (String) response.getResponseData(UserDriver.RETURN_PARAM);
 		Assert.assertNotNull(returnData);
 
 	}

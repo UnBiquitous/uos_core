@@ -77,7 +77,7 @@ public class PingApp implements UosApplication, UosEventListener {
 			ServiceCall echoGo = new ServiceCall(data.getDriver().getName(), "echo");
 						echoGo.addParameter("text", "my text");
 			ServiceResponse echoComeback = gateway.callService(data.getDevice(), echoGo);
-			String echoMsg = echoComeback.getResponseData("text");
+			String echoMsg = echoComeback.getResponseString("text");
 			if (!echoMsg.equals("my text")){
 				throw new AssertionError("The returned message wasn't 'my text' it was '"+echoMsg+"'.");
 			}

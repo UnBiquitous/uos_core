@@ -231,7 +231,7 @@ public class DeviceManager implements RadarListener {
 			
 			if (equivalentDriverResponse != null && (equivalentDriverResponse.getError() == null || equivalentDriverResponse.getError().isEmpty())){
 				
-				String interfaces = equivalentDriverResponse.getResponseData(INTERFACES_KEY);
+				String interfaces = equivalentDriverResponse.getResponseString(INTERFACES_KEY);
 				
 				if (interfaces != null){
 					
@@ -285,7 +285,7 @@ public class DeviceManager implements RadarListener {
 			ServiceResponse response = gateway.callService(dummyDevice, call);
 			if (response != null && ( response.getError() == null || response.getError().isEmpty())){
 				// in case of a success greeting process, register the device in the neighborhood database
-				String responseDevice = response.getResponseData("device");
+				String responseDevice = response.getResponseString("device");
 				if (responseDevice != null){
 					UpDevice remoteDevice = new JSONDevice(responseDevice).getAsObject();
 					registerDevice(remoteDevice);

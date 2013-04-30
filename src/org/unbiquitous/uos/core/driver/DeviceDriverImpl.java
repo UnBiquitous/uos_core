@@ -162,7 +162,7 @@ public class DeviceDriverImpl implements DeviceDriver {
 		
 		try {
 			// return the currentDevice information
-			Map<String, String> response = new HashMap<String, String>();
+			Map<String, Object> response = new HashMap<String, Object>();
 			response.put(DEVICE_KEY, new JSONDevice(gateway.getCurrentDevice()).toString());
 			serviceResponse.setResponseData(response);
 		} catch (JSONException e) {
@@ -187,7 +187,7 @@ public class DeviceDriverImpl implements DeviceDriver {
 			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);
 			JSONArray equivalentDriversJson = new JSONArray(equivalentDrivers);
 			List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
-			Map<String,String> responseData = new HashMap<String, String>();
+			Map<String,Object> responseData = new HashMap<String, Object>();
 			
 			for(int i = 0; i < equivalentDriversJson.length(); i++) {
 				String equivalentDriver = equivalentDriversJson.getString(i);

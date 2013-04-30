@@ -83,7 +83,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 			}
 			//The JSON List must be represented in a JSON Way with the JSON Array 
 			JSONArray jsonArray = new JSONArray(listJson);
-			Map<String, String> responseData = new HashMap<String, String>();
+			Map<String, Object> responseData = new HashMap<String, Object>();
 			responseData.put("driverList", jsonArray.toString());
 			serviceResponse.setResponseData(responseData);
 		}
