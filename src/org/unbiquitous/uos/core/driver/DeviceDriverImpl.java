@@ -77,12 +77,12 @@ public class DeviceDriverImpl implements DeviceDriver {
 
 		List<DriverData> listDrivers = null;
 		
-		Map<String, String> parameters = serviceCall.getParameters();
+		Map<String, Object> parameters = serviceCall.getParameters();
 		
 		//handle parameters to filter message
 		DriverManager driverManager = ((SmartSpaceGateway)this.gateway).getDriverManager();
 		if (parameters != null){
-			listDrivers = driverManager.listDrivers(parameters.get(DRIVER_NAME_KEY),this.gateway.getCurrentDevice().getName());
+			listDrivers = driverManager.listDrivers((String) parameters.get(DRIVER_NAME_KEY),this.gateway.getCurrentDevice().getName());
 		}else{
 			// In case no parameters informed, list all drivers
 			listDrivers = driverManager.listDrivers(null,this.gateway.getCurrentDevice().getName());
@@ -123,7 +123,7 @@ public class DeviceDriverImpl implements DeviceDriver {
 	public void authenticate(ServiceCall serviceCall,
 			ServiceResponse serviceResponse, UOSMessageContext messageContext) {
 		
-		String securityType = serviceCall.getParameters().get(SECURITY_TYPE_KEY);
+		String securityType = (String) serviceCall.getParameters().get(SECURITY_TYPE_KEY);
 		
 		// find the Authentication handler responsible for the requested securityType
 		AuthenticationHandler ah = ((SmartSpaceGateway) this.gateway).getSecurityManager().getAuthenticationHandler(securityType);
@@ -145,7 +145,7 @@ public class DeviceDriverImpl implements DeviceDriver {
 		DeviceManager deviceManager = ((SmartSpaceGateway)this.gateway).getDeviceManager();
 		
 		// Get and Convert the UpDevice Parameter
-		String deviceParameter = serviceCall.getParameters().get(DEVICE_KEY);
+		String deviceParameter = (String) serviceCall.getParameters().get(DEVICE_KEY);
 		UpDevice device = null;
 		if (deviceParameter != null){
 			try {
@@ -184,7 +184,7 @@ public class DeviceDriverImpl implements DeviceDriver {
 	public void tellEquivalentDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
 		try {
 			
-			String equivalentDrivers = serviceCall.getParameter(DRIVERS_NAME_KEY);
+			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);
 			JSONArray equivalentDriversJson = new JSONArray(equivalentDrivers);
 			List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
 			Map<String,String> responseData = new HashMap<String, String>();

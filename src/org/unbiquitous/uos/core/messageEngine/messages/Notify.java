@@ -11,7 +11,7 @@ public class Notify extends Message {
 	
 	private String instanceId;
 	
-	private Map<String, String> parameters;
+	private Map<String, Object> parameters;
 	
 	public Notify() {
 		setType(Message.Type.NOTIFY);
@@ -49,26 +49,26 @@ public class Notify extends Message {
 	/**
 	 * @return the parameters
 	 */
-	public Map<String, String> getParameters() {
+	public Map<String, Object> getParameters() {
 		return parameters;
 	}
 
 	/**
 	 * @param parameters the parameters to set
 	 */
-	public void setParameters(Map<String, String> parameters) {
+	public void setParameters(Map<String, Object> parameters) {
 		this.parameters = parameters;
 	}
 	
 	public Notify addParameter(String key, String value){
 		if (parameters == null){
-			parameters = new HashMap<String, String>();
+			parameters = new HashMap<String, Object>();
 		}
 		parameters.put(key, value);
 		return this;
 	}
 	
-	public String getParameter(String key){
+	public Object getParameter(String key){
 		if (parameters != null){
 			return parameters.get(key);
 		}

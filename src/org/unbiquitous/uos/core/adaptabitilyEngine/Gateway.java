@@ -32,7 +32,7 @@ public interface Gateway {
 	 */
 	public ServiceResponse callService(UpDevice device,
 			String serviceName, String driverName, String instanceId,
-			String securityType, Map<String, String> parameters)
+			String securityType, Map<String, Object> parameters)
 			throws ServiceCallException;
 
 	/**

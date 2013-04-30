@@ -46,7 +46,7 @@ public class SmartSpaceGateway implements Gateway {
 
 	public ServiceResponse callService(UpDevice device, String serviceName,
 			String driverName, String instanceId, String securityType,
-			Map<String, String> parameters) throws ServiceCallException {
+			Map<String, Object> parameters) throws ServiceCallException {
 
 		return adaptabilityEngine.callService(device, serviceName, driverName,
 				instanceId, securityType, parameters);

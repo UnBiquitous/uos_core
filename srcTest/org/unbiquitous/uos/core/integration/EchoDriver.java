@@ -46,7 +46,7 @@ public class EchoDriver implements UosEventDriver {
 
 	public void echo(ServiceCall call, ServiceResponse response,
 			UOSMessageContext ctx) {
-		response.addParameter("text", call.getParameter("text"));
+		response.addParameter("text", (String) call.getParameter("text"));
 	}
 
 	@Override

@@ -144,12 +144,12 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 */
 	public void retrieveUserInfo(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
 
-		String email = serviceCall.getParameter(EMAIL_PARAM);
+		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 
 		JSONObject returned_user = null;
 
 		returned_user = labels.get(email);
-		String specificField = serviceCall.getParameter(SPECIFIC_FIELD_PARAM);
+		String specificField = (String) serviceCall.getParameter(SPECIFIC_FIELD_PARAM);
 
 		if (specificField != null && returned_user != null) {
 			try {
@@ -175,10 +175,10 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param messageContext
 	 */
 	public void saveUserImage(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
-		String name = serviceCall.getParameter(NAME_PARAM);
-		String email = serviceCall.getParameter(EMAIL_PARAM);
-		Integer index = Integer.parseInt(serviceCall.getParameter(INDEX_IMAGE_PARAM));
-		Integer length = Integer.parseInt(serviceCall.getParameter(LENGTH_IMAGE_PARAM));
+		String name = (String) serviceCall.getParameter(NAME_PARAM);
+		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
+		Integer index = Integer.parseInt((String) serviceCall.getParameter(INDEX_IMAGE_PARAM));
+		Integer length = Integer.parseInt((String) serviceCall.getParameter(LENGTH_IMAGE_PARAM));
 
 		ReceiveImageData receiveImageData = new ReceiveImageData(name, email, index, length, messageContext);
 
@@ -195,8 +195,8 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param messageContext
 	 */
 	public void removeUserImages(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
-		String name = serviceCall.getParameter(NAME_PARAM);
-		String email = serviceCall.getParameter(EMAIL_PARAM);
+		String name = (String) serviceCall.getParameter(NAME_PARAM);
+		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 		String id = name + SPECIAL_CHARACTER_SEPARATOR + email;
 
 		boolean result = removeUser(id);
@@ -261,7 +261,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 		NetworkDevice networkDevice = messageContext.getCallerDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 
-		String eventKey = serviceCall.getParameter(EVENT_KEY_PARAM);
+		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
 		if (NEW_USER_EVENT_KEY.equals(eventKey)) {
 			if (!newUserListenerDevices.contains(networkInterface)) {
@@ -286,7 +286,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 		NetworkDevice networkDevice = messageContext.getCallerDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 
-		String eventKey = serviceCall.getParameter(EVENT_KEY_PARAM);
+		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
 		if (eventKey == null) {
 			newUserListenerDevices.remove(networkInterface);

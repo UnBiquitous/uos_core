@@ -44,3 +44,4 @@
 - Diminuir o uso de mocks (deixá-los apenas para a rede e outros recursos intestáveis)
 - trocar o ResourceBundle por um objeto de Configuração (com valores default) ou um mapa
 - Mudar o nome do application context
+- Nome do dispositivo tem que ser automático

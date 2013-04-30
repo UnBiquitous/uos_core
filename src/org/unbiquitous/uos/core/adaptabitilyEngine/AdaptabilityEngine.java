@@ -82,7 +82,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 									String driverName, 
 									String instanceId,
 									String securityType,
-									Map<String,String> parameters) throws ServiceCallException{
+									Map<String,Object> parameters) throws ServiceCallException{
 		ServiceCall serviceCall = new ServiceCall();
 		serviceCall.setDriver(driverName);
 		serviceCall.setInstanceId(instanceId);

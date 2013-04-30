@@ -55,7 +55,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 		
 		String deviceCaller = null;
 		try{
-			JSONDevice jsonDevice = new JSONDevice(serviceCall.getParameter("device"));
+			JSONDevice jsonDevice = new JSONDevice((String) serviceCall.getParameter("device"));
 			deviceCaller = (jsonDevice.getAsObject()).getName();
 		} catch (JSONException e) {
 			logger.error(e);

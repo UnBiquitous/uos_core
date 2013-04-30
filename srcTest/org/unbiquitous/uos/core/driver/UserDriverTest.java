@@ -69,7 +69,7 @@ public class UserDriverTest {
 	@Test
 	public void should_return_empty_user_data() throws Exception {
 
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
@@ -94,7 +94,7 @@ public class UserDriverTest {
 		Assert.assertEquals(NAME, dummyNewEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
 		Assert.assertEquals(EMAIL, dummyNewEventListener.getLastEvent().getParameter(UserDriver.EMAIL_PARAM));
 
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
@@ -123,7 +123,7 @@ public class UserDriverTest {
 		Assert.assertEquals(NAME, dummyEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
 		Assert.assertEquals(EMAIL, dummyEventListener.getLastEvent().getParameter(UserDriver.EMAIL_PARAM));
 
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
@@ -156,7 +156,7 @@ public class UserDriverTest {
 		Assert.assertEquals(NAME, dummyLostEventListener.getLastEvent().getParameter(UserDriver.NAME_PARAM));
 		Assert.assertEquals(EMAIL, dummyLostEventListener.getLastEvent().getParameter(UserDriver.EMAIL_PARAM));
 
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
@@ -177,7 +177,7 @@ public class UserDriverTest {
 		// Selecionando canal
 		int channel = 1;
 
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.NAME_PARAM, NAME);
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 		parameters.put(UserDriver.INDEX_IMAGE_PARAM, "1");
@@ -231,7 +231,7 @@ public class UserDriverTest {
 
 	@Test
 	public void should_remove_user_image() throws IOException, ServiceCallException {
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.NAME_PARAM, NAME);
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 

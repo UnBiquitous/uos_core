@@ -47,8 +47,8 @@ public class OntologyDriverImpl implements OntologyDriver {
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
 
-        String instanceName = serviceCall.getParameter(INSTANCE_NAME_PARAM);
-        String className = serviceCall.getParameter(CLASS_NAME_PARAM);
+        String instanceName = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM);
+        String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
         if (instanceName != null && className != null) {
             try {
                 returned_object.put("queryResult", reasoner.isInstanceOf(instanceName, className));
@@ -65,8 +65,8 @@ public class OntologyDriverImpl implements OntologyDriver {
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
 
-        String subClassName = serviceCall.getParameter(SUBCLASS_NAME_PARAM);
-        String className = serviceCall.getParameter(CLASS_NAME_PARAM);
+        String subClassName = (String) serviceCall.getParameter(SUBCLASS_NAME_PARAM);
+        String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
         if (subClassName != null && className != null) {
             try {
                 returned_object.put("queryResult", reasoner.isSubClassOf(subClassName, className));
@@ -82,9 +82,9 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void hasObjectProperty(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String instanceName1 = serviceCall.getParameter(INSTANCE_NAME_PARAM+1);
-        String objectPropertyName = serviceCall.getParameter(OBJECT_PROPERTY_NAME_PARAM);
-        String instanceName2 = serviceCall.getParameter(INSTANCE_NAME_PARAM+2);
+        String instanceName1 = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM+1);
+        String objectPropertyName = (String) serviceCall.getParameter(OBJECT_PROPERTY_NAME_PARAM);
+        String instanceName2 = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM+2);
         if (instanceName1 != null && objectPropertyName != null
                 && instanceName2 != null) {
             try {
@@ -101,8 +101,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void getInstancesFromClass(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String className = serviceCall.getParameter(CLASS_NAME_PARAM);
-        String direct = serviceCall.getParameter(DIRECT_PARAM);
+        String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
+        String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
         if (direct != null && className != null) {
             boolean directValue = Boolean.parseBoolean(direct);
             try {
@@ -119,8 +119,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void getSubClassesFromClass(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String className = serviceCall.getParameter(CLASS_NAME_PARAM);
-        String direct = serviceCall.getParameter(DIRECT_PARAM);
+        String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
+        String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
         if (direct != null && className != null) {
             boolean directValue = Boolean.parseBoolean(direct);
             try {
@@ -137,8 +137,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void getSuperClassesFromClass(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String className = serviceCall.getParameter(CLASS_NAME_PARAM);
-        String direct = serviceCall.getParameter(DIRECT_PARAM);
+        String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
+        String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
         if (direct != null && className != null) {
             boolean directValue = Boolean.parseBoolean(direct);
             try {
@@ -155,8 +155,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void getDataPropertyValues(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String instanceName = serviceCall.getParameter(INSTANCE_NAME_PARAM);
-        String dataPropertyName = serviceCall.getParameter(DATA_PROPERTY_NAME_PARAM);
+        String instanceName = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM);
+        String dataPropertyName = (String) serviceCall.getParameter(DATA_PROPERTY_NAME_PARAM);
         if (instanceName != null && dataPropertyName != null) {
             try {
                 returned_object.put("queryResult", reasoner.getDataPropertyValues(instanceName, dataPropertyName));
@@ -172,8 +172,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void areDisjointClasses(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String className1 = serviceCall.getParameter(CLASS_NAME_PARAM+1);
-        String className2 = serviceCall.getParameter(CLASS_NAME_PARAM+2);
+        String className1 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+1);
+        String className2 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+2);
         if (className1 != null && className2 != null) {
             try {
                 returned_object.put("queryResult", reasoner.areDisjointClasses(className1, className2));
@@ -189,8 +189,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void areEquivalentClasses(ServiceCall serviceCall,
             ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         JSONObject returned_object = new JSONObject();
-        String className1 = serviceCall.getParameter(CLASS_NAME_PARAM+1);
-        String className2 = serviceCall.getParameter(CLASS_NAME_PARAM+2);
+        String className1 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+1);
+        String className2 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+2);
         if (className1 != null && className2 != null) {
             try {
                 returned_object.put("queryResult", reasoner.areEquivalentClasses(className1, className2));
@@ -237,7 +237,7 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void registerListener(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         NetworkDevice networkDevice = messageContext.getCallerDevice();
         UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
-        String eventKey = serviceCall.getParameter(EVENT_KEY_PARAM);
+        String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
         if (INSTANCE_OF_EVENT_KEY.equals(eventKey)) {
             if (!instanceOfListenerDevices.contains(networkInterface)) {
@@ -258,7 +258,7 @@ public class OntologyDriverImpl implements OntologyDriver {
     public void unregisterListener(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
         NetworkDevice networkDevice = messageContext.getCallerDevice();
         UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
-        String eventKey = serviceCall.getParameter(EVENT_KEY_PARAM);
+        String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
         if (eventKey == null) {
             instanceOfListenerDevices.remove(networkInterface);

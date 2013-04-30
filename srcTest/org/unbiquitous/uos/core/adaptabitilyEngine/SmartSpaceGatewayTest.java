@@ -47,8 +47,8 @@ public class SmartSpaceGatewayTest {
 	}
 	@Test public void callServiceWithMultipleParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
-		gateway.callService(target, "s", "d", "i", "t", new HashMap<String, String>());
-		verify(engine).callService(target, "s", "d", "i", "t", new HashMap<String, String>());
+		gateway.callService(target, "s", "d", "i", "t", new HashMap<String, Object>());
+		verify(engine).callService(target, "s", "d", "i", "t", new HashMap<String, Object>());
 	}
 	
 	private static class EventListener implements UosEventListener{

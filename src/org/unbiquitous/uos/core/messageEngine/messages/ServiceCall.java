@@ -12,7 +12,7 @@ public class ServiceCall extends Message {
 	
 	private String service;
 	
-	private Map<String,String> parameters;
+	private Map<String,Object> parameters;
 	
 	private String instanceId;
 	
@@ -59,11 +59,11 @@ public class ServiceCall extends Message {
 		this.service = service;
 	}
 
-	public Map<String,String> getParameters() {
+	public Map<String,Object> getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(Map<String,String> parameters) {
+	public void setParameters(Map<String,Object> parameters) {
 		this.parameters = parameters;
 	}
 
@@ -109,13 +109,13 @@ public class ServiceCall extends Message {
 
 	public ServiceCall addParameter(String key, String value){
 		if (parameters == null){
-			parameters = new HashMap<String, String>();
+			parameters = new HashMap<String, Object>();
 		}
 		parameters.put(key, value);
 		return this;
 	}
 	
-	public String getParameter(String key){
+	public Object getParameter(String key){
 		if (parameters != null){
 			return parameters.get(key);
 		}
