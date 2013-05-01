@@ -50,7 +50,7 @@ public class ApplicationManager {
 	
 	public void deploy(UosApplication app, String id) {
 		id = assignAName(app, id);
-		initApp(app);
+		initApp(app,id);
 		startApp(app);
 		deployed.put(id, app);
 	}
@@ -86,9 +86,9 @@ public class ApplicationManager {
 		}
 	}
 	
-	private void initApp(final UosApplication app) {
+	private void initApp(final UosApplication app, String id) {
 		Ontology initOntology = createInitOntology(app);
-		app.init(initOntology);
+		app.init(initOntology,id);
 		if (initOntology != null){
 			initOntology.saveChanges();
 		}

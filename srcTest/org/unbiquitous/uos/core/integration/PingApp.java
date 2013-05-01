@@ -86,7 +86,7 @@ public class PingApp implements UosApplication, UosEventListener {
 
 	public void stop() throws Exception {	run = false;	}
 
-	public void init(OntologyDeploy ontology) {}
+	public void init(OntologyDeploy ontology, String appId) {}
 
 	public void tearDown(OntologyUndeploy ontology) throws Exception {}
 

@@ -92,11 +92,12 @@ public class ApplicationManagerTest {
 		assertThat(app.startedCount).isEqualTo(1);
 	}
 	
-	@Test public void initsTheAppWithTheProperOntology(){
+	@Test public void initsTheAppWithTheProperOntologyAndId(){
 		DummyApp app = new DummyApp();
 		manager.add(app);
 		manager.startApplications();
 		assertThat(app.initOntology).isNotNull();
+		assertThat(app.appId).isNotNull();
 	}
 	
 	@Test public void initsTheAppWithNoOntologyWhenDisabled(){

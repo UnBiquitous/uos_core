@@ -30,13 +30,16 @@ public interface UosApplication {
 	 */
 	void stop() throws Exception;
 
-        /**
-	 * This method is invoked in the initialization of the application in the middleware.
-	 * The structural changes in the ontology are done here.
-         *
-         * @param knowledgeBase Provides methods to change the ontology schema.
+	/**
+	 * This method is invoked in the initialization of the application in the
+	 * middleware. The structural changes in the ontology are done here.
+	 * 
+	 * @param knowledgeBase
+	 *            Provides methods to change the ontology schema.
+	 * @param appId
+	 * 			  The id which this app is addressable in the device.
 	 */
-	public void init(OntologyDeploy ontology);
+	public void init(OntologyDeploy ontology, String appId);
 
 
 	/**

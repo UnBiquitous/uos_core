@@ -18,6 +18,7 @@ public class DummyApp implements UosApplication{
 	public int	stopedCount;
 	public boolean finished;
 	public int	finishedCount;
+	public String appId;
 	public OntologyDeploy initOntology;
 	public OntologyStart startOntology;
 	public OntologyUndeploy teardownOntology;
@@ -31,8 +32,9 @@ public class DummyApp implements UosApplication{
 	}
 	
 	@Override
-	public void init(OntologyDeploy ontology) {
+	public void init(OntologyDeploy ontology, String appId) {
 		this.initOntology = ontology;
+		this.appId = appId;
 		inited = true;
 		initedCount ++;
 	}

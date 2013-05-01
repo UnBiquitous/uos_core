@@ -150,7 +150,7 @@ public class OntologyClassTest implements UosApplication{
     }
 
     @Override
-    public void init(OntologyDeploy ontology) {
+    public void init(OntologyDeploy ontology, String appId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
