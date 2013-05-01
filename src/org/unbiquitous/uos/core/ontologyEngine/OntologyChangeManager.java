@@ -18,7 +18,7 @@ import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.unbiquitous.uos.core.application.UosApplication;
+import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.ontologyEngine.exception.CycleException;
 import org.unbiquitous.uos.core.ontologyEngine.exception.DeclarationException;
 import org.unbiquitous.uos.core.ontologyEngine.exception.DisjunctionException;

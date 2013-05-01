@@ -16,7 +16,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.application.UosApplication;
+import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;

@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.connectivity.proxying;
 
-import org.unbiquitous.uos.core.application.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;

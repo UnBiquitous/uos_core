@@ -1,4 +1,4 @@
-package org.unbiquitous.uos.core.application;
+package org.unbiquitous.uos.core.applicationManager;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;

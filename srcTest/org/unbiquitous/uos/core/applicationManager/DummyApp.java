@@ -3,7 +3,6 @@ package org.unbiquitous.uos.core.applicationManager;
 import java.util.Map;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.application.UosApplication;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyUndeploy;

@@ -7,8 +7,6 @@ import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.application.UOSMessageContext;
-import org.unbiquitous.uos.core.application.UosApplication;
 import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;

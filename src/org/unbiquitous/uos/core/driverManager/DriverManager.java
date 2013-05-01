@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.application.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.driverManager.drivers.DefaultDrivers;
 import org.unbiquitous.uos.core.driverManager.drivers.Pointer;

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOSApplicationContext;
-import org.unbiquitous.uos.core.application.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;

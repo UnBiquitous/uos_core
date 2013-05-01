@@ -1,4 +1,4 @@
-package org.unbiquitous.uos.core.application;
+package org.unbiquitous.uos.core.applicationManager;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

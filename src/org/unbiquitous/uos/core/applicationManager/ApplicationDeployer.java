@@ -5,7 +5,6 @@ import java.util.ResourceBundle;
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.application.UosApplication;
 
 
 /**

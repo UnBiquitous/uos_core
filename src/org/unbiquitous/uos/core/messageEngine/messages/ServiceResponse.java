@@ -3,7 +3,7 @@ package org.unbiquitous.uos.core.messageEngine.messages;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.unbiquitous.uos.core.application.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 
 
 public class ServiceResponse extends Message{

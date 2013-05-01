@@ -7,7 +7,7 @@ import java.util.Map;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
-import org.unbiquitous.uos.core.application.UosApplication;
+import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
