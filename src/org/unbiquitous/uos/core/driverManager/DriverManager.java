@@ -13,6 +13,7 @@ import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
+import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.driverManager.drivers.DefaultDrivers;
 import org.unbiquitous.uos.core.driverManager.drivers.Pointer;
 import org.unbiquitous.uos.core.messageEngine.ServiceCallHandler;
@@ -373,7 +374,14 @@ public class DriverManager {
 	 * Initializes the driver that are not initialized yet.
 	 */
 	public void initDrivers(Gateway gateway){
-		
+		try {
+			if (driverDao.list("uos.DeviceDriver").isEmpty()){
+				DeviceDriver deviceDriver = new DeviceDriver();
+				deployDriver(deviceDriver.getDriver(), deviceDriver);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e); 
+		}
 		Iterator<String> it = toInitialize.iterator();
 		while(it.hasNext()){
 			String id = it.next();

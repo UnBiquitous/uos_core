@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.UOSApplicationContext;
-import org.unbiquitous.uos.core.driver.DeviceDriverImpl;
+import org.unbiquitous.uos.core.driver.DeviceDriver;
 
 
 public class IntegrationTest {
@@ -74,7 +74,7 @@ public class IntegrationTest {
 					{"ubiquitos.message.response.retry", "30"},//Optional
 					{"ubiquitos.connectionManager", IntegrationConnectionManager.class.getName()},
 					{"ubiquitos.uos.deviceName", deviceName}, //TODO: Should not be mandatory, and could be automatic
-					{"ubiquitos.driver.deploylist", DeviceDriverImpl.class.getName()}, //TODO: Should not be mandatory
+					{"ubiquitos.driver.deploylist", DeviceDriver.class.getName()}, //TODO: Should not be mandatory
 					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"}, //TODO: Should not be mandatory
 		        };
 			}

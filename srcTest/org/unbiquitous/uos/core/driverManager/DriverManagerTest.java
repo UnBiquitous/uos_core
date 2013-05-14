@@ -1,5 +1,6 @@
 package org.unbiquitous.uos.core.driverManager;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -10,20 +11,13 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fest.assertions.core.Condition;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
-import org.unbiquitous.uos.core.driverManager.DriverDao;
-import org.unbiquitous.uos.core.driverManager.DriverData;
-import org.unbiquitous.uos.core.driverManager.DriverManager;
-import org.unbiquitous.uos.core.driverManager.DriverManagerException;
-import org.unbiquitous.uos.core.driverManager.DriverModel;
-import org.unbiquitous.uos.core.driverManager.DriverNotFoundException;
-import org.unbiquitous.uos.core.driverManager.InterfaceValidationException;
-import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
-import org.unbiquitous.uos.core.driverManager.UosDriver;
+import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
@@ -413,6 +407,46 @@ public class DriverManagerTest {
 	@Test
 	public void shouldDoNothingWithoutDriversToInit() throws DriverManagerException, InterfaceValidationException{
 		manager.initDrivers(null);
+	}
+	
+	@Test public void mustHaveADeviceDriverByDefault() throws Exception{
+		manager.initDrivers(null);
+		assertThat(manager.listDrivers())
+			.haveExactly(1, new Condition<UosDriver>() {
+				public boolean matches(UosDriver value) {
+					return value.getDriver().getName()
+								.equals("uos.DeviceDriver");
+				}
+			});
+		
+	}
+	
+	@Test public void mustHaveADeviceDriverByDefaultNoMatterHowMuchTimesWeCallInit() throws Exception{
+		manager.initDrivers(null);
+		manager.initDrivers(null);
+		manager.initDrivers(null);
+		assertThat(manager.listDrivers())
+			.haveExactly(1, new Condition<UosDriver>() {
+				public boolean matches(UosDriver value) {
+					return value.getDriver().getName()
+								.equals("uos.DeviceDriver");
+				}
+			});
+		
+	}
+	
+	@Test public void dontDeployANewDeviceDriverIfOneWasAlreadyDeclared() throws Exception{
+		DeviceDriver deviceDriver = new DeviceDriver();
+		manager.deployDriver(deviceDriver.getDriver(), deviceDriver,"my");
+		manager.initDrivers(null);
+		assertThat(manager.listDrivers())
+			.haveExactly(1, new Condition<UosDriver>() {
+				public boolean matches(UosDriver value) {
+					return value.getDriver().getName()
+								.equals("uos.DeviceDriver");
+				}
+			});
+		
 	}
 	
 	@Test

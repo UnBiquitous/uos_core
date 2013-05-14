@@ -39,7 +39,7 @@ import org.unbiquitous.uos.core.network.radar.RadarListener;
  */
 public class DeviceManager implements RadarListener {
 
-	private static final String DEVICE_DRIVER_NAME = "br.unb.unbiquitous.ubiquitos.driver.DeviceDriver";
+	private static final String DEVICE_DRIVER_NAME = "uos.DeviceDriver";
 
 	private static final String DRIVERS_NAME_KEY = "driversName";
 	
