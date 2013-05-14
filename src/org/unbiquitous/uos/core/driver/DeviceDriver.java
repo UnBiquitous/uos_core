@@ -45,29 +45,41 @@ public class DeviceDriver implements UosDriver {
 	private final UpDriver driver;
 	
 	public DeviceDriver() {
-		driver = new UpDriver(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver");
+		driver = new UpDriver("uos.DeviceDriver");
 
-		// populate listDrivers service
-		driver.addService("listDrivers").addParameter(DRIVER_NAME_KEY,
-				UpService.ParameterType.OPTIONAL);
+		driver.addService("listDrivers")
+			.addParameter(DRIVER_NAME_KEY,UpService.ParameterType.OPTIONAL);
 
-		// populate authenticate service
-		driver.addService("authenticate").addParameter(SECURITY_TYPE_KEY,
-				UpService.ParameterType.MANDATORY);
+		driver.addService("authenticate")
+			.addParameter(SECURITY_TYPE_KEY,UpService.ParameterType.MANDATORY);
 
-		// populate goodbye service
 		driver.addService("goodbye");
 
-		// populate handshake service
-		driver.addService("handshake").addParameter(DEVICE_KEY,
-				UpService.ParameterType.MANDATORY);
+		driver.addService("handshake")
+			.addParameter(DEVICE_KEY,UpService.ParameterType.MANDATORY);
 
-		// populate tellEquivalentDriver service
-		driver.addService("tellEquivalentDriver").addParameter(DRIVER_NAME_KEY, 
-				UpService.ParameterType.MANDATORY);
+		driver.addService("tellEquivalentDriver")
+			.addParameter(DRIVER_NAME_KEY,UpService.ParameterType.MANDATORY);
 	}
 
+	@Override
+	public UpDriver getDriver() {
+    	return driver;
+	}
+
+	@Override
+	public void init(Gateway gateway, String instanceId) {
+		this.gateway = gateway;
+	}
+
+	@Override
+	public void destroy() {}
+
+	@Override
+	public List<UpDriver> getParent() {
+		return null;
+	}
+	
 	/**
 	 * Service responsible for retrieving the list of Driver Instances present in the underlying device.
 	 * This listing service can have its result filtered with the use of the parameters 'serviceName' or 'driverName'.
@@ -216,24 +228,6 @@ public class DeviceDriver implements UosDriver {
 			}
 		}
 		jsonList.add(new JSONDriver(upDriver));
-	}
-
-	@Override
-	public UpDriver getDriver() {
-    	return driver;
-	}
-
-	@Override
-	public void init(Gateway gateway, String instanceId) {
-		this.gateway = gateway;
-	}
-
-	@Override
-	public void destroy() {}
-
-	@Override
-	public List<UpDriver> getParent() {
-		return null;
 	}
 
 }

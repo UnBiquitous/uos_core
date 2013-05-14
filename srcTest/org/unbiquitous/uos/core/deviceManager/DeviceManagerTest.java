@@ -256,7 +256,7 @@ public class DeviceManagerTest {
 				scCacther.capture());
 		ServiceCall parameter = scCacther.getAllValues().get(0);
 		assertEquals("handshake", parameter.getService());
-		assertEquals("br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+		assertEquals("uos.DeviceDriver",
 				parameter.getDriver());
 		assertNull(parameter.getInstanceId());
 		assertNull(parameter.getSecurityType());
@@ -343,7 +343,7 @@ public class DeviceManagerTest {
 						.addNetworkInterface("A", "T").toString()));
 		deviceManager.deviceEntered(enteree);
 		ServiceCall listDrivers = new ServiceCall(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+				"uos.DeviceDriver",
 				"listDrivers", null);
 		verify(gateway, times(1)).callService(any(UpDevice.class),
 				eq(listDrivers));
@@ -934,7 +934,7 @@ public class DeviceManagerTest {
 
 	private ServiceResponse gatewayHandshakeCall() throws ServiceCallException {
 		ServiceCall handshake = new ServiceCall(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+				"uos.DeviceDriver",
 				"handshake", null);
 		handshake.addParameter("device", currentDevice.toString());
 		return gateway.callService(any(UpDevice.class), eq(handshake));
@@ -943,7 +943,7 @@ public class DeviceManagerTest {
 	private ServiceResponse gatewayListDriversCall()
 			throws ServiceCallException {
 		ServiceCall listDrivers = new ServiceCall(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+				"uos.DeviceDriver",
 				"listDrivers", null);
 		return gateway.callService(any(UpDevice.class), eq(listDrivers));
 	}
@@ -951,7 +951,7 @@ public class DeviceManagerTest {
 	private ServiceResponse gatewayTellEquivalentDriverCall()
 			throws ServiceCallException, JSONException {
 		ServiceCall tellEquivalentDriver = new ServiceCall(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+				"uos.DeviceDriver",
 				"tellEquivalentDrivers", null);
 		List<String> equivalents = new ArrayList<String>();
 		equivalents.add("equivalentDriver");
@@ -964,7 +964,7 @@ public class DeviceManagerTest {
 	private ServiceResponse gatewayTellTwoEquivalentDrivers()
 			throws ServiceCallException, JSONException {
 		ServiceCall tellEquivalentDriver = new ServiceCall(
-				"br.unb.unbiquitous.ubiquitos.driver.DeviceDriver",
+				"uos.DeviceDriver",
 				"tellEquivalentDrivers", null);
 		List<String> equivalents = new ArrayList<String>();
 		equivalents.add("D3");
