@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.context;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.fest.assertions.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
