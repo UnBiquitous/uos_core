@@ -140,32 +140,26 @@ public class DeviceDriverImpl implements DeviceDriver {
 	/**
 	 * @see DeviceDriver#handshake(ServiceCall, ServiceResponse, UOSMessageContext)
 	 */
-	//FIXME: Bug when a device tries to handshake a second time
 	public void handshake(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext){
 		DeviceManager deviceManager = ((SmartSpaceGateway)this.gateway).getDeviceManager();
 		
 		// Get and Convert the UpDevice Parameter
-		String deviceParameter = (String) serviceCall.getParameters().get(DEVICE_KEY);
-		UpDevice device = null;
-		if (deviceParameter != null){
-			try {
-				device = new JSONDevice(deviceParameter).getAsObject();
-			} catch (JSONException e) {
-				serviceResponse.setError(e.getMessage());
-			}
+		String deviceParameter = (String) serviceCall.getParameterString(DEVICE_KEY);
+		if (deviceParameter == null){
+			serviceResponse.setError("No 'device' parameter informed.");
+			return;
 		}
-		
-		// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
-		
-		// register the device
-		deviceManager.registerDevice(device);
-		
 		try {
-			// return the currentDevice information
-			Map<String, Object> response = new HashMap<String, Object>();
-			response.put(DEVICE_KEY, new JSONDevice(gateway.getCurrentDevice()).toString());
-			serviceResponse.setResponseData(response);
-		} catch (JSONException e) {
+			UpDevice device = new JSONDevice(deviceParameter).getAsObject();
+			// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
+			deviceManager.registerDevice(device);
+			serviceResponse
+					.addParameter(DEVICE_KEY, 
+							new JSONDevice(gateway.getCurrentDevice())
+								.toString()
+								);
+		} catch (Exception e) {
+			serviceResponse.setError(e.getMessage());
 			logger.error(e);
 		} 
 	}
