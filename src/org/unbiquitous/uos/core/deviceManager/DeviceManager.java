@@ -166,7 +166,7 @@ public class DeviceManager implements RadarListener {
 					JSONObject driversListMap = null;
 					Object temp = response.getResponseData("driverList");
 					if (temp instanceof JSONObject){
-						driversListMap = (JSONObject)(Object)temp; //TODO: Not tested. Why?
+						driversListMap = (JSONObject)temp; //TODO: Not tested. Why?
 					}else {
 						driversListMap = new JSONObject(temp.toString());
 					}
