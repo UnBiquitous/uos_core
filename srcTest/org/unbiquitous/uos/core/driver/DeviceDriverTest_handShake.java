@@ -20,7 +20,7 @@ import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
 public class DeviceDriverTest_handShake {
 
-	private DeviceDriverImpl driver;
+	private DeviceDriver driver;
 	private DeviceManager deviceManager;
 	private UpDevice currentDevice;
 
@@ -40,7 +40,7 @@ public class DeviceDriverTest_handShake {
 		ctx.init(bundle);
 		currentDevice = ctx.getGateway().getCurrentDevice();
 		
-		driver = new DeviceDriverImpl();
+		driver = new DeviceDriver();
 		
 		DriverManager driverManager = ctx.getDriverManager();
 		driverManager.deployDriver(driver.getDriver(), driver);
