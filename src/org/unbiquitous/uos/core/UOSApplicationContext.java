@@ -4,9 +4,11 @@ package org.unbiquitous.uos.core;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.EventManager;
@@ -255,6 +257,11 @@ public class UOSApplicationContext {
 			}
 		}
 
+		if (currentDevice.getName().equals("localhost")){
+			UUID uuid = UUID.randomUUID();
+			currentDevice.setName(uuid.toString());
+		}
+		
 		//get metadata
 		currentDevice.addProperty("platform",System.getProperty("java.vm.name"));
 		
