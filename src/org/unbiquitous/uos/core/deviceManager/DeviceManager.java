@@ -126,8 +126,6 @@ public class DeviceManager implements RadarListener {
 		return null;
 	}
 
-	Set<String> alreadyVisited = new HashSet<String>();
-
 	/**
 	 * @see org.unbiquitous.uos.core.network.radar.RadarListener#deviceEntered(org.unbiquitous.uos.core.network.model.NetworkDevice)
 	 */
@@ -153,7 +151,7 @@ public class DeviceManager implements RadarListener {
 			upDevice = doHandshake(device, upDevice);
 			doDriversRegistry(device, upDevice); 
 		}else{
-			logger.debug("Already know device "+device.getNetworkDeviceName());
+			logger.debug("Already known device "+device.getNetworkDeviceName());
 		}
 	}
 

@@ -68,7 +68,7 @@ public class CacheController {
 	 */
 	public CachedConnectionData addConnection(ClientConnection c){
 		CachedConnectionData connectionData = null;
-		String deviceName = c.getClientDevice().getNetworkDeviceName().split(":")[0];
+		String deviceName = c.getClientDevice().getNetworkDeviceName();
 		synchronized (clientCache) {
 			List<ClientConnection> clientConnectionList = clientCache.get(deviceName);
 			if (clientConnectionList == null){
