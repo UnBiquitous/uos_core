@@ -55,7 +55,11 @@ public class EventManager implements NotifyHandler {
 	 */
 	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException{
 		try {
-			messageEngine.notifyEvent(notify, device);
+			if(device == null){
+				handleNofify(notify, device);
+			}else{
+				messageEngine.notifyEvent(notify, device);
+			}
 		} catch (MessageEngineException e) {
 			throw new NotifyException(e);
 		}
@@ -113,18 +117,16 @@ public class EventManager implements NotifyHandler {
 			info.listener = listener;
 			info.device = device;
 			
-			
-			// Send the event register request to the called device
-			ServiceCall serviceCall = new ServiceCall(driver,REGISTER_LISTENER_SERVICE,instanceId);
-			
-			serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, eventKey);
-			
 			try {
-				ServiceResponse response = messageEngine.callService(device, serviceCall);
-				if (response == null || (response.getError() != null && !response.getError().isEmpty())){
-					throw new NotifyException(response.getError());
+				if (device != null){
+					// Send the event register request to the called device
+					ServiceCall serviceCall = new ServiceCall(driver,REGISTER_LISTENER_SERVICE,instanceId);
+					serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, eventKey);
+					ServiceResponse response = messageEngine.callService(device, serviceCall);
+					if (response == null || (response.getError() != null && !response.getError().isEmpty())){
+						throw new NotifyException(response.getError());
+					}
 				}
-				
 				// If the registry process goes ok, then add the listenner to the listener map
 				if (listenerMap.get(eventIdentifier) == null){
 					listenerMap.put(eventIdentifier,new ArrayList<ListenerInfo>());
