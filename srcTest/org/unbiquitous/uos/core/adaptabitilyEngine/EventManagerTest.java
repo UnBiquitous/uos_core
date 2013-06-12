@@ -1,10 +1,15 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
-import static org.mockito.Mockito.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
@@ -72,28 +77,32 @@ public class EventManagerTest {
 	//TODO: test other combinations of driver/id/key
 
 	@Test
-	@Ignore
 	public void unregisteringDelegatesToMessageEngine() throws Exception{
 		UpDevice device = new UpDevice("the_device");
 		
 		manager.registerForEvent(listener, device, "driver", "id", "key");
 		manager.unregisterForEvent(listener, device, "driver", "id", "key");
 		
-		verify(engine).callService(eq(device), call.capture());
+		verify(engine,times(2)).callService(eq(device), call.capture());
 		assertThat(call.getAllValues()).hasSize(2);
 		assertThat(call.getAllValues().get(1).getService()).isEqualTo("unregisterListener");
 	}
 	
 	@Test
-	@Ignore
+	public void stopNotifyingToThelistenerWhenDeviceIsNull() throws Exception{
+		manager.registerForEvent(listener, null, "driver", "id", "key");
+		manager.unregisterForEvent(listener, null, "driver", "id", "key");
+		
+		Notify notify = new Notify("key","driver","id");
+		manager.sendEventNotify(notify, null);
+		
+		verify(listener,never()).handleEvent((Notify)any());
+	}
+	
+	@Test
 	public void dontFailWehnUnregisteringWithoutRegistering() throws Exception{
-		UpDevice device = new UpDevice("the_device");
-		
-		manager.unregisterForEvent(listener, device, "driver", "id", "key");
-		
-		verify(engine).callService(eq(device), call.capture());
-		assertThat(call.getAllValues()).hasSize(2);
-		assertThat(call.getAllValues().get(1).getService()).isEqualTo("unregisterListener");
+		manager.unregisterForEvent(	listener, new UpDevice("the_device"), 
+									"driver", "id", "key");
 	}
 	
 }

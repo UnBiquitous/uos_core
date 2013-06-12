@@ -151,19 +151,11 @@ public class EventManager implements NotifyHandler {
 	 */
 	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
 		
-		// First filter the listeners by the event key 
-		List<ListenerInfo> listeners = null;
+		List<ListenerInfo> listeners = findListeners(	device, driver,
+														instanceId, eventKey);
 		
-		if (eventKey == null){
-			// In this case all eventKeys must be checked for the listener to be removed.
-			listeners = new ArrayList<ListenerInfo>();
-			for (List<ListenerInfo> list : listenerMap.values()){
-				listeners.addAll(list);
-			}
-		}else{
-			// In case a eventKey is informed, then only the listeners for that event key must be used
-			String eventIdentifier = getEventIdentifier(device, driver, instanceId, eventKey);
-			listeners = listenerMap.get(eventIdentifier);
+		if (listeners == null){
+			return;
 		}
 		
 		NotifyException exception = null;
@@ -208,6 +200,25 @@ public class EventManager implements NotifyHandler {
 		if (exception != null){
 			throw exception;
 		}
+	}
+
+	private List<ListenerInfo> findListeners(UpDevice device, String driver,
+			String instanceId, String eventKey) {
+		// First filter the listeners by the event key 
+		List<ListenerInfo> listeners = null;
+		
+		if (eventKey == null){
+			// In this case all eventKeys must be checked for the listener to be removed.
+			listeners = new ArrayList<ListenerInfo>();
+			for (List<ListenerInfo> list : listenerMap.values()){
+				listeners.addAll(list);
+			}
+		}else{
+			// In case a eventKey is informed, then only the listeners for that event key must be used
+			String eventIdentifier = getEventIdentifier(device, driver, instanceId, eventKey);
+			listeners = listenerMap.get(eventIdentifier);
+		}
+		return listeners;
 	}
 	
 	/**
