@@ -364,8 +364,7 @@ public class DeviceManagerTest {
 		driverList.put("id1", new JSONDriver(dummy));
 		driverList.put("id2", new JSONDriver(dummy));
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
-						driverList.toString()));
+				new ServiceResponse().addParameter("driverList",driverList));
 		deviceManager.deviceEntered(enteree);
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(2, newGuyDrivers.size());
@@ -394,7 +393,7 @@ public class DeviceManagerTest {
 		driverList.put("id1", new JSONDriver(dummy));
 		
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList", driverList.toString()));
+				new ServiceResponse().addParameter("driverList", driverList));
 
 		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
 

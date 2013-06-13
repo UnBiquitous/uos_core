@@ -19,8 +19,6 @@ public class JSONDriver extends JSONObject {
 		super(source);
 	}
 
-
-
 	public JSONDriver(UpDriver bean) throws JSONException {
 		this.put(PROP_NAME,bean.getName());
 		

@@ -35,7 +35,7 @@ public class ServiceResponse extends Message{
 		this.responseData = responseData;
 	}
 	
-	public ServiceResponse addParameter(String key, String value){
+	public ServiceResponse addParameter(String key, Object value){
 		if (responseData == null){
 			responseData = new HashMap<String, Object>();
 		}

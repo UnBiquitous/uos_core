@@ -16,6 +16,7 @@ import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
+import org.unbiquitous.uos.core.driverManager.DriverModel;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
@@ -109,14 +110,14 @@ public class DeviceDriver implements UosDriver {
 		
 		// Converts the list of DriverData into Parameters
 		
-		Map<String, String> driversList = new HashMap<String, String>();
+		Map<String, JSONObject> driversList = new HashMap<String, JSONObject>();
 		if (listDrivers != null && !listDrivers.isEmpty()){
 			for (DriverData driverData : listDrivers) {
 				
 				try {
 					JSONDriver jsonDriver = new JSONDriver(driverData.getDriver());
 					
-					driversList.put(driverData.getInstanceID(), jsonDriver.toString());//FIXME : DeviceDriver : the driver should be a JSON and not a String
+					driversList.put(driverData.getInstanceID(), jsonDriver);
 				} catch (JSONException e) {
 					logger.error("Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
 				}
@@ -125,7 +126,7 @@ public class DeviceDriver implements UosDriver {
 		@SuppressWarnings("rawtypes")
 		Map responseData = new HashMap();
 		
-		responseData.put(DRIVER_LIST_KEY, new JSONObject(driversList).toString());
+		responseData.put(DRIVER_LIST_KEY, new JSONObject(driversList));
 		
 		serviceResponse.setResponseData(responseData);
 	}
@@ -158,7 +159,8 @@ public class DeviceDriver implements UosDriver {
 	 * and will be returned in the same parameter with the information of the called device.
 	 */
 	public void handshake(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext){
-		DeviceManager deviceManager = ((SmartSpaceGateway)this.gateway).getDeviceManager();
+		SmartSpaceGateway gtw = (SmartSpaceGateway)this.gateway;
+		DeviceManager deviceManager = gtw.getDeviceManager();
 		
 		// Get and Convert the UpDevice Parameter
 		String deviceParameter = (String) serviceCall.getParameterString(DEVICE_KEY);
@@ -170,11 +172,19 @@ public class DeviceDriver implements UosDriver {
 			UpDevice device = new JSONDevice(deviceParameter).getAsObject();
 			// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
 			deviceManager.registerDevice(device);
-			serviceResponse
-					.addParameter(DEVICE_KEY, 
-							new JSONDevice(gateway.getCurrentDevice())
-								.toString()
-								);
+			serviceResponse.addParameter(DEVICE_KEY, 
+								new JSONDevice(gateway.getCurrentDevice())
+									.toString()
+									);
+			ServiceResponse driversResponse = 
+					gateway.callService(device, new ServiceCall("uos.DeviceDriver","listDrivers"));
+			Map<String, Object> driverMap = new JSONObject( driversResponse.getResponseData("driverList").toString()).toMap();
+			// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
+			for (String id : driverMap.keySet()){
+				UpDriver upDriver = new JSONDriver(driverMap.get(id).toString()).getAsObject();
+				DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
+				gtw.getDriverManager().insert(driverModel);
+			}
 		} catch (Exception e) {
 			serviceResponse.setError(e.getMessage());
 			logger.error(e);

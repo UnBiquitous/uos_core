@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.integration;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,11 @@ public class IntegrationTest {
 		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice("my.pc"));
 		
 		//Test if handshake was successfull
-		assertNotNull(cell.getGateway().listDrivers(echo.getDriver().getName()));
+		assertThat(cell.getGateway().listDrivers(echo.getDriver().getName())).
+			isNotEmpty();
+		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		
 		
 		//TODO: remove sync by time, do somethign plugable
 		Thread.sleep(5000);//Some time to things set up straight

@@ -1,19 +1,33 @@
 package org.unbiquitous.uos.core.driver;
 
+
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.ListResourceBundle;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
+import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
@@ -23,6 +37,7 @@ public class DeviceDriverTest_handShake {
 	private DeviceDriver driver;
 	private DeviceManager deviceManager;
 	private UpDevice currentDevice;
+	private DriverManager driverManager;
 
 
 	@Before public void setUp() throws Exception{
@@ -42,7 +57,7 @@ public class DeviceDriverTest_handShake {
 		
 		driver = new DeviceDriver();
 		
-		DriverManager driverManager = ctx.getDriverManager();
+		driverManager = ctx.getDriverManager();
 		driverManager.deployDriver(driver.getDriver(), driver);
 		driverManager.initDrivers(ctx.getGateway());
 		
@@ -126,4 +141,39 @@ public class DeviceDriverTest_handShake {
 	
 	//TODO: with myself
 	
+	
+	@Test public void mustRegisterTheOtherDriversLocallyAlso() throws Exception{
+		SmartSpaceGateway gateway = mock(SmartSpaceGateway.class);
+		when(gateway.getDeviceManager()).thenReturn(deviceManager);
+		when(gateway.getDriverManager()).thenReturn(driverManager);
+		when(gateway.getCurrentDevice()).thenReturn(new UpDevice());
+
+//		gateway.getDriverManager().listDrivers(driverName, deviceName)
+		
+		JSONObject driversList = new JSONObject();
+		UpDriver dummyInterface = new UpDriver("ddd");
+		dummyInterface.addService("s");
+		driversList.put("id_d", new JSONDriver(dummyInterface));
+		
+		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
+			.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
+		
+		driver.init(gateway, "id");
+		UpDevice toRegister = new UpDevice("Dummy")
+										.addNetworkInterface("HERE", "LOCAL");
+
+		ServiceCall call = new ServiceCall()
+					.addParameter("device",new JSONDevice(toRegister).toString());
+		
+		ServiceResponse response = new ServiceResponse();
+		driver.handshake(call, response, null);
+		
+		ArgumentCaptor<ServiceCall> getCall = ArgumentCaptor
+													.forClass(ServiceCall.class); 
+		verify(gateway, times(1)).callService(eq(toRegister), getCall.capture());
+		assertThat(getCall.getValue().getDriver()).isEqualTo("uos.DeviceDriver");
+		assertThat(getCall.getValue().getService()).isEqualTo("listDrivers");
+		
+		assertThat(driverManager.listDrivers("ddd", "Dummy")).isNotEmpty();
+	}
 }
