@@ -10,9 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.ListResourceBundle;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.junit.After;
@@ -148,8 +146,6 @@ public class DeviceDriverTest_handShake {
 		when(gateway.getDriverManager()).thenReturn(driverManager);
 		when(gateway.getCurrentDevice()).thenReturn(new UpDevice());
 
-//		gateway.getDriverManager().listDrivers(driverName, deviceName)
-		
 		JSONObject driversList = new JSONObject();
 		UpDriver dummyInterface = new UpDriver("ddd");
 		dummyInterface.addService("s");

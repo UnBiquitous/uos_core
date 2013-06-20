@@ -180,7 +180,7 @@ public class DeviceManager implements RadarListener {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Not possible to discover services from device '"+device.getNetworkDeviceName()+"'",e);
+			logger.error("Not possible to discover services from device '"+device.getNetworkDeviceName()+"'. Possibly not a uOS Device");
 		}
 	}
 

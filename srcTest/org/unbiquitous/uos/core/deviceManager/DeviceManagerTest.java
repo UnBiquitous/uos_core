@@ -322,7 +322,7 @@ public class DeviceManagerTest {
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
 	}
-
+	
 	@Test
 	public void IfTheHandShakeDoesNotWorksNothingHappens_Exception()
 			throws Exception {

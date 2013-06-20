@@ -148,12 +148,19 @@ public class MessageHandler {
 		
 	}
 	
+	//TODO: refactor this
 	private String send(String message, UpDevice target, boolean waitForResponse) throws Exception{
 		UpNetworkInterface netInt = connectivityManager.getAppropriateInterface(target);
 		ClientConnection connection = connectionManagerControlCenter.openActiveConnection(netInt.getNetworkAddress(), netInt.getNetType());
-					
+		if (connection == null){
+			return null;
+		}
 		OutputStream outputStream = connection.getDataOutputStream();
 		InputStream inputStream = connection.getDataInputStream();
+		
+		if (inputStream == null || outputStream == null){
+			return null;
+		}
 		
 		String response = sendReceive(message, outputStream,inputStream,waitForResponse);
 		

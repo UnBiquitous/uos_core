@@ -147,6 +147,25 @@ public class MessageHandlerTest {
 		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.snapshot,new JSONServiceCall(scenario.grabSentString()).getAsObject());
 	}
 	
+	@Test public void callService_aSimpleCallMustBeSentButWhenNoConnectionIsPossibleNullShouldBeReturned() throws Exception{
+		SnapshotScenario scenario = new SnapshotScenario();
+		when(controlCenter.openActiveConnection(
+				scenario.wifi.getNetworkAddress(), 
+				scenario.wifi.getNetType())).thenReturn(null);
+		
+		assertNull("No response must be returned.", handler.callService(scenario.target, scenario.snapshot));
+	}
+	
+	@Test public void callService_aSimpleCallMustBeSentButWhenNoValidConnectionIsReturnedNullShouldBeReturned() throws Exception{
+		SnapshotScenario scenario = new SnapshotScenario();
+		ClientConnection mock = mock(ClientConnection.class);
+		when(controlCenter.openActiveConnection(
+				scenario.wifi.getNetworkAddress(), 
+				scenario.wifi.getNetType())).thenReturn(mock);
+		
+		assertNull("No response must be returned.", handler.callService(scenario.target, scenario.snapshot));
+	}
+	
 	@Test public void callService_ACallWithSecurityTypeMustResultOnAnEncapsulatedMessage() throws Exception{
 		SnapshotScenario scenario = new SnapshotScenario();
 		scenario.snapshot.setSecurityType("Pig-Latin");
