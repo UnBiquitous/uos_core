@@ -321,7 +321,7 @@ public class DeviceManager implements RadarListener {
 				}
 			}
 			deviceDao.delete(upDevice.getName());
-			logger.info("Device left.");
+			logger.info( String.format("Device '%s' left", upDevice.getName()));
 		} else {
 			logger.info("Device not found in database.");
 		}

@@ -31,28 +31,32 @@ public class IntegrationTest {
 	@Test public void execute() throws Exception{
 		//Driver Side
 		// TODO: This bypass does not test how the middleware instantiates drivers and applications
-		UOSApplicationContext pc = startContext("my.pc");
+		String pcName = "my.pc";
+		UOSApplicationContext pc = startContext(pcName);
 		EchoDriver echo = new EchoDriver();
 		pc.getDriverManager().deployDriver(echo.getDriver(), echo);
 		pc.getDriverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
 
 		//App side
-		UOSApplicationContext cell = startContext("my.cell");
+		String cellName = "my.cell";
+		UOSApplicationContext cell = startContext(cellName);
 		PingApp ping = new PingApp();
 		cell.getApplicationManager().deploy(ping, "pingApp"); //TODO: id should be plausibly auto assigned
 		
 		//promote radar handshake		
-		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice("my.pc"));
+		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice(pcName));
 		
 		//Test if handshake was successfull
 		assertThat(cell.getGateway().listDrivers(echo.getDriver().getName())).
 			isNotEmpty();
 		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		assertThat(cell.getGateway().listDevices()).hasSize(2);
 		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		assertThat(pc.getGateway().listDevices()).hasSize(2);
 		
-		
-		//TODO: remove sync by time, do somethign plugable
-		Thread.sleep(5000);//Some time to things set up straight
+		synchronized (PingApp.instance) {
+			PingApp.instance.wait(5000);
+		}
 		//finish instances
 		pc.tearDown();
 		cell.tearDown();
@@ -65,7 +69,13 @@ public class IntegrationTest {
 			assertTrue(e.getKey(),e.getValue());
 		}
 		
-		//TODO: Estimulate the deviceLeft
+		//Estimulate the deviceLeft
+		cell.getRadarControlCenter().deviceLeft(new IntegrationDevice(pcName));
+//		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		assertThat(cell.getGateway().listDevices()).hasSize(1);
+		pc.getRadarControlCenter().deviceLeft(new IntegrationDevice(cellName));
+//		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		assertThat(pc.getGateway().listDevices()).hasSize(1);
 		
 
 	}

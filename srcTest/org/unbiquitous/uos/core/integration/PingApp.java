@@ -23,8 +23,10 @@ public class PingApp implements UosApplication, UosEventListener {
 	public Map<String, Boolean> assertions = new HashMap<String, Boolean>();
 	
 	boolean eventReceived;
+	static public PingApp instance;
 	
 	public void start(Gateway gateway, OntologyStart ontology) {
+		PingApp.instance = this;
 		try {
 			boolean started = false;
 			while(run){
@@ -56,6 +58,9 @@ public class PingApp implements UosApplication, UosEventListener {
 			assertions.put(e.getMessage(), false);
 		} catch (Exception e) {
 			assertions.put("Some unexpected Exception occurred:"+e.getMessage(), false);
+		}
+		synchronized (PingApp.instance) {
+			PingApp.instance.notifyAll();
 		}
 	}
 

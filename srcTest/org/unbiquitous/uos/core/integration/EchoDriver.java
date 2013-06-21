@@ -24,6 +24,7 @@ public class EchoDriver implements UosEventDriver {
 	private Gateway gateway;
 	private String id;
 
+	static public EchoDriver instance;
 
 	private static final UpDriver driver = new UpDriver("br.unbiquitous.Echo");
 	{
@@ -37,6 +38,7 @@ public class EchoDriver implements UosEventDriver {
 	}
 
 	public void init(Gateway gateway, String instanceId) {
+		EchoDriver.instance = this;
 		this.gateway = gateway;
 		this.id = instanceId;
 	}
