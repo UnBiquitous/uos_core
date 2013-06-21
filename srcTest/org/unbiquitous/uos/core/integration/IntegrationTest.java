@@ -51,16 +51,15 @@ public class IntegrationTest {
 		assertThat(cell.getGateway().listDrivers(echo.getDriver().getName())).
 			isNotEmpty();
 		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		assertThat(cell.getGateway().listDrivers(null)).hasSize(3);
 		assertThat(cell.getGateway().listDevices()).hasSize(2);
 		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(2);
+		assertThat(pc.getGateway().listDrivers(null)).hasSize(3);
 		assertThat(pc.getGateway().listDevices()).hasSize(2);
 		
 		synchronized (PingApp.instance) {
 			PingApp.instance.wait(5000);
 		}
-		//finish instances
-		pc.tearDown();
-		cell.tearDown();
 		
 		//checkresults
 		for (Entry<String, Boolean> e : ping.assertions.entrySet()){
@@ -72,14 +71,18 @@ public class IntegrationTest {
 		
 		//Estimulate the deviceLeft
 		cell.getRadarControlCenter().deviceLeft(new IntegrationDevice(pcName));
-		
+
 		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		assertThat(cell.getGateway().listDrivers(null)).hasSize(1);
 		assertThat(cell.getGateway().listDevices()).hasSize(1);
 		pc.getRadarControlCenter().deviceLeft(new IntegrationDevice(cellName));
 		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		assertThat(pc.getGateway().listDrivers(null)).hasSize(2);
 		assertThat(pc.getGateway().listDevices()).hasSize(1);
 		
-
+		//finish instances
+		pc.tearDown();
+		cell.tearDown();
 	}
 
 	private UOSApplicationContext startContext(final String deviceName) throws ContextException{
