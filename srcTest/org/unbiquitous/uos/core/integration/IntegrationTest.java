@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.integration;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.fest.assertions.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.UOSApplicationContext;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
+import org.unbiquitous.uos.core.driverManager.DriverData;
 
 
 public class IntegrationTest {
@@ -71,10 +72,11 @@ public class IntegrationTest {
 		
 		//Estimulate the deviceLeft
 		cell.getRadarControlCenter().deviceLeft(new IntegrationDevice(pcName));
-//		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		
+		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
 		assertThat(cell.getGateway().listDevices()).hasSize(1);
 		pc.getRadarControlCenter().deviceLeft(new IntegrationDevice(cellName));
-//		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
+		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
 		assertThat(pc.getGateway().listDevices()).hasSize(1);
 		
 

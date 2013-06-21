@@ -109,6 +109,18 @@ public class DriverDaoTest {
 		assertEquals(3,dao.list().size());
 	}
 	
+	@Test public void mustDeleteOnlyOnTheDataSpecifyied(){
+		dao.insert(createDriver("ida", "dra", "deva"));
+		dao.insert(createDriver("id1", "dra", "deva"));
+		dao.insert(createDriver("idb", "drb", "deva"));
+		dao.insert(createDriver("ida", "dra", "devb"));
+		dao.insert(createDriver("idd", "drd", "devb"));
+		dao.delete("ida","devb");
+		assertEquals(4,dao.list().size());
+		assertEquals(3,dao.list(null,"deva").size());
+		assertEquals(2,dao.list("dra").size());
+	}
+	
 	@Test public void findADriverByName(){
 		dao.insert(createDriver("a", "a"));
 		assertEquals(1, dao.list("a").size());

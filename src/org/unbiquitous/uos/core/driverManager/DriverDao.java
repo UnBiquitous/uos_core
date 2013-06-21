@@ -128,7 +128,7 @@ public class DriverDao {
 			driverMap.remove(name);
 		}
 		driverCount.put(name, driverCount.get(name)-1);
-		driverByTypeMap.get(name).remove(driver.rowid());
+		driverByTypeMap.get(name).remove(driver);
 		
 		String deviceName = driver.device().toLowerCase();
 		driverByDeviceMap.get(deviceName).remove(driver);

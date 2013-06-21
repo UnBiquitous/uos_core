@@ -248,7 +248,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallAHandshakeWithIt() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
 		ArgumentCaptor<ServiceCall> scCacther = ArgumentCaptor
 				.forClass(ServiceCall.class);
@@ -265,7 +265,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfTheHandShakeWorksRegisterTheReturnedDevice() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface(
 				"ADDR_UNKNOWN", "UNEXISTANT").addNetworkInterface(
 				"127.255.255.666", "Ethernet:TFH");
@@ -280,7 +280,7 @@ public class DeviceManagerTest {
 	
 	@Test
 	public void IfTheHandShakeHappensTwiceDoNothing() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice newGuy = new UpDevice("TheNewGuy")
 			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
 			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
@@ -297,7 +297,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheHandShakeDoesNotWorksNothingHappens_NoResponse()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(null);
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
@@ -306,7 +306,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheHandShakeDoesNotWorksNothingHappens_NoData()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(new ServiceResponse());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
@@ -315,7 +315,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheHandShakeDoesNotWorksNothingHappens_ErrorOnResponse()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		ServiceResponse error = new ServiceResponse();
 		error.setError("Just Kidding");
 		when(gatewayHandshakeCall()).thenReturn(error);
@@ -326,7 +326,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheHandShakeDoesNotWorksNothingHappens_Exception()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenThrow(new RuntimeException());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
@@ -337,7 +337,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallListDriversOnIt() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -351,7 +351,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void AfterListingTheDriverTheyMustBeRegistered() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -377,7 +377,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToInterfaceValidationError()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -425,7 +425,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToNullEquivalentDriverResponse()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -454,7 +454,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToInterfaceNotProvided()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -484,7 +484,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToWrongJSONObject()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -508,7 +508,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToMissingServer()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -536,7 +536,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverDueToEquivalentDriverInterfaceValidationError()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -576,7 +576,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldNotRegisterADriverWithEquivalentDriverNotInformed()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -615,7 +615,7 @@ public class DeviceManagerTest {
 	
 	public void shouldNotRegisterADriverWithTwoEquivalentDriversNotInformed()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -660,7 +660,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldRegisterADriverWithUnknownEquivalentDriver()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -701,7 +701,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldRegisterTwoDriversWithTheSameUnknownEquivalentDriver()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -751,7 +751,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldRegisterADriverWithTwoLevelsOfUnknownEquivalentDrivers()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
 		when(gatewayHandshakeCall())
@@ -799,7 +799,7 @@ public class DeviceManagerTest {
 	@Test
 	public void shouldRegisterTwoDriversWithTheSameUnknownEquivalentDriverFromDifferentLevels()
 			throws ServiceCallException, JSONException {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 		
 		when(gatewayHandshakeCall())
@@ -867,7 +867,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheListDriversDoesNotWorksNothingHappens_NoResponse()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -879,7 +879,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheListDriversDoesNotWorksNothingHappens_NoData()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -915,7 +915,7 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheListDriversDoesNotWorksNothingHappens_ThrowingException()
 			throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -924,10 +924,10 @@ public class DeviceManagerTest {
 		assertEquals(0, driverDao.list(null, "A").size());
 	}
 
-	private NetworkDevice createKnownNetworkDevice() {
+	private NetworkDevice networkDevice(String address, String type) {
 		NetworkDevice enteree = mock(NetworkDevice.class);
-		when(enteree.getNetworkDeviceName()).thenReturn("ADDR_UNKNOWN");
-		when(enteree.getNetworkDeviceType()).thenReturn("UNEXISTANT");
+		when(enteree.getNetworkDeviceName()).thenReturn(address);
+		when(enteree.getNetworkDeviceType()).thenReturn(type);
 		return enteree;
 	}
 
@@ -976,7 +976,7 @@ public class DeviceManagerTest {
 	// TODO: What about proxying
 	@Test
 	public void AfterListingIfProxyingIsEnabledRegisterIt() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -1006,7 +1006,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void AfterListingIfProxyingIsNotEnabledDoNothing() throws Exception {
-		NetworkDevice enteree = createKnownNetworkDevice();
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
 				new ServiceResponse().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
@@ -1030,32 +1030,42 @@ public class DeviceManagerTest {
 	// public void deviceLeft(NetworkDevice device) {
 	@Test
 	public void removeTheDeviceFromDatabaseOnLeft() throws Exception {
-		NetworkDevice leavingGuy = createKnownNetworkDevice();
-		UpDevice oldGuy = new UpDevice("OldMan").addNetworkInterface(
-				leavingGuy.getNetworkDeviceName(),
-				leavingGuy.getNetworkDeviceType());
-		when(connManager.getHost(eq(leavingGuy.getNetworkDeviceName())))
-				.thenReturn("ADDR_UNKNOWN");
-		deviceManager.registerDevice(oldGuy);
-		assertEquals(2, dao.list().size());
+		NetworkDevice leavingCard = networkDevice("ADDR_UNKNOWN_A", "UNEXISTANT");
+		UpDevice leavingGuy = upDevice("leavingMan", leavingCard);
+		when(connManager.getHost(eq(leavingCard.getNetworkDeviceName())))
+										.thenReturn("ADDR_UNKNOWN_A");
+		deviceManager.registerDevice(leavingGuy);
+		
+		NetworkDevice stayingCard = networkDevice("ADDR_UNKNOWN_B", "UNEXISTANT");
+		UpDevice stayingGuy = upDevice("stayingMan", stayingCard);
+		when(connManager.getHost(eq(stayingCard.getNetworkDeviceName())))
+										.thenReturn("ADDR_UNKNOWN_B");
+		deviceManager.registerDevice(stayingGuy);
+		
+		assertEquals(3, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
 		driver.addService("s");
-		driverDao.insert(new DriverModel("id1", driver, oldGuy.getName()));
-		driverDao.insert(new DriverModel("id2", driver, oldGuy.getName()));
-		driverDao.insert(new DriverModel("id3", driver, oldGuy.getName()));
-		assertEquals(3, driverDao.list().size());
+		driverDao.insert(new DriverModel("id1", driver, leavingGuy.getName()));
+		driverDao.insert(new DriverModel("id2", driver, leavingGuy.getName()));
+		driverDao.insert(new DriverModel("id3", driver, leavingGuy.getName()));
+		driverDao.insert(new DriverModel("id4", driver, stayingGuy.getName()));
+		assertEquals(4, driverDao.list().size());
 
-		deviceManager.deviceLeft(leavingGuy);
-		assertEquals(1, dao.list().size());
-		assertEquals(0, driverDao.list().size());
+		deviceManager.deviceLeft(leavingCard);
+		assertEquals(2, dao.list().size());
+		assertEquals(1, driverDao.list().size());
+	}
+
+	private UpDevice upDevice(String name, NetworkDevice networkCard) {
+		return new UpDevice(name).addNetworkInterface(
+									networkCard.getNetworkDeviceName(),
+									networkCard.getNetworkDeviceType());
 	}
 
 	@Test
 	public void doNothingWhenLeftingANullDevice() throws Exception {
-		NetworkDevice leavingGuy = createKnownNetworkDevice();
-		UpDevice oldGuy = new UpDevice("OldMan").addNetworkInterface(
-				leavingGuy.getNetworkDeviceName(),
-				leavingGuy.getNetworkDeviceType());
+		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
+		UpDevice oldGuy = upDevice("OldMan", leavingGuy);
 		when(connManager.getHost(eq(leavingGuy.getNetworkDeviceName())))
 				.thenReturn("ADDR_UNKNOWN");
 		deviceManager.registerDevice(oldGuy);
@@ -1074,10 +1084,8 @@ public class DeviceManagerTest {
 
 	@Test
 	public void doNothingWhenLeftingADeviceWithNullData() throws Exception {
-		NetworkDevice leavingGuy = createKnownNetworkDevice();
-		UpDevice oldGuy = new UpDevice("OldMan").addNetworkInterface(
-				leavingGuy.getNetworkDeviceName(),
-				leavingGuy.getNetworkDeviceType());
+		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
+		UpDevice oldGuy = upDevice("OldMan", leavingGuy);
 		deviceManager.registerDevice(oldGuy);
 		assertEquals(2, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
@@ -1094,7 +1102,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void doNothingWhenLeftingAnUnkownDevice() throws Exception {
-		NetworkDevice leavingGuy = createKnownNetworkDevice();
+		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		assertEquals(1, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
 		driver.addService("s");
