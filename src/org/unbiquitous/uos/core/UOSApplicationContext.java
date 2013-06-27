@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.EventManager;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
+import org.unbiquitous.uos.core.adaptabitilyEngine.QueueManager;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
@@ -431,7 +432,10 @@ public class UOSApplicationContext {
 	}
 	
 	private EventManager getEventManager(){
-		if (eventManager == null) eventManager = new EventManager(messageEngine);
+		if (eventManager == null){
+			QueueManager queueManager = new QueueManager(messageEngine);
+			eventManager = new EventManager(messageEngine, queueManager);
+		}
 		return eventManager;
 	}
 

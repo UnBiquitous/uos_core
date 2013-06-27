@@ -17,7 +17,7 @@ public class QueueManager {
 	MessageEngine messageEngine;
 
 	private static final int QUEUE_MAX_SIZE = 100;
-	private static final int MAX_MESSAGES_TO_BE_RETREIVED = 100;
+	private static final int MAX_MESSAGES_TO_BE_RETREIVED = 10;
 	
 	private static Map<String, LinkedList<Notify>> queueMap = 
 									new HashMap<String, LinkedList<Notify>>();
@@ -40,13 +40,17 @@ public class QueueManager {
 		if( targetQueue == null ){
 			//create and call method createQueue(String queueId)
 			targetQueue = new LinkedList<Notify>();
+			
+			//TODO: Bassani: espelhar no BD
 			queueMap.put(queueId, targetQueue);
 			queueSubscribers.put(queueId, new ArrayList<UpDevice>());
+			
+			//TODO: Bassani: espelhar no BD
 			queueSentIndex.put(queueId, 0); //TODO: is zero the queue tail?
 		}
 		
 		targetQueue.addFirst(notify);
-		
+		//TODO: Bassani: espelhar no BD
 		
 		//check queue max size constraint
 		adjustQueueSize(targetQueue, QUEUE_MAX_SIZE);
@@ -67,6 +71,7 @@ public class QueueManager {
 	private static void adjustQueueSize(LinkedList<Notify> queue, int size){
 		while(queue.size() > size){
 			queue.removeLast();
+			//TODO: Bassani: espelhar no BD
 		}
 	}
 	
@@ -147,6 +152,7 @@ public class QueueManager {
 	    				}
 	    			}// for each subscriber
 	    			
+	    			//TODO: Bassani: espelhar no BD
     				index ++;
     				queueSentIndex.put(queueId, index);
 	    		}//while

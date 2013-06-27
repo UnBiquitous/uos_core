@@ -35,10 +35,10 @@ public class EventManager implements NotifyHandler {
 	private MessageEngine messageEngine;
 	private QueueManager queueManager;
 	
-	public EventManager(MessageEngine messageEngine/*,QueueManager qm*/) {
+	public EventManager(MessageEngine messageEngine, QueueManager queueManager) {
 		this.messageEngine = messageEngine;
 		//TODO: Bassani: init queueManager
-		//this.queueManager = qm;
+		this.queueManager = queueManager;
 		
 	}
 	
