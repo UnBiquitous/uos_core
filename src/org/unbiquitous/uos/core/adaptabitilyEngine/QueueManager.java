@@ -3,8 +3,8 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Map;
-import java.util.Queue;
 import java.util.List;
 
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
@@ -16,10 +16,14 @@ public class QueueManager {
 	
 	MessageEngine messageEngine;
 
-	private static Map<String, Queue<Notify>> queueMap = 
-										new HashMap<String, Queue<Notify>>();
+	private static final int QUEUE_MAX_SIZE = 100;
+	
+	private static Map<String, LinkedList<Notify>> queueMap = 
+									new HashMap<String, LinkedList<Notify>>();
 	private static Map<String, List<UpDevice>> queueSubscribers = 
-										new HashMap<String, List<UpDevice>>();
+									new HashMap<String, List<UpDevice>>();
+	private static Map<String, Integer> queueSentIndex = 
+									new HashMap<String, Integer>();
 	
 	Thread sender;
 	
@@ -30,20 +34,38 @@ public class QueueManager {
 	}
 	
 	public void addMessage(Notify notify, String queueId){
-		Queue<Notify> targetQueue = queueMap.get(queueId);
+		LinkedList<Notify> targetQueue = queueMap.get(queueId);
 		
 		if( targetQueue == null ){
+			//create and call method createQueue(String queueId)
 			targetQueue = new LinkedList<Notify>();
 			queueMap.put(queueId, targetQueue);
+			queueSubscribers.put(queueId, new ArrayList<UpDevice>());
+			queueSentIndex.put(queueId, 0); //TODO: is zero the queue tail?
 		}
 		
-		targetQueue.add(notify);
+		targetQueue.addFirst(notify);
+		
+		
+		//check queue max size constraint
+		adjustQueueSize(targetQueue, QUEUE_MAX_SIZE);
+		
 		
 		//if sender thread not running, run it
 		if(!sender.isAlive()){
 			sender.start();
 		}
 		
+	}
+	/**
+	 *
+	 * Adjust queue size by removing its oldest elements.
+	 * 
+	 */
+	private static void adjustQueueSize(LinkedList<Notify> queue, int size){
+		while(queue.size() > size){
+			queue.removeLast();
+		}
 	}
 	
 	
@@ -57,10 +79,13 @@ public class QueueManager {
 	    public void run() {
 	    	
 	    	for(String queueId : queueMap.keySet()){
-	    		Queue<Notify> currentQueue = queueMap.get(queueId);
-	    		while(!currentQueue.isEmpty()){
-	    			boolean removeFromQueue = true;
-	    			Notify msg = currentQueue.peek();
+	    		LinkedList<Notify> currentQueue = queueMap.get(queueId);
+	    		ListIterator<Notify> iterator;
+	    		int index = queueSentIndex.get(queueId);
+	    		iterator = currentQueue.listIterator(index);
+	    		
+	    		while(iterator.hasNext()){
+	    			Notify msg = iterator.next();
 	    			
 	    			List<UpDevice> subscribersList;
 	    			subscribersList = queueSubscribers.get(queueId);
@@ -68,18 +93,16 @@ public class QueueManager {
 	    				try{
 	    					messageEngine.notifyEvent(msg, subscriber);
 	    				}catch (MessageEngineException mee){
-	    					removeFromQueue = false;
+	    					//assuming the best case scenario
 	    				}
-	    			}
+	    			}// for each subscriber
 	    			
-	    			//if all goes fine remove from the queue
-	    			if(removeFromQueue){
-	    				currentQueue.poll();
-	    			}
-	    		}
+    				index ++;
+    				queueSentIndex.put(queueId, index);
+	    		}//while
 	    		
-	    	}
-	    }
-	}
+	    	}//for each queue
+	    }//run()
+	}//MessageSender
 	
-}
+}//QueueManager
