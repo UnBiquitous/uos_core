@@ -95,6 +95,14 @@ public class MessageEngine implements MessageListener {
 		try {
 			JSONServiceCall jsonServiceCall = new JSONServiceCall(message);
 			ServiceCall serviceCall = jsonServiceCall.getAsObject();
+			
+			//TODO: Bassani - if the service call is a (Un)Register Service Call
+			//					give it to the EventManager.
+			//
+			if(serviceCall.getService().equals("registerListener") || 
+					serviceCall.getService().equals("unregisterListener")){
+				
+			}
 			ServiceResponse response = serviceCallHandler.handleServiceCall(serviceCall, messageContext);
 			logger.info("Returning service response");
 			

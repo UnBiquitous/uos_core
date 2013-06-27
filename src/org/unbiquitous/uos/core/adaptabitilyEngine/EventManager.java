@@ -3,8 +3,10 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
@@ -33,9 +35,13 @@ public class EventManager implements NotifyHandler {
 	private Map<String, List<ListenerInfo>> listenerMap = new HashMap<String, List<ListenerInfo>>();
 	
 	private MessageEngine messageEngine;
+	private QueueManager queueManager;
 	
-	public EventManager(MessageEngine messageEngine) {
+	public EventManager(MessageEngine messageEngine/*,QueueManager qm*/) {
 		this.messageEngine = messageEngine;
+		//TODO: Bassani: init queueManager
+		//this.queueManager = qm;
+		
 	}
 	
 	private static class ListenerInfo{
@@ -50,15 +56,21 @@ public class EventManager implements NotifyHandler {
 	 * Sends a notify message to the device informed.
 	 * 
 	 * @param notify Notify message to be sent.
-	 * @param device Device which is going to receive the notofy event
+	 * @param device Device which is going to receive the notify event
 	 * @throws MessageEngineException
 	 */
 	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException{
-		try {
-			messageEngine.notifyEvent(notify, device);
-		} catch (MessageEngineException e) {
-			throw new NotifyException(e);
-		}
+		//try {
+		//FIXME: Define the queueId construction policy
+			String queueId = notify.getDriver() + "_" + notify.getEventKey() + 
+												"_" + notify.getInstanceId();
+			
+			queueManager.addMessage(notify, queueId);
+			
+			//messageEngine.notifyEvent(notify, device);
+		//} catch (MessageEngineException e) {
+		//	throw new NotifyException(e);
+		//}
 	}
 	
 	/**
@@ -136,6 +148,10 @@ public class EventManager implements NotifyHandler {
 				throw new NotifyException(e);
 			}
 		}
+	}
+	
+	public void handleRegisterForEvent(String queueId, String subscriberName){
+		
 	}
 	
 	/**
@@ -300,5 +316,4 @@ public class EventManager implements NotifyHandler {
 		
 		return info;
 	}
-	
 }
