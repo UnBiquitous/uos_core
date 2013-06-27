@@ -57,6 +57,7 @@ public class QueueManager {
 		}
 		
 	}
+	
 	/**
 	 *
 	 * Adjust queue size by removing its oldest elements.
@@ -66,6 +67,32 @@ public class QueueManager {
 		while(queue.size() > size){
 			queue.removeLast();
 		}
+	}
+	
+	
+	/**
+	 * 
+	 * 
+	 * 
+	 * @param upDevice
+	 * @param queueId
+	 * @return false if there is no such queue and true otherwise.
+	 */
+	public boolean addSubscriber(UpDevice subscriber, String queueId){
+		boolean success = true;
+		List<UpDevice> subscribers = queueSubscribers.get(queueId);
+		
+		if(subscribers == null){
+			//there is no such queue
+			success = false;
+		}
+		else{
+			subscribers.add(subscriber);
+			//TODO: Bassani: retreive and send the last X messages to the
+			//               subscriber.
+		}
+		
+		return success;
 	}
 	
 	
