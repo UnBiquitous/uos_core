@@ -3,10 +3,8 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;

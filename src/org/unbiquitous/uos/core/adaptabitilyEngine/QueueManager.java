@@ -17,6 +17,7 @@ public class QueueManager {
 	MessageEngine messageEngine;
 
 	private static final int QUEUE_MAX_SIZE = 100;
+	private static final int MAX_MESSAGES_TO_BE_RETREIVED = 100;
 	
 	private static Map<String, LinkedList<Notify>> queueMap = 
 									new HashMap<String, LinkedList<Notify>>();
@@ -88,11 +89,33 @@ public class QueueManager {
 		}
 		else{
 			subscribers.add(subscriber);
+			sendLastMessages(subscriber, queueId);
 			//TODO: Bassani: retreive and send the last X messages to the
 			//               subscriber.
 		}
 		
 		return success;
+	}
+	
+	private void sendLastMessages(UpDevice subscriber, String queueId){
+		int lastMsgIndex = queueSentIndex.get(queueId);
+		
+		int firstMsgIndex = (lastMsgIndex - MAX_MESSAGES_TO_BE_RETREIVED > 0) ? 
+								lastMsgIndex - MAX_MESSAGES_TO_BE_RETREIVED : 0;
+		
+		if(lastMsgIndex > 0){
+			LinkedList<Notify> queue = queueMap.get(queueId);
+			
+			for(int i= firstMsgIndex; i < lastMsgIndex; i++){
+				try{
+					messageEngine.notifyEvent(queue.get(i), subscriber);
+				}catch (MessageEngineException mee){
+					//assuming the best case scenario
+				}
+			}
+		
+		}
+		
 	}
 	
 	
