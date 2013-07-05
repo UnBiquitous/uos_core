@@ -1,5 +1,7 @@
 package org.unbiquitous.uos.core;
 
+import java.io.PrintStream;
+import java.rmi.server.LogStream;
 import java.util.logging.Level;
 
 @SuppressWarnings("rawtypes")
@@ -15,8 +17,6 @@ public class Logger {
 		this.clazz = clazz;
 		logger = java.util.logging.Logger.getLogger(clazz.getName());
 		logger.setLevel(Level.FINE);
-//		java.util.logging.Logger.getGlobal().setLevel(Level.FINE);
-//		logger.setParent(java.util.logging.Logger.getGlobal());
 	}
 	
 	public void error(Throwable e){
@@ -41,21 +41,21 @@ public class Logger {
 	}
 	
 	public void warn(String msg){
-		logger.log(Level.WARNING,msg);
+		logger.warning(msg);
 	}
 	
 	public void debug(String msg){
 //		logger.fine(msg);
-		logger.log(Level.INFO, msg);
+		logger.fine(msg);
 	}
 	
 	public void debug(String msg, Throwable e){
-//		logger.log(Level.FINE,msg, e);
-		logger.log(Level.INFO,msg, e);
+		logger.log(Level.FINE,msg, e);
+//		logger.log(Level.INFO,msg, e.printStackTrace(LogStream.getDefaultStream()));
 	}
 	
 	public void info(String msg){
-		logger.log(Level.INFO,msg);
+		logger.info(msg);
 	}
 	
 	public void info(Throwable e){

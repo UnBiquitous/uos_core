@@ -310,7 +310,8 @@ public class DeviceManager implements RadarListener {
 		if (device == null || device.getNetworkDeviceName() == null || device.getNetworkDeviceType() == null) return;
 		// Remove what services this device has.
 		logger.info("Device "+device.getNetworkDeviceName()+" of type "+device.getNetworkDeviceType()+" leaving.");
-		List<UpDevice> devices = deviceDao.list(connectionManagerControlCenter.getHost(device.getNetworkDeviceName()),device.getNetworkDeviceType());
+		String host = connectionManagerControlCenter.getHost(device.getNetworkDeviceName());
+		List<UpDevice> devices = deviceDao.list(host,device.getNetworkDeviceType());
 
 		if (devices != null && !devices.isEmpty()){
 			UpDevice upDevice = devices.get(0);

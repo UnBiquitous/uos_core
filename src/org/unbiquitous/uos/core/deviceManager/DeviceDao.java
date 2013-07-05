@@ -76,7 +76,9 @@ public class DeviceDao {
 			String key = createInterfaceKey(new UpNetworkInterface(networktype, address));
 			UpDevice upDevice = interfaceMap.get(key);
 			List<UpDevice> ret = new ArrayList<UpDevice>();
-			ret.add(upDevice);
+			if (upDevice != null){
+				ret.add(upDevice);
+			}
 			return ret;
 		}else if (address != null ){
 			if(addressMap.containsKey(address)){

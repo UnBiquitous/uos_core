@@ -7,11 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
@@ -65,6 +63,12 @@ public class DeviceManagerTest {
 		dao = new DeviceDao(null);
 		driverDao = new DriverDao(null);
 		connManager = mock(ConnectionManagerControlCenter.class);
+		when(connManager.getHost(anyString())).thenAnswer(new Answer() {
+			@Override
+			public String answer(InvocationOnMock invocation) throws Throwable {
+				return (String) invocation.getArguments()[0];
+			}
+		});
 		gateway = mock(Gateway.class);
 		proxier = mock(ConnectivityManager.class);
 		currentDevice = new UpDevice("myDevice").addNetworkInterface(
@@ -1114,6 +1118,28 @@ public class DeviceManagerTest {
 
 		deviceManager.deviceLeft(leavingGuy);
 		assertEquals(1, dao.list().size());
+		assertEquals(2, driverDao.list().size());
+	}
+	
+	@Test
+	public void doNothingWhenLeftingAnUnkownDevicexxxx() throws Exception {
+		NetworkDevice knownCard = networkDevice("ADDR_KNOWN", "THIS_ONE");
+		UpDevice knownGuy = upDevice("OldMan", knownCard);
+		deviceManager.registerDevice(knownGuy);
+		
+		
+		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "THIS_ONE");
+		assertEquals(2, dao.list().size());
+		UpDriver driver = new UpDriver("DD");
+		driver.addService("s");
+		driverDao
+				.insert(new DriverModel("id1", driver, currentDevice.getName()));
+		driverDao
+				.insert(new DriverModel("id2", driver, currentDevice.getName()));
+		assertEquals(2, driverDao.list().size());
+
+		deviceManager.deviceLeft(leavingGuy);
+		assertEquals(2, dao.list().size());
 		assertEquals(2, driverDao.list().size());
 	}
 }

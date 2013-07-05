@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,11 +155,15 @@ public class DeviceDaoTest {
 		assertTrue(ret.contains(devices.get(0)));
 		assertTrue(ret.contains(devices.get(2)));
 		
+		assertThat(dao.list("nonexists","Etherenet:TCP")).isEmpty();
+		
 		//check for address
 		ret = dao.list("10.0.0.10",null);
 		assertNotNull(ret);
 		assertEquals(1,ret.size());
 		assertTrue(ret.contains(devices.get(0)));
+		
+		assertThat(dao.list("10.0.0.10","nonexists")).isEmpty();
 		
 		//check for both
 		ret = dao.list("AAAAAAAAAAAAC", "Bluetooth");
