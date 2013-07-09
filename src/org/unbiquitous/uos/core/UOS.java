@@ -61,7 +61,6 @@ public class UOS {
 
 	private ApplicationDeployer applicationDeployer;
 	private DeviceManager deviceManager;
-	private SmartSpaceGateway gateway;
 
 	private DriverDao driverDao;
 	private DeviceDao deviceDao;
@@ -105,9 +104,6 @@ public class UOS {
 			logger.debug("Initializing SecurityManager");
 			initSecurityManager();
 
-			gateway = new SmartSpaceGateway();
-
-			
 			/*---------------------------------------------------------------*/
 			
 			// Start Connection Manager Control Center
@@ -139,7 +135,7 @@ public class UOS {
             initOntology();
                         
             //FIXME: This is trash
-			gateway.init(get(AdaptabilityEngine.class), currentDevice, securityManager,
+            get(SmartSpaceGateway.class).init(get(AdaptabilityEngine.class), currentDevice, securityManager,
 					get(ConnectivityManager.class),
 					deviceManager, driverManager, applicationDeployer, ontology);
 
@@ -154,7 +150,7 @@ public class UOS {
 			initRadarControlCenter();
 
 			// Initialize the deployed Drivers
-			driverManager.initDrivers(gateway);
+			driverManager.initDrivers(get(SmartSpaceGateway.class));
 
 			// Start The Applications within the middleware
 			logger.debug("Initializing Applications");
@@ -288,7 +284,7 @@ public class UOS {
 								getDeviceDao(),getDriverDao(), 
 								getConnectionManagerControlCenter(), 
 								get(ConnectivityManager.class), 
-								gateway, getDriverManager());
+								get(SmartSpaceGateway.class), getDriverManager());
 	}
 
 	private void initConnectivityManager() {
@@ -303,11 +299,11 @@ public class UOS {
 			logger.info("No proxying attribute found in the properties. Proxying set as false.");
 		}
 
-		get(ConnectivityManager.class).init(this, gateway, doProxying);
+		get(ConnectivityManager.class).init(this, get(SmartSpaceGateway.class), doProxying);
 	}
 
 	private void initApplications()throws ContextException {
-		applicationManager = new ApplicationManager(resourceBundle, gateway);
+		applicationManager = new ApplicationManager(resourceBundle, get(SmartSpaceGateway.class));
 		applicationDeployer = new ApplicationDeployer(resourceBundle,applicationManager);
 		applicationDeployer.deployApplications();
 		applicationManager.startApplications();
@@ -383,7 +379,7 @@ public class UOS {
 	 *         Smart Space
 	 */
 	public Gateway getGateway() {
-		return gateway;
+		return get(SmartSpaceGateway.class);
 	}
 
 	/**
