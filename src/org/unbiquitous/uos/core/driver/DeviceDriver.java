@@ -178,12 +178,15 @@ public class DeviceDriver implements UosDriver {
 									);
 			ServiceResponse driversResponse = 
 					gateway.callService(device, new ServiceCall("uos.DeviceDriver","listDrivers"));
-			Map<String, Object> driverMap = new JSONObject( driversResponse.getResponseData("driverList").toString()).toMap();
-			// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
-			for (String id : driverMap.keySet()){
-				UpDriver upDriver = new JSONDriver(driverMap.get(id).toString()).getAsObject();
-				DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
-				gtw.getDriverManager().insert(driverModel);
+			Object driverList = driversResponse.getResponseData("driverList");
+			if (driverList != null){
+				Map<String, Object> driverMap = new JSONObject( driverList.toString()).toMap();
+				// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
+				for (String id : driverMap.keySet()){
+					UpDriver upDriver = new JSONDriver(driverMap.get(id).toString()).getAsObject();
+					DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
+					gtw.getDriverManager().insert(driverModel);
+				}
 			}
 		} catch (Exception e) {
 			serviceResponse.setError(e.getMessage());

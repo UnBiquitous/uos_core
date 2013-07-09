@@ -98,6 +98,13 @@ public class DeviceDriverTest_handShake {
 	}
 	
 	@Test public void doesNothingWhenTheSameDeviceShowsUpAgain() throws Exception{
+		
+		SmartSpaceGateway gateway = mockGateway(currentDevice);
+		
+		driver.init(gateway, "id");
+		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
+				.thenReturn(new ServiceResponse());
+		
 		UpDevice toRegister = new UpDevice("Dummy")
 									.addNetworkInterface("HERE", "LOCAL");
 		
@@ -112,8 +119,11 @@ public class DeviceDriverTest_handShake {
 		driver.handshake(call, response, null);
 		
 		assertThat(deviceManager.listDevices()).contains(toRegister);
-		assertThat(response.getResponseData()).isNullOrEmpty();
-		assertThat(response.getError()).isNotEmpty();
+		assertThat(response.getResponseData("device"))
+					.isEqualTo(new JSONDevice(currentDevice).toString());
+		assertThat(response.getError()).isNullOrEmpty(); 
+		// FIXME: error when the driver is already registered
+		assertThat(deviceManager.listDevices()).contains(toRegister);
 	}
 	
 	@Test public void doesNothingWhenThereIsNoDevice() throws Exception{
@@ -140,11 +150,39 @@ public class DeviceDriverTest_handShake {
 	//TODO: with myself
 	
 	
+	@Test public void mustNotBreakWhenItsDoneTwice() throws Exception{
+		SmartSpaceGateway gateway = mockGateway(new UpDevice());
+		
+		JSONObject driversList = new JSONObject();
+		UpDriver dummyInterface = new UpDriver("ddd");
+		dummyInterface.addService("s");
+		driversList.put("id_d", new JSONDriver(dummyInterface));
+		
+		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
+		.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
+		
+		driver.init(gateway, "id");
+		UpDevice toRegister = new UpDevice("Dummy")
+				.addNetworkInterface("HERE", "LOCAL");
+		
+		ServiceCall call = new ServiceCall()
+				.addParameter("device",new JSONDevice(toRegister).toString());
+		
+		ServiceResponse response = new ServiceResponse();
+		driver.handshake(call, response, null);
+		driver.handshake(call, response, null);
+		
+		ArgumentCaptor<ServiceCall> getCall = ArgumentCaptor
+				.forClass(ServiceCall.class); 
+		verify(gateway, times(2)).callService(eq(toRegister), getCall.capture());
+		assertThat(getCall.getValue().getDriver()).isEqualTo("uos.DeviceDriver");
+		assertThat(getCall.getValue().getService()).isEqualTo("listDrivers");
+		
+		assertThat(driverManager.listDrivers("ddd", "Dummy")).isNotEmpty();
+		assertThat(response.getError()).isNullOrEmpty();
+	}
 	@Test public void mustRegisterTheOtherDriversLocallyAlso() throws Exception{
-		SmartSpaceGateway gateway = mock(SmartSpaceGateway.class);
-		when(gateway.getDeviceManager()).thenReturn(deviceManager);
-		when(gateway.getDriverManager()).thenReturn(driverManager);
-		when(gateway.getCurrentDevice()).thenReturn(new UpDevice());
+		SmartSpaceGateway gateway = mockGateway(new UpDevice());
 
 		JSONObject driversList = new JSONObject();
 		UpDriver dummyInterface = new UpDriver("ddd");
@@ -171,5 +209,13 @@ public class DeviceDriverTest_handShake {
 		assertThat(getCall.getValue().getService()).isEqualTo("listDrivers");
 		
 		assertThat(driverManager.listDrivers("ddd", "Dummy")).isNotEmpty();
+	}
+
+	private SmartSpaceGateway mockGateway(UpDevice currentDevice) {
+		SmartSpaceGateway gateway = mock(SmartSpaceGateway.class);
+		when(gateway.getDeviceManager()).thenReturn(deviceManager);
+		when(gateway.getDriverManager()).thenReturn(driverManager);
+		when(gateway.getCurrentDevice()).thenReturn(currentDevice);
+		return gateway;
 	}
 }

@@ -6,8 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +30,6 @@ import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
-import org.unbiquitous.uos.core.deviceManager.DeviceDao;
-import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverDao;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
@@ -59,6 +62,7 @@ public class DeviceManagerTest {
 	private ConnectivityManager proxier;
 
 	@Before
+	@SuppressWarnings("rawtypes")
 	public void setUp() {
 		dao = new DeviceDao(null);
 		driverDao = new DriverDao(null);
@@ -293,6 +297,22 @@ public class DeviceManagerTest {
 						new ServiceResponse().addParameter("device",
 								newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
+		deviceManager.deviceEntered(enteree);
+		assertEquals(2, dao.list().size());
+		assertEquals(newGuy, dao.find(newGuy.getName()));
+	}
+	
+	@Test
+	public void IfTheSecondHandShakeSucceedsRegisterDevice() throws Exception {
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
+		UpDevice newGuy = new UpDevice("TheNewGuy")
+			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		deviceManager.deviceEntered(enteree);
+		when(gatewayHandshakeCall())
+		.thenReturn(
+				new ServiceResponse().addParameter("device",
+						newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
 		assertEquals(newGuy, dao.find(newGuy.getName()));

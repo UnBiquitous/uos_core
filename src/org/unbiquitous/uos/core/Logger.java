@@ -45,8 +45,8 @@ public class Logger {
 	}
 	
 	public void debug(String msg){
-//		logger.fine(msg);
 		logger.fine(msg);
+//		logger.info("Debug:"+msg);
 	}
 	
 	public void debug(String msg, Throwable e){

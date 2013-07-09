@@ -25,9 +25,9 @@ public class DeviceDao {
 	}
 	
 	public void save(UpDevice device) {
-		if (find(device.getName()) != null){
-			throw new RuntimeException("Atempt to insert a device with same name.");
-		}
+//		if (find(device.getName()) != null){
+//			throw new RuntimeException("Atempt to insert a device with same name.");
+//		}
 		if (device.getNetworks() != null){
 			for (UpNetworkInterface ni : device.getNetworks()){
 				interfaceMap.put(createInterfaceKey(ni), device);

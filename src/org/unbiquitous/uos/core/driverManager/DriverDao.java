@@ -36,13 +36,12 @@ public class DriverDao {
 	
 	
 	public void insert(DriverModel driver) {
-		if (retrieve(driver.id(), driver.device()) == null){
-			driver.rowid(newId());
-			insertOnMap(driver);
-		}else{
-			throw new RuntimeException("Device "+driver.device()+
-					" already has a driver with id "+ driver.id());
+		DriverModel found = retrieve(driver.id(), driver.device());
+		if (found != null){
+			removeFromMap(found);
 		}
+		driver.rowid(newId());
+		insertOnMap(driver);
 	}
 
 	public List<DriverModel> list() {

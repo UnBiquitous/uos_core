@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -69,6 +70,7 @@ public class DeviceDaoTest {
 		for (UpDevice d: devices) assertTrue(list.contains(d));
 	}
 	
+	@Ignore
 	@Test(expected=Exception.class) public void should_not_save_a_device_with_the_same_name(){
 		dao.save(new UpDevice("my.device"));
 		dao.save(new UpDevice("my.device"));
