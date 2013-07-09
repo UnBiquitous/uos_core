@@ -4,7 +4,9 @@ package org.unbiquitous.uos.core;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -62,7 +64,6 @@ public class UOS {
 
 	private ApplicationDeployer applicationDeployer;
 	private DeviceManager deviceManager;
-	private ConnectivityManager connectivityManager;
 	private SmartSpaceGateway gateway;
 
 	private DriverDao driverDao;
@@ -106,8 +107,7 @@ public class UOS {
 			// Objects Instantiation
 			adaptabilityEngine = new AdaptabilityEngine();
 			messageEngine = new MessageEngine();
-			connectivityManager = new ConnectivityManager();
-                            
+			
 			// Start Security Manager
 			logger.debug("Initializing SecurityManager");
 			initSecurityManager(resourceBundle);
@@ -133,21 +133,20 @@ public class UOS {
 			// Start Service Handler
 			logger.debug("Initializing ServiceHandler");
 			initAdaptabilityEngine(connectionManagerControlCenter,
-					driverManager, currentDevice, messageEngine,
-					connectivityManager);
+					driverManager, currentDevice, messageEngine);
 
 			// Start Device Manager
 			logger.debug("Initializing DeviceManager");
 			initDeviceManager(currentDevice, adaptabilityEngine,
-					connectionManagerControlCenter, connectivityManager,
-					resourceBundle);
+					connectionManagerControlCenter,resourceBundle);
 			messageEngine.setDeviceManager(deviceManager);
 
             initOntology(resourceBundle, deviceManager);
                         
+            //FIXME: This is trash
 			gateway.init(adaptabilityEngine, currentDevice, securityManager,
-					connectivityManager, deviceManager, driverManager,
-					applicationDeployer, ontology);
+					get(ConnectivityManager.class),
+					deviceManager, driverManager, applicationDeployer, ontology);
 
 			// Start Connectivity Manager
 			logger.debug("Initializing ConnectivityManager");
@@ -222,8 +221,10 @@ public class UOS {
 	private void initMessageEngine(AdaptabilityEngine adaptabilityEngine,
 			SecurityManager securityManager,
 			ConnectionManagerControlCenter connectionManagerControlCenter) {
+		MessageHandler messageHandler = new MessageHandler(resourceBundle, connectionManagerControlCenter,securityManager,get(ConnectivityManager.class));
 		messageEngine.init(adaptabilityEngine, adaptabilityEngine,
-				securityManager, connectionManagerControlCenter, new MessageHandler(resourceBundle, connectionManagerControlCenter,securityManager,connectivityManager));
+				securityManager, connectionManagerControlCenter, 
+				messageHandler);
 	}
 
 	private void initDriverManager(ResourceBundle resourceBundle,
@@ -239,10 +240,11 @@ public class UOS {
 	private void initAdaptabilityEngine(
 			ConnectionManagerControlCenter connectionManagerControlCenter,
 			DriverManager driverManager, UpDevice currentDevice,
-			MessageEngine messageEngine, ConnectivityManager connectivityManager) {
+			MessageEngine messageEngine) {
 
 		adaptabilityEngine.init(connectionManagerControlCenter, driverManager,
-				currentDevice, this, messageEngine, connectivityManager, getEventManager());
+				currentDevice, this, messageEngine, 
+				get(ConnectivityManager.class), getEventManager());
 
 	}
 
@@ -291,10 +293,12 @@ public class UOS {
 	private void initDeviceManager(UpDevice currentDevice,
 			AdaptabilityEngine adaptabilityEngine,
 			ConnectionManagerControlCenter connectionManagerControlCenter,
-			ConnectivityManager connectivityManager,
 			ResourceBundle resourceBundle) throws SecurityException {
-		deviceManager = new DeviceManager(currentDevice, getDeviceDao(),getDriverDao(), 
-								getConnectionManagerControlCenter(), getConnectivityManager(), gateway, getDriverManager());
+		deviceManager = new DeviceManager(currentDevice, 
+								getDeviceDao(),getDriverDao(), 
+								getConnectionManagerControlCenter(), 
+								get(ConnectivityManager.class), 
+								gateway, getDriverManager());
 	}
 
 	private void initConnectivityManager(ResourceBundle resourceBundle,
@@ -310,7 +314,7 @@ public class UOS {
 			logger.info("No proxying attribute found in the properties. Proxying set as false.");
 		}
 
-		this.connectivityManager.init(this, gateway, doProxying);
+		get(ConnectivityManager.class).init(this, gateway, doProxying);
 	}
 
 	private void initApplications(ResourceBundle resourceBundle, Gateway gateway)
@@ -386,13 +390,6 @@ public class UOS {
 	}
 
 	/**
-	 * @return the connectivityManager
-	 */
-	public ConnectivityManager getConnectivityManager() {
-		return this.connectivityManager;
-	}
-
-	/**
 	 * @return The Gateway used by Drivers and Applications to interact with the
 	 *         Smart Space
 	 */
@@ -442,5 +439,21 @@ public class UOS {
 
 	public UpDevice device() {
 		return currentDevice;
+	}
+	
+	
+//	-----------------------------------------------------------------
+	
+	private Map<Class, Object> instances = new HashMap<Class, Object>();
+	
+	private <T> T get(Class<T> clazz){
+		if (!instances.containsKey(clazz)){
+			try {
+				instances.put(clazz, clazz.newInstance());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return (T) instances.get(clazz);
 	}
 }
