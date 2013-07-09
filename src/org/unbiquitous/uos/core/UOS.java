@@ -110,26 +110,34 @@ public class UOS {
 			
 			// Start Security Manager
 			logger.debug("Initializing SecurityManager");
-			initSecurityManager(resourceBundle);
+			initSecurityManager();
 
 			gateway = new SmartSpaceGateway();
 
+			
+			/*---------------------------------------------------------------*/
+			
 			// Start Connection Manager Control Center
 			logger.debug("Initializing ConnectionManagerControlCenter");
-			initConnectionManagerControlCenter(resourceBundle, messageEngine);
+			initConnectionManagerControlCenter( messageEngine);
 			
 			logger.debug("Initializing CurrentDevice");
-			initCurrentDevice(resourceBundle, connectionManagerControlCenter);
+			initCurrentDevice(connectionManagerControlCenter);
 			
-			// Start Driver Manager
-			logger.debug("Initializing DriverManager");
-			initDriverManager(resourceBundle, currentDevice);
+			/*---------------------------------------------------------------*/
 			
 			// Start The Message Listener
 			logger.debug("Initializing MessageListener");
 			initMessageEngine(adaptabilityEngine, securityManager,
 					connectionManagerControlCenter);
 
+			
+			/*---------------------------------------------------------------*/
+			
+			// Start Driver Manager
+			logger.debug("Initializing DriverManager");
+			initDriverManager(currentDevice);
+			
 			// Start Service Handler
 			logger.debug("Initializing ServiceHandler");
 			initAdaptabilityEngine(connectionManagerControlCenter,
@@ -138,23 +146,30 @@ public class UOS {
 			// Start Device Manager
 			logger.debug("Initializing DeviceManager");
 			initDeviceManager(currentDevice, adaptabilityEngine,
-					connectionManagerControlCenter,resourceBundle);
+					connectionManagerControlCenter);
+			
+			/*---------------------------------------------------------------*/
+			
 			messageEngine.setDeviceManager(deviceManager);
 
-            initOntology(resourceBundle, deviceManager);
+			/*---------------------------------------------------------------*/
+			
+            initOntology(deviceManager);
                         
             //FIXME: This is trash
 			gateway.init(adaptabilityEngine, currentDevice, securityManager,
 					get(ConnectivityManager.class),
 					deviceManager, driverManager, applicationDeployer, ontology);
 
+			/*---------------------------------------------------------------*/
+			
 			// Start Connectivity Manager
 			logger.debug("Initializing ConnectivityManager");
-			initConnectivityManager(resourceBundle, gateway);
+			initConnectivityManager(gateway);
 
 			// Start Radar Control Center
 			logger.debug("Initializing RadarControlCenter");
-			initRadarControlCenter(resourceBundle, deviceManager,
+			initRadarControlCenter( deviceManager,
 					connectionManagerControlCenter);
 
 			// Initialize the deployed Drivers
@@ -194,8 +209,7 @@ public class UOS {
 		init(resourceBundle);
 	}
 
-	private void initConnectionManagerControlCenter(
-			ResourceBundle resourceBundle, MessageListener messageListener)
+	private void initConnectionManagerControlCenter( MessageListener messageListener)
 			throws NetworkException {
 		connectionManagerControlCenter = null;
 		try {
@@ -209,8 +223,7 @@ public class UOS {
 		}
 	}
 
-	private void initRadarControlCenter(ResourceBundle resourceBundle,
-			DeviceManager deviceManager,
+	private void initRadarControlCenter(DeviceManager deviceManager,
 			ConnectionManagerControlCenter connectionManagerControlCenter)
 			throws NetworkException {
 		radarControlCenter = new RadarControlCenter(deviceManager,
@@ -227,8 +240,7 @@ public class UOS {
 				messageHandler);
 	}
 
-	private void initDriverManager(ResourceBundle resourceBundle,
-			UpDevice device) throws DriverManagerException {
+	private void initDriverManager(UpDevice device) throws DriverManagerException {
 		driverManager = new DriverManager(device, getDriverDao(), getDeviceDao(), getServiceCaller());
 
 		// Deploy service-drivers
@@ -248,8 +260,7 @@ public class UOS {
 
 	}
 
-	private void initCurrentDevice(ResourceBundle resourceBundle,
-			ConnectionManagerControlCenter connectionManagerControlCenter) {
+	private void initCurrentDevice(ConnectionManagerControlCenter connectionManagerControlCenter) {
 
 		// Collect device informed name
 		currentDevice = new UpDevice();
@@ -285,15 +296,13 @@ public class UOS {
 		currentDevice.setNetworks(networks);
 	}
 
-	private void initSecurityManager(ResourceBundle resourceBundle)
-			throws SecurityException {
+	private void initSecurityManager() throws SecurityException {
 		securityManager = new SecurityManager(resourceBundle);
 	}
 
 	private void initDeviceManager(UpDevice currentDevice,
 			AdaptabilityEngine adaptabilityEngine,
-			ConnectionManagerControlCenter connectionManagerControlCenter,
-			ResourceBundle resourceBundle) throws SecurityException {
+			ConnectionManagerControlCenter connectionManagerControlCenter) throws SecurityException {
 		deviceManager = new DeviceManager(currentDevice, 
 								getDeviceDao(),getDriverDao(), 
 								getConnectionManagerControlCenter(), 
@@ -301,8 +310,7 @@ public class UOS {
 								gateway, getDriverManager());
 	}
 
-	private void initConnectivityManager(ResourceBundle resourceBundle,
-			Gateway gateway) {
+	private void initConnectivityManager(Gateway gateway) {
 		//Read proxying attribute from the resource bundle
 		boolean doProxying = false;
 
@@ -325,7 +333,7 @@ public class UOS {
 		applicationManager.startApplications();
 	}
 
-        private void initOntology(ResourceBundle resourceBundle, DeviceManager deviceManager) {
+        private void initOntology(DeviceManager deviceManager) {
             try {
             	//TODO: check if this is right
             	if (!resourceBundle.containsKey("ubiquitos.ontology.path")) return;
