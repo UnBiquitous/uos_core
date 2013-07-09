@@ -32,7 +32,7 @@ public class OntologyDataPropertyTest {
     String dataPropertyFloatRangeName = "DataPropertyFloatRange";
     String dataPropertyStringRangeName = "DataPropertyStringRange";
     String dataPropertyDomainName = "DataPropertyDomain";
-    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
+    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos_main";
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;

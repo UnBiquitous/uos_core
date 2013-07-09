@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +41,7 @@ public class OntologyReasonerTest {
     String equivClassName = "ClasseEquiv";
     String disjClassName = "ClasseDisj";
     String dataPropertyValue = "dataPropertyValue";
-    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
+    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos_main";
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;
@@ -65,6 +66,15 @@ public class OntologyReasonerTest {
     
     public static OWLReasonerFactory ReasonerFactory(){
         return new org.semanticweb.HermiT.Reasoner.ReasonerFactory();
+    }
+    
+    @Test
+    public void justcreates() throws ReasonerNotDefinedException{
+    	 new Ontology(new ListResourceBundle() {
+ 			protected Object[][] getContents() {
+				return new Object[][] {};
+			}
+		});
     }
     
     @Test

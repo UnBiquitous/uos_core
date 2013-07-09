@@ -22,7 +22,8 @@ public class UOSApplicationContextTest {
 	private UOSApplicationContext ctx;
 	
 	@Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+//		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/owl/uoscontext.owl").delete();
 	}
 	
 	@After public void tearDown(){
@@ -75,6 +76,7 @@ public class UOSApplicationContextTest {
 	
 	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
 		ctx = new UOSApplicationContext();
+		new File("resources/owl/uoscontext.owl").createNewFile();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {

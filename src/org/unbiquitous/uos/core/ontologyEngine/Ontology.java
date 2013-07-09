@@ -95,6 +95,8 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                 } catch (InterruptedException e) {
                 }
             } while (true);
+        }else{
+        	return;
         }
         ontologyReasoner = new OntologyReasoner(manager, localContext, resourceBundle);
         changeManager = new OntologyChangeManager(manager, localContext, this);

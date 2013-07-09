@@ -36,7 +36,7 @@ public class OntologyClassTest implements UosApplication{
     String equivClassName = "ClasseEquiv";
     String disjClassName = "ClasseDisj";
     String classNameAnnotation = "classNameAnnotation";
-    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
+    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos_main";
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;

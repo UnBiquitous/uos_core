@@ -31,7 +31,7 @@ public class OntologyObjectPropertyTest {
     String domainName = "domain";
     String inverseName = "inverse";
     
-    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
+    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos_main";
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;

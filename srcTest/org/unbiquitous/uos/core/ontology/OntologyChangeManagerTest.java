@@ -34,7 +34,7 @@ public class OntologyChangeManagerTest implements UosApplication{
     String className3 = "Classe3";
     String className4 = "Classe4";
     String className5 = "Classe5";
-    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
+    private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos_main";
     private ResourceBundle resourceBundle = ResourceBundle
 				.getBundle(DEFAULT_UBIQUIT_BUNDLE_FILE);
     Ontology ontology;
