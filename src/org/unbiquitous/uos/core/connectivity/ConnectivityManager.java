@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriverImpl;
@@ -33,7 +33,7 @@ import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 public class ConnectivityManager {
 	
 	/** The context of the uOS */
-	private UOSApplicationContext applicationContext;
+	private UOS applicationContext;
 	private Gateway gateway;
 	
 	/** Our device */
@@ -50,7 +50,7 @@ public class ConnectivityManager {
 	
 	public ConnectivityManager(){}
 	
-	public void init(UOSApplicationContext applicationContext, Gateway gateway, boolean doProxying){
+	public void init(UOS applicationContext, Gateway gateway, boolean doProxying){
 		logger.info("Starting up UOS Connectivity Manager");
 		if(applicationContext == null){
 			throw new IllegalArgumentException("Connectivity Manager -- application context cannot be null");

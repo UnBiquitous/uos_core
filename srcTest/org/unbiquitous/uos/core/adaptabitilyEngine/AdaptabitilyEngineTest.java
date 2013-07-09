@@ -17,7 +17,7 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.EventManager;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
@@ -106,7 +106,7 @@ public class AdaptabitilyEngineTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		UOSApplicationContext ctx = mock(UOSApplicationContext.class);
+		UOS ctx = mock(UOS.class);
 		when(ctx.getApplicationManager()).thenReturn(manager);
 		
 		engine.init(null, null, null, ctx, null, null, null);
@@ -229,7 +229,7 @@ public class AdaptabitilyEngineTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		UOSApplicationContext ctx = mock(UOSApplicationContext.class);
+		UOS ctx = mock(UOS.class);
 		when(ctx.getApplicationManager()).thenReturn(manager);
 		
 		engine.init(null, null, null, ctx, null, null, null);

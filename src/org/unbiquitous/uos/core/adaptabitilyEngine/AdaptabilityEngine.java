@@ -3,7 +3,7 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.Map;
 
 import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
@@ -45,14 +45,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 	
 	private ConnectivityManager connectivityManager;
 
-	private UOSApplicationContext context;
+	private UOS context;
 
 	//TODO: this is a hell lot of dependencies
 	public void init(
 				ConnectionManagerControlCenter connectionManagerControlCenter, 
 				DriverManager driverManager, 
 				UpDevice currentDevice,
-				UOSApplicationContext context,
+				UOS context,
 				MessageEngine messageEngine,
 				ConnectivityManager connectivityManager,
 				EventManager eventManager) {

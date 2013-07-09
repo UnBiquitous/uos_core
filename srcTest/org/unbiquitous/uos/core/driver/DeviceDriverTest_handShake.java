@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
@@ -49,7 +49,7 @@ public class DeviceDriverTest_handShake {
 				};
 			}
 		};
-		UOSApplicationContext ctx = new UOSApplicationContext();
+		UOS ctx = new UOS();
 		ctx.init(bundle);
 		currentDevice = ctx.getGateway().getCurrentDevice();
 		

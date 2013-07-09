@@ -12,14 +12,14 @@ import java.util.ResourceBundle;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
 
 
 public class UOSApplicationContextTest {
 
-	private UOSApplicationContext ctx;
+	private UOS ctx;
 	
 	@Before public void setUp() throws IOException{
 //		new File("resources/owl/uoscontext.owl").createNewFile();
@@ -32,7 +32,7 @@ public class UOSApplicationContextTest {
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
-		ctx = new UOSApplicationContext();
+		ctx = new UOS();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {};
@@ -49,7 +49,7 @@ public class UOSApplicationContextTest {
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithRandomValueIfLocalhosIsTheDeviceName() throws Exception{
-		ctx = new UOSApplicationContext();
+		ctx = new UOS();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {{"ubiquitos.uos.deviceName","localhost"}};
@@ -62,7 +62,7 @@ public class UOSApplicationContextTest {
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithInformeName() throws Exception{
-		ctx = new UOSApplicationContext();
+		ctx = new UOS();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {{"ubiquitos.uos.deviceName","MyName"}};
@@ -75,7 +75,7 @@ public class UOSApplicationContextTest {
 	}
 	
 	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
-		ctx = new UOSApplicationContext();
+		ctx = new UOS();
 		new File("resources/owl/uoscontext.owl").createNewFile();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {

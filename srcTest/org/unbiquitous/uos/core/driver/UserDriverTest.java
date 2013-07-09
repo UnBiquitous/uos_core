@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
@@ -45,13 +45,13 @@ public class UserDriverTest {
 
 	private static final Logger logger = Logger.getLogger(UserDriverTest.class);
 
-	private static UOSApplicationContext uosApplicationContext;
+	private static UOS uosApplicationContext;
 
 	private static Gateway gateway;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		uosApplicationContext = new UOSApplicationContext();
+		uosApplicationContext = new UOS();
 		uosApplicationContext.init("ubiquitos_test");
 		// uosApplicationContext.init();
 		gateway = uosApplicationContext.getGateway();

@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
-import org.unbiquitous.uos.core.UOSApplicationContext;
+import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 
@@ -33,14 +33,14 @@ public class IntegrationTest {
 		//Driver Side
 		// TODO: This bypass does not test how the middleware instantiates drivers and applications
 		String pcName = "my.pc";
-		UOSApplicationContext pc = startContext(pcName);
+		UOS pc = startContext(pcName);
 		EchoDriver echo = new EchoDriver();
 		pc.getDriverManager().deployDriver(echo.getDriver(), echo);
 		pc.getDriverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
 
 		//App side
 		String cellName = "my.cell";
-		UOSApplicationContext cell = startContext(cellName);
+		UOS cell = startContext(cellName);
 		PingApp ping = new PingApp();
 		cell.getApplicationManager().deploy(ping, "pingApp"); //TODO: id should be plausibly auto assigned
 		
@@ -85,7 +85,7 @@ public class IntegrationTest {
 		cell.tearDown();
 	}
 
-	private UOSApplicationContext startContext(final String deviceName) throws ContextException{
+	private UOS startContext(final String deviceName) throws ContextException{
 		ResourceBundle pcBundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
@@ -99,7 +99,7 @@ public class IntegrationTest {
 			}
 		};
 		
-		UOSApplicationContext instance = new UOSApplicationContext();
+		UOS instance = new UOS();
 		instance.init(pcBundle);
 		return instance;
 	}

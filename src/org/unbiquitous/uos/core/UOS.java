@@ -43,12 +43,12 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedExcep
  * @author Fabricio Nogueira Buzeto
  * 
  */
-public class UOSApplicationContext {
+public class UOS {
 
 	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
 
 	private static final Logger logger = Logger
-			.getLogger(UOSApplicationContext.class);
+			.getLogger(UOS.class);
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
@@ -74,6 +74,11 @@ public class UOSApplicationContext {
 
 	private ApplicationManager applicationManager;
         
+	
+	public static void main(String[] args) throws Exception{
+		new UOS().init();
+	}
+	
 	/**
 	 * Initializes the components of the uOS middleware using 'ubiquitos' as the
 	 * name of the resouce bundle to be used.
