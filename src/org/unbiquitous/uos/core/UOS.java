@@ -56,7 +56,6 @@ public class UOS {
 	private DriverManager driverManager;
 	private ConnectionManagerControlCenter connectionManagerControlCenter;
 	private RadarControlCenter radarControlCenter;
-	private AdaptabilityEngine adaptabilityEngine;
 	private SecurityManager securityManager;
 	private UpDevice currentDevice;
 
@@ -102,9 +101,6 @@ public class UOS {
 		try {
 			this.resourceBundle = resourceBundle;
 			
-			// Objects Instantiation
-			adaptabilityEngine = new AdaptabilityEngine();
-			
 			// Start Security Manager
 			logger.debug("Initializing SecurityManager");
 			initSecurityManager();
@@ -143,7 +139,7 @@ public class UOS {
             initOntology();
                         
             //FIXME: This is trash
-			gateway.init(adaptabilityEngine, currentDevice, securityManager,
+			gateway.init(get(AdaptabilityEngine.class), currentDevice, securityManager,
 					get(ConnectivityManager.class),
 					deviceManager, driverManager, applicationDeployer, ontology);
 
@@ -221,7 +217,7 @@ public class UOS {
 												securityManager,
 												get(ConnectivityManager.class)
 											);
-		get(MessageEngine.class).init(adaptabilityEngine, adaptabilityEngine,
+		get(MessageEngine.class).init(get(AdaptabilityEngine.class), get(AdaptabilityEngine.class),
 				securityManager, connectionManagerControlCenter, 
 				messageHandler);
 	}
@@ -237,7 +233,7 @@ public class UOS {
 		driverDeployer.deployDrivers();
 		
 		// Init Adaptability Engine
-		adaptabilityEngine.init(connectionManagerControlCenter, driverManager,
+		get(AdaptabilityEngine.class).init(connectionManagerControlCenter, driverManager,
 				currentDevice, this, get(MessageEngine.class), 
 				get(ConnectivityManager.class), getEventManager());
 		
