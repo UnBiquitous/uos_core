@@ -54,7 +54,6 @@ public class UOS {
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
 	private DriverManager driverManager;
-	private MessageEngine messageEngine;
 	private ConnectionManagerControlCenter connectionManagerControlCenter;
 	private RadarControlCenter radarControlCenter;
 	private AdaptabilityEngine adaptabilityEngine;
@@ -105,7 +104,6 @@ public class UOS {
 			
 			// Objects Instantiation
 			adaptabilityEngine = new AdaptabilityEngine();
-			messageEngine = new MessageEngine();
 			
 			// Start Security Manager
 			logger.debug("Initializing SecurityManager");
@@ -132,21 +130,13 @@ public class UOS {
 			
 			/*---------------------------------------------------------------*/
 			
-			// Start Driver Manager
-			logger.debug("Initializing DriverManager");
-			initDriverManager();
-			
 			// Start Service Handler
 			logger.debug("Initializing ServiceHandler");
 			initAdaptabilityEngine();
 
-			// Start Device Manager
-			logger.debug("Initializing DeviceManager");
-			initDeviceManager();
-			
 			/*---------------------------------------------------------------*/
 			
-			messageEngine.setDeviceManager(deviceManager);
+			get(MessageEngine.class).setDeviceManager(deviceManager);
 
 			/*---------------------------------------------------------------*/
 			
@@ -209,7 +199,7 @@ public class UOS {
 		connectionManagerControlCenter = null;
 		try {
 			connectionManagerControlCenter = new ConnectionManagerControlCenter(
-					messageEngine, resourceBundle);
+					get(MessageEngine.class), resourceBundle);
 		} catch (NetworkException ex) {
 			logger.error(
 					"[Starting] Error creating Connection Manager Control Center.",
@@ -231,25 +221,29 @@ public class UOS {
 												securityManager,
 												get(ConnectivityManager.class)
 											);
-		messageEngine.init(adaptabilityEngine, adaptabilityEngine,
+		get(MessageEngine.class).init(adaptabilityEngine, adaptabilityEngine,
 				securityManager, connectionManagerControlCenter, 
 				messageHandler);
 	}
 
-	private void initDriverManager() throws DriverManagerException {
+	private void initAdaptabilityEngine() throws DriverManagerException, SecurityException {
+
+		// Start Driver Manager
+		logger.debug("Initializing DriverManager");
 		driverManager = new DriverManager(currentDevice, getDriverDao(), getDeviceDao(), getServiceCaller());
 
 		// Deploy service-drivers
 		DriverDeployer driverDeployer = new DriverDeployer(driverManager,resourceBundle);
 		driverDeployer.deployDrivers();
-
-	}
-
-	private void initAdaptabilityEngine() {
-
+		
+		// Init Adaptability Engine
 		adaptabilityEngine.init(connectionManagerControlCenter, driverManager,
-				currentDevice, this, messageEngine, 
+				currentDevice, this, get(MessageEngine.class), 
 				get(ConnectivityManager.class), getEventManager());
+		
+		// Start Device Manager
+		logger.debug("Initializing DeviceManager");
+		initDeviceManager();
 
 	}
 
@@ -432,7 +426,7 @@ public class UOS {
 	}
 	
 	private EventManager getEventManager(){
-		if (eventManager == null) eventManager = new EventManager(messageEngine);
+		if (eventManager == null) eventManager = new EventManager(get(MessageEngine.class));
 		return eventManager;
 	}
 
