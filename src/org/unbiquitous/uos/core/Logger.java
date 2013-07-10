@@ -1,7 +1,5 @@
 package org.unbiquitous.uos.core;
 
-import java.io.PrintStream;
-import java.rmi.server.LogStream;
 import java.util.logging.Level;
 
 @SuppressWarnings("rawtypes")

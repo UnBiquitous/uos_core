@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
-import org.unbiquitous.uos.core.driverManager.DriverData;
 
 
 public class IntegrationTest {

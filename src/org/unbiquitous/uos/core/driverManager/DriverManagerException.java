@@ -6,7 +6,7 @@ package org.unbiquitous.uos.core.driverManager;
  * @author Fabricio Nogueira Buzeto
  *
  */
-public class DriverManagerException extends Exception {
+public class DriverManagerException extends RuntimeException {
 
 	private static final long serialVersionUID = -1671602839178257084L;
 

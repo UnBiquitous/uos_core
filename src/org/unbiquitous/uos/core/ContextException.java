@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core;
 
-public class ContextException extends Exception {
+public class ContextException extends RuntimeException {
 
 	private static final long serialVersionUID = 8699837559689550437L;
 

@@ -217,7 +217,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 //		this.deviceManager = factory.get(DeviceManager.class);// FIXME: DeviceManager should register
 		this.securityManager = factory.get(SecurityManager.class);
 		this.connectionManagerControlCenter = factory.get(ConnectionManagerControlCenter.class);
-				
+		this.connectionManagerControlCenter.setListener(this);
 				
 		MessageHandler messageHandler = new MessageHandler(properties, 
 										connectionManagerControlCenter,

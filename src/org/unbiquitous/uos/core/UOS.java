@@ -1,35 +1,22 @@
 package org.unbiquitous.uos.core;
 
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.UUID;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.adaptabitilyEngine.EventManager;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
-import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
-import org.unbiquitous.uos.core.driverManager.DriverDao;
-import org.unbiquitous.uos.core.driverManager.DriverDeployer;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
-import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
-import org.unbiquitous.uos.core.messageEngine.MessageHandler;
-import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
-import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.radar.RadarControlCenter;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
@@ -44,29 +31,18 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedExcep
  */
 public class UOS {
 
-	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
-
-	private static final Logger logger = Logger
-			.getLogger(UOS.class);
+	private static final Logger logger = Logger.getLogger(UOS.class);
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
-	private DriverManager driverManager;
 	private RadarControlCenter radarControlCenter;
 //	private UpDevice currentDevice;
 
 	private ApplicationDeployer applicationDeployer;
-	private DeviceManager deviceManager;
 
-	private ReflectionServiceCaller serviceCaller;
-	private EventManager eventManager;
     private Ontology ontology;
     private ResourceBundle properties;
 
-	private ApplicationManager applicationManager;
-        
-	
-	
 	private UOSComponentFactory factory;
 	private List<UOSComponent> components ;
 	
@@ -102,15 +78,14 @@ public class UOS {
 			this.components = new ArrayList<UOSComponent>(){
 				{
 					add(factory.get(ConnectionManagerControlCenter.class));
+					add(factory.get(CurrentDeviceInitializer.class));
 					add(factory.get(MessageEngine.class));
+					add(factory.get(AdaptabilityEngine.class));
 				}
 			};
 			/*---------------------------------------------------------------*/
 			/* 							CREATE								 */
 			/*---------------------------------------------------------------*/
-			
-			//TODO: hack to handle the "currentDevice" creation
-			factory.get(UpDevice.class);
 			
 			for(UOSComponent component:components){
 				component.create(properties);
@@ -125,35 +100,32 @@ public class UOS {
 			
 			/*---------------------------------------------------------------*/
 			
-			logger.debug("Initializing CurrentDevice");
-			initCurrentDevice();
-			
-			/*---------------------------------------------------------------*/
-			
-			// Start Service Handler
-			logger.debug("Initializing ServiceHandler");
-			initAdaptabilityEngine();
-
-			/*---------------------------------------------------------------*/
-			
-			factory.get(MessageEngine.class).setDeviceManager(deviceManager);
+			factory.get(MessageEngine.class).setDeviceManager(factory.get(DeviceManager.class));
 
 			/*---------------------------------------------------------------*/
 			
             initOntology();
                         
             //FIXME: This is trash
-            factory.get(SmartSpaceGateway.class)
+            factory.gateway()
             	.init(	factory.get(AdaptabilityEngine.class), 
-            			factory.get(UpDevice.class), 
+            			factory.currentDevice(), 
             			factory.get(SecurityManager.class),
             			factory.get(ConnectivityManager.class),
-            			deviceManager, 
-            			driverManager, 
+            			factory.get(DeviceManager.class), 
+            			factory.get(DriverManager.class), 
             			applicationDeployer, ontology);
 
 			/*---------------------------------------------------------------*/
 			
+            
+            /*---------------------------------------------------------------*/
+			/* 							START								 */
+			/*---------------------------------------------------------------*/
+			for(UOSComponent component:components){
+				component.start();
+			}
+            
 			// Start Connectivity Manager
 			logger.debug("Initializing ConnectivityManager");
 			initConnectivityManager();
@@ -162,20 +134,12 @@ public class UOS {
 			logger.debug("Initializing RadarControlCenter");
 			initRadarControlCenter();
 
-			// Initialize the deployed Drivers
-			driverManager.initDrivers(factory.get(SmartSpaceGateway.class));
-
-			// Start The Applications within the middleware
-			logger.debug("Initializing Applications");
-			initApplications();
 		} catch (DriverManagerException e) {
 			logger.error(e);
 			throw new ContextException(e);
-		} catch (NetworkException e) {
+		} catch (Exception e) {
 			throw new ContextException(e);
-		} catch (SecurityException e) {
-			throw new ContextException(e);
-		}
+		} 
 	}
 
 	/**
@@ -201,95 +165,10 @@ public class UOS {
 
 	private void initRadarControlCenter()
 			throws NetworkException {
-		radarControlCenter = new RadarControlCenter(deviceManager,
+		radarControlCenter = new RadarControlCenter(
+				factory.get(DeviceManager.class),
 				properties, factory.get(ConnectionManagerControlCenter.class));
 		radarControlCenter.startRadar();
-	}
-
-//	private void initMessageEngine() {
-//		MessageHandler messageHandler = new MessageHandler(properties, 
-//				factory.get(ConnectionManagerControlCenter.class),
-//												factory.get(SecurityManager.class),
-//												factory.get(ConnectivityManager.class)
-//											);
-//		factory.get(MessageEngine.class)
-//			.init(	factory.get(AdaptabilityEngine.class), 
-//					factory.get(AdaptabilityEngine.class),
-//					factory.get(SecurityManager.class), 
-//					factory.get(ConnectionManagerControlCenter.class), 
-//					messageHandler);
-//	}
-
-	private void initAdaptabilityEngine() throws DriverManagerException, SecurityException {
-
-		// Start Driver Manager
-		logger.debug("Initializing DriverManager");
-		driverManager = new DriverManager(	factory.get(UpDevice.class), 
-											factory.get(DriverDao.class), 
-											factory.get(DeviceDao.class), 
-											getServiceCaller());
-
-		// Deploy service-drivers
-		DriverDeployer driverDeployer = new DriverDeployer(driverManager,properties);
-		driverDeployer.deployDrivers();
-		
-		// Init Adaptability Engine
-		factory.get(AdaptabilityEngine.class)
-			.init(	factory.get(ConnectionManagerControlCenter.class), 
-					driverManager,
-					factory.get(UpDevice.class), this, 
-					factory.get(MessageEngine.class), 
-					factory.get(ConnectivityManager.class), getEventManager());
-		
-		// Start Device Manager
-		logger.debug("Initializing DeviceManager");
-		initDeviceManager();
-
-	}
-
-	private void initCurrentDevice() {
-
-		// Collect device informed name
-		UpDevice currentDevice = factory.get(UpDevice.class);
-		if (properties.containsKey(DEVICE_NAME_KEY)){
-			currentDevice.setName(properties.getString(DEVICE_NAME_KEY));
-		}else{
-			try {
-				currentDevice.setName(InetAddress.getLocalHost().getHostName());
-			} catch (UnknownHostException e) {
-				new ContextException(e);
-			}
-		}
-
-		if (currentDevice.getName().equals("localhost")){
-			UUID uuid = UUID.randomUUID();
-			currentDevice.setName(uuid.toString());
-		}
-		
-		//get metadata
-		currentDevice.addProperty("platform",System.getProperty("java.vm.name"));
-		
-		// Collect network interface information
-		List<NetworkDevice> networkDeviceList = factory.get(ConnectionManagerControlCenter.class).getNetworkDevices();
-		List<UpNetworkInterface> networks = new ArrayList<UpNetworkInterface>();
-		for (NetworkDevice nd : networkDeviceList) {
-			UpNetworkInterface nInf = new UpNetworkInterface();
-			nInf.setNetType(nd.getNetworkDeviceType());
-			nInf.setNetworkAddress(factory.get(ConnectionManagerControlCenter.class).getHost(nd.getNetworkDeviceName()));
-			networks.add(nInf);
-			logger.info(nd.getNetworkDeviceType() + " > " + nd.getNetworkDeviceName());
-		}
-
-		currentDevice.setNetworks(networks);
-	}
-
-	private void initDeviceManager() throws SecurityException {
-		deviceManager = new DeviceManager(factory.get(UpDevice.class), 
-								factory.get(DeviceDao.class),  
-								factory.get(DriverDao.class), 
-								factory.get(ConnectionManagerControlCenter.class), 
-								factory.get(ConnectivityManager.class), 
-								factory.get(SmartSpaceGateway.class), getDriverManager());
 	}
 
 	private void initConnectivityManager() {
@@ -305,16 +184,7 @@ public class UOS {
 		}
 
 		factory.get(ConnectivityManager.class)
-			.init(	this, 
-					factory.get(SmartSpaceGateway.class), doProxying);
-	}
-
-	private void initApplications()throws ContextException {
-		applicationManager = new ApplicationManager(properties, 
-				factory.get(SmartSpaceGateway.class));
-		applicationDeployer = new ApplicationDeployer(properties,applicationManager);
-		applicationDeployer.deployApplications();
-		applicationManager.startApplications();
+			.init(	this, factory.gateway(), doProxying);
 	}
 
 	private void initOntology() {
@@ -335,15 +205,22 @@ public class UOS {
 	 */
 	public void tearDown() {
 
+		/*---------------------------------------------------------------*/
+		/* 							STOP								 */
+		/*---------------------------------------------------------------*/
+		for(UOSComponent component:components){
+			component.stop();
+		}
+		
 		// inform the applications about the teardown process
 		try {
-			applicationManager.tearDown();
+			factory.get(ApplicationManager.class).tearDown();
 		} catch (Exception e) {
 			logger.error(e);
 		}
 
 		// inform the drivers about the teardown process
-		driverManager.tearDown();
+		factory.get(DriverManager.class).tearDown();
 
 		// inform the network layer about the tear down process
 		factory.get(ConnectionManagerControlCenter.class).tearDown();
@@ -357,7 +234,7 @@ public class UOS {
 	 * @return Returns the Driver Manager of this Application Context.
 	 */
 	public DriverManager getDriverManager() {
-		return driverManager;
+		return factory.get(DriverManager.class);
 	}
 
 
@@ -365,7 +242,7 @@ public class UOS {
 	 * @return the deviceManager
 	 */
 	public DeviceManager getDeviceManager() {
-		return deviceManager;
+		return factory.get(DeviceManager.class);
 	}
 
 	/**
@@ -373,7 +250,7 @@ public class UOS {
 	 *         Smart Space
 	 */
 	public Gateway getGateway() {
-		return factory.get(SmartSpaceGateway.class);
+		return factory.gateway();
 	}
 
 	/**
@@ -381,21 +258,11 @@ public class UOS {
 	 *         into the middleware.
 	 */
 	public ApplicationManager getApplicationManager() {
-		return applicationManager;
+		return factory.get(ApplicationManager.class);
 	}
 
 	public RadarControlCenter getRadarControlCenter(){
 		return radarControlCenter;
 	}
 	
-	private ReflectionServiceCaller getServiceCaller(){
-		if (serviceCaller == null) serviceCaller = new ReflectionServiceCaller(factory.get(ConnectionManagerControlCenter.class));
-		return serviceCaller;
-	}
-	
-	private EventManager getEventManager(){
-		if (eventManager == null) eventManager = new EventManager(factory.get(MessageEngine.class));
-		return eventManager;
-	}
-
 }

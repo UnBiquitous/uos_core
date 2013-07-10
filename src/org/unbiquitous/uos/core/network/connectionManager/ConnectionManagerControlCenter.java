@@ -15,7 +15,6 @@ import java.util.ResourceBundle;
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
-import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -297,6 +296,10 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     
     public ConnectionManagerControlCenter() {}
     
+    public void setListener(MessageListener listener){
+    	this.messageListener = listener;
+    }
+    
     @Override
     public void create(ResourceBundle properties) {
     	this.resource = properties;
@@ -304,8 +307,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     
     @Override
     public void init(UOSComponentFactory factory) {
-        this.messageListener = factory.get(MessageEngine.class); // FIXME: Message Engine should register
-        // Instantiates all the Connection Managers("Externals Servers" of this component)
         loadAndStartConnectionManagers();
     }
     
