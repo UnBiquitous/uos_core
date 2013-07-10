@@ -332,4 +332,8 @@ public class DeviceManager implements RadarListener {
 	public List<UpDevice> listDevices() {
 		return deviceDao.list();
 	}
+
+	public DeviceDao getDeviceDao() {
+		return deviceDao;
+	}
 }

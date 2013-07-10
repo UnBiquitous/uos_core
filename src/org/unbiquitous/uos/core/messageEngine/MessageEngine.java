@@ -1,10 +1,16 @@
 package org.unbiquitous.uos.core.messageEngine;
 
+import java.util.ResourceBundle;
+
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.SecurityManager;
+import org.unbiquitous.uos.core.UOSComponent;
+import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
@@ -28,7 +34,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  * @author Fabricio Nogueira Buzeto
  *
  */
-public class MessageEngine implements MessageListener {
+public class MessageEngine implements MessageListener , UOSComponent{
 
 	Logger logger = Logger.getLogger(MessageEngine.class);
 	
@@ -38,20 +44,8 @@ public class MessageEngine implements MessageListener {
 	private DeviceManager deviceManager;	
 	private ConnectionManagerControlCenter connectionManagerControlCenter;
 	private MessageHandler messageHandler;
-	
-	public void init(
-						ServiceCallHandler serviceCallHandler, 
-						NotifyHandler notifyHandler,
-						SecurityManager securityManager,
-						ConnectionManagerControlCenter connectionManagerControlCenter,
-						MessageHandler messageHandler) {
-		this.serviceCallHandler = serviceCallHandler;
-		this.notifyHandler = notifyHandler;
-		this.securityManager = securityManager;
-		this.connectionManagerControlCenter = connectionManagerControlCenter;
-		this.messageHandler = messageHandler;
-		
-	}
+
+	private ResourceBundle properties;
 	
 	@Override
 	public String handleIncomingMessage(String message,NetworkDevice clientDevice) throws NetworkException{
@@ -209,10 +203,41 @@ public class MessageEngine implements MessageListener {
 		return messageHandler.callService(device, serviceCall);
 	}
 
-	/**
-	 * @param deviceManager the deviceManager to set
-	 */
+	/************************ USO COmpoment ***************************/
+	
+	@Override
+	public void create(ResourceBundle properties) {
+		this.properties = properties;
+	}
+	
+	@Override
+	public void init(UOSComponentFactory factory) {
+		this.serviceCallHandler = factory.get(AdaptabilityEngine.class);// FIXME: AdaptabilityEngine should register
+		this.notifyHandler = factory.get(AdaptabilityEngine.class);// FIXME: AdaptabilityEngine should register
+//		this.deviceManager = factory.get(DeviceManager.class);// FIXME: DeviceManager should register
+		this.securityManager = factory.get(SecurityManager.class);
+		this.connectionManagerControlCenter = factory.get(ConnectionManagerControlCenter.class);
+				
+				
+		MessageHandler messageHandler = new MessageHandler(properties, 
+										connectionManagerControlCenter,
+										securityManager,
+										factory.get(ConnectivityManager.class)
+													);
+		this.messageHandler = messageHandler;
+	}
+	
+	@Override
+	public void start() {}
+	
+	@Override
+	public void stop() {}
+
+	
+	//FIXME: remove this method
 	public void setDeviceManager(DeviceManager deviceManager) {
 		this.deviceManager = deviceManager;
 	}
+	
+	
 }

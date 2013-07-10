@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSComponent;
+import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -22,7 +25,7 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
  *
  * @author Passarinho
  */
-public class ConnectionManagerControlCenter implements ConnectionManagerListener{
+public class ConnectionManagerControlCenter implements ConnectionManagerListener, UOSComponent{
    
 	private static Logger logger = Logger.getLogger(ConnectionManagerControlCenter.class); 
 	
@@ -48,22 +51,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     /** The resource bundle from where we can get a set of configurations. */
 	private ResourceBundle resource;
 	
-    /* *****************************
-	 *   	CONSTRUCTOR
-	 * *****************************/
-	
-    /**
-	 * Constructor using AdaptabilityEngine
-	 * @param AdaptabilityEngine
-	 * @throws UbiquitOSException
-	 */
-    public ConnectionManagerControlCenter(MessageListener messageListener ,ResourceBundle resourceBundle) throws NetworkException {
-        this.resource = resourceBundle;
-        this.messageListener = messageListener;
-        // Instantiates all the Connection Managers("Externals Servers" of this component)
-        loadAndStartConnectionManagers();
-    }
-    
     /* *****************************
 	 *   	PUBLIC METHODS
 	 * *****************************/
@@ -304,4 +291,34 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     public ConnectionManager findConnectionManagerInstance(String cManagerClass){
     	return connectionManagersMap.get(cManagerClass);
     }
+    
+    
+    /************************ USO COmpoment ***************************/
+    
+    public ConnectionManagerControlCenter() {}
+    
+    @Override
+    public void create(ResourceBundle properties) {
+    	this.resource = properties;
+    }
+    
+    @Override
+    public void init(UOSComponentFactory factory) {
+        this.messageListener = factory.get(MessageEngine.class); // FIXME: Message Engine should register
+        // Instantiates all the Connection Managers("Externals Servers" of this component)
+        loadAndStartConnectionManagers();
+    }
+    
+    @Override
+    public void start() {
+    	// TODO Auto-generated method stub
+    	
+    }
+    
+    @Override
+    public void stop() {
+    	// TODO Auto-generated method stub
+    	
+    }
+    
 }

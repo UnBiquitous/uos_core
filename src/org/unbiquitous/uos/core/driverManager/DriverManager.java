@@ -429,4 +429,8 @@ public class DriverManager {
 			throw new DriverManagerException(e);
 		}
 	}
+
+	public DriverDao getDriverDao() {
+		return driverDao;
+	}
 }

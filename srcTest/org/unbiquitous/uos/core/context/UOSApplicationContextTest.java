@@ -42,10 +42,10 @@ public class UOSApplicationContextTest {
 		
 		assertEquals("When no deviceName is specified use hostname",
 				InetAddress.getLocalHost().getHostName(),
-				ctx.device().getName()); 
+				ctx.getGateway().getCurrentDevice().getName()); 
 		assertEquals("Platform is defined by system propery ",
 				System.getProperty("java.vm.name"),
-				ctx.device().getProperty("platform")); 
+				ctx.getGateway().getCurrentDevice().getProperty("platform")); 
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithRandomValueIfLocalhosIsTheDeviceName() throws Exception{
@@ -57,8 +57,8 @@ public class UOSApplicationContextTest {
 		};
 		ctx.init(prop);
 		
-		System.out.println(ctx.device().getName());
-		assertThat(ctx.device().getName()).isNotEqualTo("localhost");
+		System.out.println(ctx.getGateway().getCurrentDevice().getName());
+		assertThat(ctx.getGateway().getCurrentDevice().getName()).isNotEqualTo("localhost");
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithInformeName() throws Exception{
@@ -71,7 +71,7 @@ public class UOSApplicationContextTest {
 		ctx.init(prop);
 		
 		assertEquals("When deviceName is specified use it","MyName",
-														ctx.device().getName()); 
+								ctx.getGateway().getCurrentDevice().getName()); 
 	}
 	
 	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
