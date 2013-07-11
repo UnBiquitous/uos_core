@@ -8,8 +8,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
@@ -33,7 +34,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
  */
 public class DriverManager {
 	
-	private static Logger logger = Logger.getLogger(DriverManager.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	private ReflectionServiceCaller serviceCaller;
 	
@@ -89,7 +90,7 @@ public class DriverManager {
 			//Find DriversInstance
 			model = driverDao.retrieve(serviceCall.getInstanceId(),currentDevice.getName());
 			if (model == null){
-				logger.error("No Instance found with id '"+serviceCall.getInstanceId()+"'");
+				logger.severe("No Instance found with id '"+serviceCall.getInstanceId()+"'");
 				throw new DriverManagerException("No Instance found with id '"+serviceCall.getInstanceId()+"'");
 			}
 		}else{
@@ -100,14 +101,14 @@ public class DriverManager {
 				TreeNode driverNode = driverHash.get(serviceCall.getDriver());
 				
 				if(driverNode == null) {
-					logger.debug("No instance found for handling driver '"+serviceCall.getDriver()+"'");
+					logger.fine("No instance found for handling driver '"+serviceCall.getDriver()+"'");
 					throw new DriverManagerException("No instance found for handling driver '"+serviceCall.getDriver()+"'");
 				}
 				
 				list = findEquivalentDriver(driverNode.getChildren());
 				
 				if(list == null || list.isEmpty()) {
-					logger.debug("No instance found for handling driver '"+serviceCall.getDriver()+"'");
+					logger.fine("No instance found for handling driver '"+serviceCall.getDriver()+"'");
 					throw new DriverManagerException("No instance found for handling driver '"+serviceCall.getDriver()+"'");
 				}
 				
@@ -180,7 +181,7 @@ public class DriverManager {
 			driverDao.insert(model);
 			instances.put(model.rowid(), uDriver);
 			toInitialize.add(instanceId);
-			logger.debug(	"Deployied Driver : "+model.driver().getName()+
+			logger.fine(	"Deployied Driver : "+model.driver().getName()+
 							" with id "+instanceId);
 		}else{
 			throw new IllegalArgumentException("The deployed DriverIntance must be of type UosDriver.");
@@ -296,7 +297,7 @@ public class DriverManager {
 			driverDao.delete(model.id(), currentDevice.getName());
 			toInitialize.remove(model.id());
 		}else{
-			logger.error("Undeploying driver with InstanceId : '"+instanceId+"' was not possible, since it's not present in the current database.");
+			logger.severe("Undeploying driver with InstanceId : '"+instanceId+"' was not possible, since it's not present in the current database.");
 		}
 	}
 	
@@ -389,7 +390,7 @@ public class DriverManager {
 			UosDriver driver = instances.get(model.rowid());
 			driver.init(gateway, id);
 			it.remove();
-			logger.debug(	"Initialized Driver : "+model.driver().getName()+
+			logger.fine(	"Initialized Driver : "+model.driver().getName()+
 							" with id "+id);
 		}
 	}

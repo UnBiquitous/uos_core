@@ -1,13 +1,15 @@
 package org.unbiquitous.uos.core.messageEngine;
 
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
@@ -36,7 +38,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  */
 public class MessageEngine implements MessageListener , UOSComponent{
 
-	Logger logger = Logger.getLogger(MessageEngine.class);
+	Logger logger = UOSLogging.getLogger();
 	
 	private ServiceCallHandler serviceCallHandler;
 	private NotifyHandler notifyHandler;
@@ -73,11 +75,11 @@ public class MessageEngine implements MessageListener , UOSComponent{
 				}
 			}
 		} catch (JSONException e) {
-			logger.info("Failure to handle the incoming message",e);
+			logger.log(Level.INFO,"Failure to handle the incoming message",e);
 			Notify event = new Notify();
 			event.setError("Failure to handle the incoming message");
 			try {return new JSONNotify(event).toString();} 
-			catch (JSONException z) {logger.error("Never Happens");}
+			catch (JSONException z) {logger.severe("Never Happens");}
 		}
 		return null;
 	}
@@ -95,7 +97,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			JSONServiceResponse jsonResponse = new JSONServiceResponse(response);
 			return jsonResponse.toString();
 		} catch (Exception e) {
-			logger.error("Internal Failure", e);
+			logger.log(Level.SEVERE,"Internal Failure", e);
 			ServiceResponse errorResponse = new ServiceResponse();
 			errorResponse.setError(e.getMessage() == null ?"Internal Error":e.getMessage());
 			try {
@@ -120,7 +122,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 							);
 			
 		} catch (Exception e) {
-			logger.error("Internal Failure. Notify cannot be handled.", e);
+			logger.log(Level.SEVERE,"Internal Failure. Notify cannot be handled.", e);
 		} 
 	}
 	
@@ -133,7 +135,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			
 			TranslationHandler tHandler = securityManager.getTranslationHandler(securityType);
 			
-			logger.debug("clientDevice.getNetworkDeviceName: "+clientDevice.getNetworkDeviceName());
+			logger.fine("clientDevice.getNetworkDeviceName: "+clientDevice.getNetworkDeviceName());
 			
 			//Translate Network Name into Device Name
 			//TODO: MessageEngine : This is a violation of responsibility among the layers. Names should be already in the correct format
@@ -162,7 +164,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 				return jsonEncapsulatedResponse.toString();
 			}
 		} catch (Exception e) {
-			logger.error("Problems handling EncapsulatedMessage: ",e);
+			logger.log(Level.SEVERE,"Problems handling EncapsulatedMessage: ",e);
 		} 
 		return null;
 	}

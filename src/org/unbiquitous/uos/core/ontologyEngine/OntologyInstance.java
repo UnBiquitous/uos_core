@@ -5,6 +5,7 @@
 package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -17,7 +18,7 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.driver.OntologyDriver;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployInstance;
@@ -34,7 +35,7 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.RemovalException;
  */
 public class OntologyInstance implements DeployInstance, UndeployInstance, StartInstance {
 
-    private static final Logger logger = Logger.getLogger(OntologyInstance.class);
+    private static final Logger logger = UOSLogging.getLogger();
     private OWLOntology localContext;
     private OntologyReasoner ontologyReasoner;
     private OntologyChangeManager changeManager;
@@ -227,7 +228,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeObjectPropertyAssertion"
+            logger.severe(ex.getMessage() + " Change ( removeObjectPropertyAssertion"
                     + instanceName + " " + objectPropertyName + " " + instanceName2
                     + ") will not be applied.");
         }
@@ -251,7 +252,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyAssertion"
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyAssertion"
                     + instanceName + " " + dataPropertyName + " " + str_value
                     + ") will not be applied.");
         }
@@ -275,7 +276,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyAssertion"
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyAssertion"
                     + instanceName + " " + dataPropertyName + " " + int_value
                     + ") will not be applied.");
         }
@@ -299,7 +300,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyAssertion"
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyAssertion"
                     + instanceName + " " + dataPropertyName + " " + float_value
                     + ") will not be applied.");
         }
@@ -322,7 +323,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyAssertion "
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyAssertion "
                     + instanceName + " " + dataPropertyName + " " + boolean_value
                     + ") will not be applied.");
         }
@@ -346,7 +347,7 @@ public class OntologyInstance implements DeployInstance, UndeployInstance, Start
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeInstanceOf "
+            logger.severe(ex.getMessage() + " Change ( removeInstanceOf "
                     + instanceName + " of " + className
                     + ") will not be applied.");
         } 

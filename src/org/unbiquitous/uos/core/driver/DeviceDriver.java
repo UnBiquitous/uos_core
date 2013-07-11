@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
@@ -33,7 +35,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
  *
  */
 public class DeviceDriver implements UosDriver {
-	private static Logger logger = Logger.getLogger(DeviceDriver.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	private static final String DEVICE_KEY = "device";
 	private static final String SECURITY_TYPE_KEY = "securityType";
@@ -119,7 +121,7 @@ public class DeviceDriver implements UosDriver {
 					
 					driversList.put(driverData.getInstanceID(), jsonDriver);
 				} catch (JSONException e) {
-					logger.error("Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
+					logger.log(Level.SEVERE,"Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
 				}
 			}
 		}
@@ -190,7 +192,7 @@ public class DeviceDriver implements UosDriver {
 			}
 		} catch (Exception e) {
 			serviceResponse.setError(e.getMessage());
-			logger.error(e);
+			logger.log(Level.SEVERE,"Problems on handshake",e);
 		} 
 	}
 	
@@ -224,7 +226,7 @@ public class DeviceDriver implements UosDriver {
 			responseData.put(INTERFACES_KEY, new JSONArray(jsonList.toString()).toString());
 			serviceResponse.setResponseData(responseData);			
 		} catch (JSONException e) {
-			logger.error(e);
+			logger.log(Level.SEVERE,"Problems on equivalent drivers." ,e);
 		}
 	}
 	

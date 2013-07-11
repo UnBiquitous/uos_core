@@ -3,6 +3,8 @@ package org.unbiquitous.uos.core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.messageEngine.TranslationHandler;
 
@@ -15,7 +17,7 @@ import org.unbiquitous.uos.core.messageEngine.TranslationHandler;
  */
 public class SecurityManager {
 
-	private static final Logger logger = Logger.getLogger(SecurityManager.class);
+	private static final Logger logger = UOSLogging.getLogger();
 	
 	private static final String AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY = "ubiquitos.security.authenticationHandlerList";
 	private static final String TRANSLATION_HANDLER_LIST_RESOURCE_KEY = "ubiquitos.security.translationHandlerList";
@@ -55,7 +57,7 @@ public class SecurityManager {
 				authenticationHandlerProperty = resourceBundle.getString(AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY);
 			} catch (Exception e) {
 				String erroMessage = "No "+AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.error(erroMessage);
+				logger.severe(erroMessage);
 				return;
 			}
 			
@@ -69,28 +71,28 @@ public class SecurityManager {
 							Class<?> clazz = Class.forName(authHandler);
 							AuthenticationHandler ah = (AuthenticationHandler)clazz.newInstance();
 							if (ah instanceof AuthenticationHandler){
-								logger.debug("Loading AuthenticationHandler '"+authHandler+"'");
+								logger.fine("Loading AuthenticationHandler '"+authHandler+"'");
 								authenticationHandlers.put(ah.getSecurityType(), ah);
 							}else{
-								logger.error("The AuthenticationHandler '"+authHandler+"' does not implements the apropriated interface and will not be used.");
+								logger.severe("The AuthenticationHandler '"+authHandler+"' does not implements the apropriated interface and will not be used.");
 							}
 						} catch (ClassNotFoundException e) {
-							logger.error("The AuthenticationHandler '"+authHandler+"' will not be used because of the following errors.",e);
+							logger.log(Level.SEVERE,"The AuthenticationHandler '"+authHandler+"' will not be used because of the following errors.",e);
 						} catch (InstantiationException e) {
-							logger.error("The AuthenticationHandler '"+authHandler+"' will not be used because of following errors.",e);
+							logger.log(Level.SEVERE,"The AuthenticationHandler '"+authHandler+"' will not be used because of following errors.",e);
 						} catch (IllegalAccessException e) {
-							logger.error("The AuthenticationHandler '"+authHandler+"' will not be used because of following errors.",e);
+							logger.log(Level.SEVERE,"The AuthenticationHandler '"+authHandler+"' will not be used because of following errors.",e);
 						}
 					}
 				}
 			}else{
 				String erroMessage = "No "+AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.error(erroMessage);
+				logger.severe(erroMessage);
 				throw new SecurityException(erroMessage);
 			}
 		}else{
 			String erroMessage = "No resource bundle informed.";
-			logger.error(erroMessage);
+			logger.severe(erroMessage);
 			throw new SecurityException(erroMessage);
 		}
 	}
@@ -108,7 +110,7 @@ public class SecurityManager {
 				translationHandlerProperty = resourceBundle.getString(TRANSLATION_HANDLER_LIST_RESOURCE_KEY);
 			} catch (Exception e) {
 				String erroMessage = "No "+TRANSLATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.error(erroMessage);
+				logger.severe(erroMessage);
 				return;
 			}
 			
@@ -122,28 +124,28 @@ public class SecurityManager {
 							Class<?> clazz = Class.forName(tranlationHandler);
 							TranslationHandler th = (TranslationHandler)clazz.newInstance();
 							if (th instanceof TranslationHandler){
-								logger.debug("Loading TranslationHandler '"+tranlationHandler+"'");
+								logger.fine("Loading TranslationHandler '"+tranlationHandler+"'");
 								translationHandlers.put(th.getSecurityType(), th);
 							}else{
-								logger.error("The TranslationHandler '"+tranlationHandler+"' does not implements the apropriated interface and will not be used.");
+								logger.severe("The TranslationHandler '"+tranlationHandler+"' does not implements the apropriated interface and will not be used.");
 							}
 						} catch (ClassNotFoundException e) {
-							logger.error("The TranslationHandler '"+tranlationHandler+"' will not be used because of the following errors.",e);
+							logger.log(Level.SEVERE,"The TranslationHandler '"+tranlationHandler+"' will not be used because of the following errors.",e);
 						} catch (InstantiationException e) {
-							logger.error("The TranslationHandler '"+tranlationHandler+"' will not be used because of following errors.",e);
+							logger.log(Level.SEVERE,"The TranslationHandler '"+tranlationHandler+"' will not be used because of following errors.",e);
 						} catch (IllegalAccessException e) {
-							logger.error("The TranslationHandler '"+tranlationHandler+"' will not be used because of following errors.",e);
+							logger.log(Level.SEVERE,"The TranslationHandler '"+tranlationHandler+"' will not be used because of following errors.",e);
 						}
 					}
 				}
 			}else{
 				String erroMessage = "No "+TRANSLATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.error(erroMessage);
+				logger.severe(erroMessage);
 				throw new SecurityException(erroMessage);
 			}
 		}else{
 			String erroMessage = "No resource bundle informed.";
-			logger.error(erroMessage);
+			logger.severe(erroMessage);
 			throw new SecurityException(erroMessage);
 		}
 	}

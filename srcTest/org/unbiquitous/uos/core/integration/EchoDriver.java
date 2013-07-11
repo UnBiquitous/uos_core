@@ -3,8 +3,10 @@ package org.unbiquitous.uos.core.integration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.driverManager.UosEventDriver;
@@ -17,7 +19,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
 
 public class EchoDriver implements UosEventDriver {
-	private static final Logger logger = Logger.getLogger(EchoDriver.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	public Map<String, Boolean> assertions = new HashMap<String, Boolean>();
 	
@@ -63,7 +65,7 @@ public class EchoDriver implements UosEventDriver {
 					gateway.sendEventNotify(reminder, new UpDevice("dummy").addNetworkInterface(ctx.getCallerDevice().getNetworkDeviceName(), ctx.getCallerDevice().getNetworkDeviceType()));
 					Thread.sleep(100);// Wait a little bit
 				} catch (Exception e) {
-					logger.error(e);
+					logger.log(Level.SEVERE,"Problems registering listener",e);
 					assertions.put("Some unexpected Exception occurred:"+e.getMessage(), false);
 				}
 			}

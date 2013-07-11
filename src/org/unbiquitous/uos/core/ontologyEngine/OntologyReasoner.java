@@ -6,6 +6,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -24,7 +26,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.StartReasoner;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
@@ -40,7 +42,7 @@ public class OntologyReasoner implements StartReasoner {
     OWLReasonerConfiguration config;
     OWLReasoner reasoner;
     private OWLOntology localContext;
-    private static final Logger logger = Logger.getLogger(OntologyReasoner.class);
+    private static final Logger logger = UOSLogging.getLogger();
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock read = readWriteLock.readLock();
     private final Lock write = readWriteLock.writeLock();
@@ -58,7 +60,7 @@ public class OntologyReasoner implements StartReasoner {
            
         } catch (Exception e) {
             
-            logger.error(e);        
+            logger.log(Level.SEVERE,"Not possible to create ReasonerFactory",e);        
         } 
            
         return null;

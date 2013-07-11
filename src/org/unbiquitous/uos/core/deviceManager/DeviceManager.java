@@ -5,11 +5,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
@@ -45,7 +47,7 @@ public class DeviceManager implements RadarListener {
 	
 	private static final String INTERFACES_KEY = "interfaces";
 
-	private static final Logger logger = Logger.getLogger(DeviceManager.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	private Gateway gateway;
 
@@ -116,12 +118,12 @@ public class DeviceManager implements RadarListener {
 		List<UpDevice> list = deviceDao.list(networkAddress, networkType);
 		if (list != null && !list.isEmpty()) {
 			UpDevice deviceFound = list.get(0);
-			logger.debug("Device with addr '" + networkAddress
+			logger.fine("Device with addr '" + networkAddress
 					+ "' found on network '" + networkType + "' resolved to "
 					+ deviceFound);
 			return deviceFound;
 		}
-		logger.debug("No device found with addr '" + networkAddress
+		logger.fine("No device found with addr '" + networkAddress
 				+ "' on network '" + networkType + "'.");
 		return null;
 	}
@@ -139,7 +141,7 @@ public class DeviceManager implements RadarListener {
 		for (UpNetworkInterface networkInterface : this.currentDevice.getNetworks()) {
 			String currentDeviceHost = connectionManagerControlCenter.getHost(networkInterface.getNetworkAddress());
 			if(deviceHost != null && deviceHost.equals(currentDeviceHost)) {
-				logger.debug("Host of device entered is the same of current device:" + device.getNetworkDeviceName());
+				logger.fine("Host of device entered is the same of current device:" + device.getNetworkDeviceName());
 				return;
 			}
 		}
@@ -151,7 +153,7 @@ public class DeviceManager implements RadarListener {
 			upDevice = doHandshake(device, upDevice);
 			doDriversRegistry(device, upDevice); 
 		}else{
-			logger.debug("Already known device "+device.getNetworkDeviceName());
+			logger.fine("Already known device "+device.getNetworkDeviceName());
 		}
 	}
 
@@ -176,11 +178,11 @@ public class DeviceManager implements RadarListener {
 					
 					registerRemoteDriverInstances(upDevice, driversListMap,ids.toArray(new String[]{}));
 				} catch (JSONException e) {
-					logger.error("Problems ocurred in the registering of drivers from device '"+upDevice.getName()+"' .", e);
+					logger.log(Level.SEVERE,"Problems ocurred in the registering of drivers from device '"+upDevice.getName()+"' .", e);
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Not possible to discover services from device '"+device.getNetworkDeviceName()+"'. Possibly not a uOS Device");
+			logger.severe("Not possible to discover services from device '"+device.getNetworkDeviceName()+"'. Possibly not a uOS Device");
 		}
 	}
 
@@ -197,14 +199,14 @@ public class DeviceManager implements RadarListener {
 					this.connectivityManager.registerProxyDriver(upDriver, upDevice, id);
 				}
 			} catch (DriverManagerException e) {
-				logger.error("Problems ocurred in the registering of driver '"+upDriver.getName()+
+				logger.log(Level.SEVERE,"Problems ocurred in the registering of driver '"+upDriver.getName()+
 						"' with instanceId '"+id+"' in the device '"+upDevice.getName()+"' and it will not be registered.", e);
 			} catch (DriverNotFoundException e) {
 				unknownDrivers.addAll(e.getDriversName());
 				dependents.add(driverModel);
 				
 			} catch (RuntimeException e) {
-				logger.error("Problems ocurred in the registering of driver '"+upDriver.getName()+
+				logger.log(Level.SEVERE,"Problems ocurred in the registering of driver '"+upDriver.getName()+
 								"' with instanceId '"+id+"' in the device '"+upDevice.getName()+"' and it will not be registered.", e);
 			}
 		}
@@ -244,36 +246,36 @@ public class DeviceManager implements RadarListener {
 					try {
 						driverManager.addToEquivalenceTree(drivers);
 					} catch (InterfaceValidationException e) {
-						logger.error("Not possible to add to equivalance tree due to wrong interface specification.");
+						logger.severe("Not possible to add to equivalance tree due to wrong interface specification.");
 					}
 					
 					for (DriverModel dependent : dependents) {
 						try {
 							driverManager.insert(dependent);
 						} catch (DriverManagerException e) {
-							logger.error("Problems ocurred in the registering of driver '"+dependent.driver().getName()+
+							logger.log(Level.SEVERE,"Problems ocurred in the registering of driver '"+dependent.driver().getName()+
 									"' with instanceId '"+dependent.id()+"' in the device '"+upDevice.getName()+"' and it will not be registered.", e);
 						} catch (DriverNotFoundException e) {
-							logger.error("Not possible to register driver '" + dependent.driver().getName() + "' due to unkwnown equivalent driver.");
+							logger.severe("Not possible to register driver '" + dependent.driver().getName() + "' due to unkwnown equivalent driver.");
 						}
 					}
 					
 				} else {
-					logger.error("Not possible to call service on device '" + upDevice.getName() + "' for no equivalent drivers on the service response.");
+					logger.severe("Not possible to call service on device '" + upDevice.getName() + "' for no equivalent drivers on the service response.");
 				}
 			} else {
-				logger.error("Not possible to call service on device '"+upDevice.getName()+
+				logger.severe("Not possible to call service on device '"+upDevice.getName()+
 						(equivalentDriverResponse == null ? ": null": "': Cause : "+equivalentDriverResponse.getError()));
 			}
 		} catch (ServiceCallException e) {
-			logger.error("Not possible to call service on device '" + upDevice.getName());
+			logger.severe("Not possible to call service on device '" + upDevice.getName());
 		}
 	}
 
 	private UpDevice doHandshake(NetworkDevice device, UpDevice upDevice) {
 		try {
 			// Create a Dummy device just for calling it
-			logger.debug("Trying to hanshake with device : "+device.getNetworkDeviceName());
+			logger.fine("Trying to hanshake with device : "+device.getNetworkDeviceName());
 			UpDevice dummyDevice = new UpDevice(device.getNetworkDeviceName())
 											.addNetworkInterface(device.getNetworkDeviceName(), device.getNetworkDeviceType());
 			
@@ -290,14 +292,14 @@ public class DeviceManager implements RadarListener {
 					logger.info("Registered device "+remoteDevice.getName());
 					return remoteDevice;
 				}else{
-					logger.error("Not possible complete handshake with device '"+device.getNetworkDeviceName()+"' for no device on the handshake response.");
+					logger.severe("Not possible complete handshake with device '"+device.getNetworkDeviceName()+"' for no device on the handshake response.");
 				}
 			}else{
-				logger.error("Not possible to handshake with device '"+device.getNetworkDeviceName()+
+				logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+
 						(response == null?": null": "': Cause : "+response.getError()));
 			}
 		} catch (Exception e) {
-			logger.error("Not possible to handshake with device '"+device.getNetworkDeviceName()+"'. "+e.getMessage());
+			logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+"'. "+e.getMessage());
 		}
 		return upDevice;
 	}

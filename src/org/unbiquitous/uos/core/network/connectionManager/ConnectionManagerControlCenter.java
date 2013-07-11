@@ -11,10 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -27,7 +29,7 @@ import org.unbiquitous.uos.core.network.radar.RadarControlCenter;
  */
 public class ConnectionManagerControlCenter implements ConnectionManagerListener, UOSComponent{
    
-	private static Logger logger = Logger.getLogger(ConnectionManagerControlCenter.class); 
+	private static Logger logger = UOSLogging.getLogger(); 
 	
 	// Separator token for resource parameters
 	private static final String PARAM_SEPARATOR = ",";
@@ -218,7 +220,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	try {
 			// Retrieve all defined Connection Managers.
     		if (!resource.containsKey(CONNECTION_MANAGER_CLASS_KEY)){
-    			logger.warn("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
+    			logger.warning("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
     			return;
     		}
 			String connectionPropertie = null; 
@@ -320,7 +322,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     		try {
 				connectionManagersThreadMap.get(cm).join();
 			} catch (Exception e) {
-				logger.error(e);
+				logger.log(Level.SEVERE,"Problems tearing down.",e);
 			}
     	}
 	}

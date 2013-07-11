@@ -1,10 +1,12 @@
 package org.unbiquitous.uos.core.applicationManager;
 
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.ContextException;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 
 
 /**
@@ -16,7 +18,7 @@ import org.unbiquitous.uos.core.Logger;
  */
 public class ApplicationDeployer {
 
-    private static Logger logger = Logger.getLogger(ApplicationDeployer.class);
+    private static Logger logger = UOSLogging.getLogger();
     public final static String APPLICATION_LIST = "ubiquitos.application.deploylist";
     public final static String APPLICATION_DEFAULT_PATH = "ubiquitos.application.path";
     public final static String APPLICATION_SEPARATOR = ";";
@@ -52,7 +54,7 @@ public class ApplicationDeployer {
                 applicationList = resourceBundle.getString(APPLICATION_LIST);
             } catch (Exception e) {
                 String erroMessage = "No " + APPLICATION_LIST + " specified.";
-                logger.error(erroMessage);
+                logger.severe(erroMessage);
                 return;
             }
 
@@ -77,7 +79,7 @@ public class ApplicationDeployer {
                                     || applicationData.contains(INSTANCE_ID_INDICATOR_BEGIN)) {
                                 // Application data with malformed specified instanceID
                                 String erroMessage = "ApplicationData '" + applicationData + "' in " + APPLICATION_LIST + " is malformed.";
-                                logger.error(erroMessage);
+                                logger.severe(erroMessage);
                                 throw new ContextException(erroMessage);
                             } else {
                                 // Application data without instanceId
@@ -88,13 +90,13 @@ public class ApplicationDeployer {
                         deployApplication(applicationClass, instanceId);
                     }
                 } else {
-                    logger.debug("Data specified for " + APPLICATION_LIST + " is empty.");
+                    logger.fine("Data specified for " + APPLICATION_LIST + " is empty.");
                 }
             } else {
-                logger.debug("No " + APPLICATION_LIST + " specified.");
+                logger.fine("No " + APPLICATION_LIST + " specified.");
             }
         } else {
-            logger.debug("No parameters (ResourceBundle) informed to Deployer.");
+            logger.fine("No parameters (ResourceBundle) informed to Deployer.");
         }
     }
 
@@ -124,7 +126,7 @@ public class ApplicationDeployer {
 //			deployApplication(applicationInstance,instanceId);
 			this.manager.add(applicationInstance, instanceId);
 		} catch (Exception e) {
-			logger.error("Not possible to deploy "+applicationClass,e);
+			logger.log(Level.SEVERE,"Not possible to deploy "+applicationClass,e);
 		} 
     }
 

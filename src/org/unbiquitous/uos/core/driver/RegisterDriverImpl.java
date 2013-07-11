@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
@@ -31,7 +33,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
  */
 public class RegisterDriverImpl implements RegisterDriver {
 	
-	private static final Logger logger = Logger.getLogger(RegisterDriver.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	private static final String DEVICE_NAME_KEY = "deviceName";
 	private static final String DRIVER_NAME_KEY = "driverName";
@@ -58,7 +60,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 			JSONDevice jsonDevice = new JSONDevice((String) serviceCall.getParameter("device"));
 			deviceCaller = (jsonDevice.getAsObject()).getName();
 		} catch (JSONException e) {
-			logger.error(e);
+			logger.log(Level.SEVERE,"Not possible to list devices.",e);
 		}
 		
 		// Filter proxying drivers
@@ -78,7 +80,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 					
 					listJson.add(json);
 				} catch (JSONException e) {
-					logger.error(e);
+					logger.log(Level.SEVERE,"Not possible to list devices.",e);
 				}
 			}
 			//The JSON List must be represented in a JSON Way with the JSON Array 

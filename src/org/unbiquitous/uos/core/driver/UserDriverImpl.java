@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
@@ -36,7 +37,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  */
 public class UserDriverImpl extends UserDriverNativeSupport {
 
-	private static Logger logger = Logger.getLogger(UserDriverNativeSupport.class);
+	private static Logger logger = UOSLogging.getLogger();
 
 	private volatile Tracker tracker;
 	private volatile Daemon daemon;
@@ -248,7 +249,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 		try {
 			Thread.sleep(TIME_IN_SLEEP_BEFORE_START);
 		} catch (InterruptedException e) {
-			logger.error(e.getMessage());
+			logger.severe(e.getMessage());
 		}
 		startTracker();
 	}

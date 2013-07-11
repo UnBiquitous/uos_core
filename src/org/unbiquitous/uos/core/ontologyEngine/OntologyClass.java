@@ -6,6 +6,7 @@ package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -18,7 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployClass;
 import org.unbiquitous.uos.core.ontologyEngine.api.UndeployClass;
 import org.unbiquitous.uos.core.ontologyEngine.exception.CycleException;
@@ -34,7 +35,7 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.RemovalException;
  */
 public class OntologyClass implements DeployClass, UndeployClass {
 
-    private static final Logger logger = Logger.getLogger(OntologyClass.class);
+    private static final Logger logger = UOSLogging.getLogger();
     private OWLOntology localContext;
     private OWLOntologyManager manager;
     private OntologyChangeManager changeManager;
@@ -99,7 +100,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
             logger.info(ex.getMessage() + " Change ( addSubClass "
                     + subClassName + " of " + className + " ) will not be applied. Added annotation. ");
         } catch (CycleException ex) {
-            logger.error(ex.getMessage() + " Change (" + subClassName
+            logger.severe(ex.getMessage() + " Change (" + subClassName
                     + " subClassOf " + className + ") will not be applied.");
         }
     }
@@ -129,7 +130,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
                 manager.applyChange(addAxiom);
             }
         } catch (DisjunctionException ex) {
-            logger.error(ex.getMessage() + " Change (" + className + " disjointWith " + disjClassName + ") will not be applied.");
+            logger.severe(ex.getMessage() + " Change (" + className + " disjointWith " + disjClassName + ") will not be applied.");
         }
     }
 
@@ -183,7 +184,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
                 manager.applyChanges(changes);  
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeClass"  + className + ") will not be applied.");
+            logger.severe(ex.getMessage() + " Change ( removeClass"  + className + ") will not be applied.");
         }
     }
 //    @Override
@@ -219,7 +220,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeSubClass" + subClassName + " of " + className + ") will not be applied.");
+            logger.severe(ex.getMessage() + " Change ( removeSubClass" + subClassName + " of " + className + ") will not be applied.");
         }
     }
 
@@ -237,7 +238,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeEquivalentClass" + className + " of " + equivClassName + ") will not be applied.");
+            logger.severe(ex.getMessage() + " Change ( removeEquivalentClass" + className + " of " + equivClassName + ") will not be applied.");
         }
     }
 
@@ -255,7 +256,7 @@ public class OntologyClass implements DeployClass, UndeployClass {
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDisjointClass" + className + " of " + disjClassName + ") will not be applied.");
+            logger.severe(ex.getMessage() + " Change ( removeDisjointClass" + className + " of " + disjClassName + ") will not be applied.");
         }
     }
 

@@ -6,6 +6,7 @@ package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -17,7 +18,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployObjectProperty;
 import org.unbiquitous.uos.core.ontologyEngine.api.UndeployObjectProperty;
 import org.unbiquitous.uos.core.ontologyEngine.exception.CycleException;
@@ -28,7 +29,7 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.RemovalException;
 
 public class OntologyObjectProperty implements DeployObjectProperty, UndeployObjectProperty{
     
-    private static final Logger logger = Logger.getLogger(OntologyObjectProperty.class);
+    private static final Logger logger = UOSLogging.getLogger();
     private OWLOntology localContext;
     private OWLOntologyManager manager;
     private OntologyChangeManager changeManager;
@@ -81,7 +82,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(addAxiom);
             }
         } catch (CycleException ex) {
-            logger.error(ex.getMessage() + " Change ( addSubObjectProperty " 
+            logger.severe(ex.getMessage() + " Change ( addSubObjectProperty " 
                     + subObjectPropertyName + " of " + objectPropertyName + ") will not be applied.");
         }
     }
@@ -157,7 +158,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChanges(changes);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + 
+            logger.severe(ex.getMessage() + 
                     "Object property not defined in Ontology or not defined by " +
                     "this application. Change ( removeObjectProperty" + 
                     objectPropertyName + ") will not be applied. ");
@@ -179,7 +180,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeSubObjectProperty " + 
+            logger.severe(ex.getMessage() + " Change ( removeSubObjectProperty " + 
                     subObjectPropertyName + " of " + objectPropertyName + 
                     ") will not be applied.");
         }
@@ -199,7 +200,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeObjectPropertyDomain" + 
+            logger.severe(ex.getMessage() + " Change ( removeObjectPropertyDomain" + 
                     domainName + " of " + objectPropertyName + 
                     ") will not be applied.");
         }
@@ -219,7 +220,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeObjectPropertyBooleanRange"  
+            logger.severe(ex.getMessage() + " Change ( removeObjectPropertyBooleanRange"  
                     + objectPropertyName + 
                     ") will not be applied.");
         }
@@ -238,7 +239,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeTransitiveProperty "  
+            logger.severe(ex.getMessage() + " Change ( removeTransitiveProperty "  
                     + objectPropertyName + 
                     ") will not be applied.");
         }     
@@ -257,7 +258,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeSymmetricProperty "  
+            logger.severe(ex.getMessage() + " Change ( removeSymmetricProperty "  
                     + objectPropertyName + 
                     ") will not be applied.");
         }     
@@ -277,7 +278,7 @@ public class OntologyObjectProperty implements DeployObjectProperty, UndeployObj
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeInverseProperty "  
+            logger.severe(ex.getMessage() + " Change ( removeInverseProperty "  
                     + objectPropertyName + " of " + inverseObjectPropertyName + 
                     ") will not be applied.");
         }     

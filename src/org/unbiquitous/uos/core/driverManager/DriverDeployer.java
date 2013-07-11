@@ -1,9 +1,11 @@
 package org.unbiquitous.uos.core.driverManager;
 
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
@@ -18,7 +20,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 //TODO: Untested class
 public class DriverDeployer {
 	
-	private static Logger logger = Logger.getLogger(DriverDeployer.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	private static final String DRIVER_LIST_RESOURCE_KEY = "ubiquitos.driver.deploylist";
         
@@ -61,13 +63,13 @@ public class DriverDeployer {
 			String deployList = null;
 			try {
 				if (!resourceBundle.containsKey(DRIVER_LIST_RESOURCE_KEY)){
-					logger.warn("No '"+DRIVER_LIST_RESOURCE_KEY+"' property defined. This implies on no drivers for this instance.");
+					logger.warning("No '"+DRIVER_LIST_RESOURCE_KEY+"' property defined. This implies on no drivers for this instance.");
 	    			return;
 				}
 				deployList = resourceBundle.getString(DRIVER_LIST_RESOURCE_KEY);
 			} catch (Exception e) {
 				String errorMessage = "No "+DRIVER_LIST_RESOURCE_KEY+" specified.";
-				logger.error(errorMessage,e);
+				logger.log(Level.SEVERE,errorMessage,e);
 				throw new DriverManagerException(errorMessage,e);
 			}
 			
@@ -80,18 +82,18 @@ public class DriverDeployer {
 							deployDriverByProperty(driverData);
 						} catch (InterfaceValidationException e) {
 							String errorMessage = "The driver could not be deployed due to invalid interface specification.";
-							logger.error(errorMessage,e);
+							logger.log(Level.SEVERE,errorMessage,e);
 							throw new DriverManagerException(errorMessage,e);
 						}
 					}
 				}else{
-					logger.debug("Data specified for "+DRIVER_LIST_RESOURCE_KEY+" is empty.");
+					logger.fine("Data specified for "+DRIVER_LIST_RESOURCE_KEY+" is empty.");
 				}
 			}else{
-				logger.debug("No "+DRIVER_LIST_RESOURCE_KEY+" specified.");
+				logger.fine("No "+DRIVER_LIST_RESOURCE_KEY+" specified.");
 			}
 		}else{
-			logger.debug("No parameters (DriverManager or ResourceBundle) informed to Deployer.");
+			logger.fine("No parameters (DriverManager or ResourceBundle) informed to Deployer.");
 		}
 	}
 
@@ -123,7 +125,7 @@ public class DriverDeployer {
 					driverData.contains(INSTANCE_ID_INDICATOR_BEGIN)){
 				// Driver data with malformed specified instanceID
 				String erroMessage = "DriverData '"+driverData+"' in "+DRIVER_LIST_RESOURCE_KEY+" is malformed.";
-				logger.error(erroMessage);
+				logger.log(Level.SEVERE,erroMessage);
 				throw new DriverManagerException(erroMessage);
 			}else{
 				// Driver data without instanceId
@@ -165,12 +167,12 @@ public class DriverDeployer {
 					driverManager.addToEquivalenceTree(driver.getParent());
 					driverManager.deployDriver(driver.getDriver(), driver, instanceId);
 				} catch (DriverNotFoundException ex) {
-					logger.error("Problems ocurred in the registering of driver '"+driver.getDriver().getName()+
+					logger.log(Level.SEVERE,"Problems ocurred in the registering of driver '"+driver.getDriver().getName()+
 							"' and it will not be registered.", ex);
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.log(Level.SEVERE,"Problems Deploying driver",e);
 			// TODO Auto-generated catch block
 			new RuntimeException(e);
 		} 
@@ -185,13 +187,13 @@ public class DriverDeployer {
 	private boolean validateServiceInterface(UosDriver driverInstance) {
 		if (driverInstance.getDriver() == null){
 			String erroMessage = "DriverClass '"+driverInstance.getClass().getName()+"' does not inform a valid UPDriver instance.";
-			logger.debug(erroMessage);
+			logger.fine(erroMessage);
 			return false;
 		}
 		if (driverInstance.getDriver().getServices() == null||
 				driverInstance.getDriver().getServices().isEmpty()){
 			String erroMessage = "DriverClass '"+driverInstance.getClass().getName()+"' does informs a empty or non-existent list of services.";
-			logger.debug(erroMessage);
+			logger.fine(erroMessage);
 			return false;
 		}
 		for (UpService ups : driverInstance.getDriver().getServices()){
@@ -199,11 +201,11 @@ public class DriverDeployer {
 				driverInstance.getClass().getDeclaredMethod(ups.getName(), ServiceCall.class , ServiceResponse.class, UOSMessageContext.class);
 			} catch (SecurityException e) {
 				String erroMessage = "Service '"+ups.getName()+"' on DriverClass '"+driverInstance.getClass().getName()+"' has security acces issues.";
-				logger.debug(erroMessage,e);
+				logger.log(Level.FINE,erroMessage,e);
 				return false;
 			} catch (NoSuchMethodException e) {
 				String erroMessage = "Service '"+ups.getName()+"' on DriverClass '"+driverInstance.getClass().getName()+"' does not exist.";
-				logger.debug(erroMessage,e);
+				logger.log(Level.FINE,erroMessage,e);
 				return false;
 			}
 		}

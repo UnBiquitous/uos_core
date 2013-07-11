@@ -9,6 +9,8 @@ import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
@@ -21,7 +23,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployClass;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployDataProperty;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployInstance;
@@ -54,7 +56,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
     private OntologyObjectProperty ontologyObjectProperty;
     private OntologyInstance ontologyInstance;
     private OntologyReasoner ontologyReasoner;
-    private static final Logger logger = Logger.getLogger(Ontology.class);
+    private static final Logger logger = UOSLogging.getLogger();
     OWLXMLOntologyFormat owlxmlFormat = new OWLXMLOntologyFormat();
     public static final String ANNOTATION_PROPERTY = "createdBy";
     IRI documentIRI = IRI.create("file:" + ONTOLOGY_PATH);
@@ -83,7 +85,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
 
                             localContext = manager.loadOntologyFromOntologyDocument(file);
                         } catch (OWLOntologyCreationException ex) {
-                            logger.error(ex);
+                            logger.log(Level.SEVERE,"Not possible to start ontology",ex);
                         } finally {
                             protectArea--;
                             lock.unlock();
@@ -131,7 +133,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                         }
 
                     } catch (OWLOntologyStorageException ex) {
-                        logger.error(ex);
+                        logger.log(Level.SEVERE,"Not possible to save changes",ex);
                     } finally {
                   
                         protectArea--;

@@ -6,6 +6,7 @@ package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -18,7 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployDataProperty;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDataType;
 import org.unbiquitous.uos.core.ontologyEngine.api.UndeployDataProperty;
@@ -34,7 +35,7 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.RemovalException;
  */
 public class OntologyDataProperty implements DeployDataProperty, UndeployDataProperty {
 
-    private static final Logger logger = Logger.getLogger(OntologyDataProperty.class);
+    private static final Logger logger = UOSLogging.getLogger();
     private OWLOntology localContext;
     private OWLOntologyManager manager;
     private OntologyChangeManager changeManager;
@@ -87,7 +88,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(addAxiom);
             }
         } catch (CycleException ex) {
-            logger.error(ex.getMessage() + " Change ( addSubDataProperty " 
+            logger.severe(ex.getMessage() + " Change ( addSubDataProperty " 
                     + subDataPropertyName + " of " + dataPropertyName + ") will not be applied.");
         }
     }
@@ -179,7 +180,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChanges(changes);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + 
+            logger.severe(ex.getMessage() + 
                     "Data property not defined in Ontology or not defined by " +
                     "this application. Change ( removeDataProperty" + 
                     dataPropertyName + ") will not be applied. ");
@@ -200,7 +201,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
 //                manager.applyChanges(remover.getChanges());
 //            }
 //        } catch (RemovalException ex) {
-//            logger.error(ex.getMessage() + 
+//            logger.severe(ex.getMessage() + 
 //                    "Data property not defined in Ontology or not defined by " +
 //                    "this application. Change ( removeDataProperty" + 
 //                    dataPropertyName + ") will not be applied. ");
@@ -221,7 +222,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeSubDataProperty " + 
+            logger.severe(ex.getMessage() + " Change ( removeSubDataProperty " + 
                     subDataPropertyName + " of " + dataPropertyName + 
                     ") will not be applied.");
         }
@@ -241,7 +242,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyDomain" + 
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyDomain" + 
                     domainName + " of " + dataPropertyName + 
                     ") will not be applied.");
         }
@@ -275,7 +276,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyBooleanRange"  
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyBooleanRange"  
                     + dataPropertyName + 
                     ") will not be applied.");
         }
@@ -295,7 +296,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyIntegerRange"  
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyIntegerRange"  
                     + dataPropertyName + 
                     ") will not be applied.");
         }
@@ -315,7 +316,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyFloatRange"  
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyFloatRange"  
                     + dataPropertyName + 
                     ") will not be applied.");
         }
@@ -335,7 +336,7 @@ public class OntologyDataProperty implements DeployDataProperty, UndeployDataPro
                 manager.applyChange(removeAxiom);
             }
         } catch (RemovalException ex) {
-            logger.error(ex.getMessage() + " Change ( removeDataPropertyStringRange"  
+            logger.severe(ex.getMessage() + " Change ( removeDataPropertyStringRange"  
                     + dataPropertyName + 
                     ") will not be applied.");
         }

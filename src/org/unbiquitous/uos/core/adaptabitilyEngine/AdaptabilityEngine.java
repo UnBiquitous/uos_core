@@ -2,11 +2,12 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
@@ -44,7 +45,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 											NotifyHandler,
 											UOSComponent{
 	
-	private static Logger logger = Logger.getLogger(AdaptabilityEngine.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	protected DriverManager driverManager;
 	protected UpDevice currentDevice;

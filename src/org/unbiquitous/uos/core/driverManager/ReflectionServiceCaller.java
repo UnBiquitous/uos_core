@@ -3,14 +3,16 @@ package org.unbiquitous.uos.core.driverManager;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -25,7 +27,7 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
  */
 public class ReflectionServiceCaller {
 	
-	private static Logger logger = Logger.getLogger(ReflectionServiceCaller.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	ConnectionManagerControlCenter connectionManagerControlCenter;
 	
@@ -58,7 +60,7 @@ public class ReflectionServiceCaller {
 					return response;
 				}else{
 					String message = "No Service Implementation found for service "+serviceCall.getService()+" on driver :" +serviceCall.getDriver() +"(@"+serviceCall.getInstanceId()+")";
-					logger.error(message);
+					logger.severe(message);
 					throw new DriverManagerException(message);
 				}
 			} catch (Exception e) {
@@ -66,7 +68,7 @@ public class ReflectionServiceCaller {
 				return null;
 			} 
 		}else{
-			logger.error("No Intance Driver Found for this ServiceCall");
+			logger.severe("No Intance Driver Found for this ServiceCall");
 			throw new DriverManagerException("No Intance Driver Found for this ServiceCall");
 		}
 	}
@@ -104,7 +106,7 @@ public class ReflectionServiceCaller {
 	 * @throws DriverManagerException Error Encapsulated
 	 */
 	private void logInternalError(ServiceCall serviceCall, Exception e) throws DriverManagerException{
-		logger.error("Internal Failure", e);
+		logger.log(Level.SEVERE,"Internal Failure", e);
 		throw new DriverManagerException("Internal Error calling service ("
 				+ serviceCall.getService()
 				+ ") on Driver (" + serviceCall.getDriver()
@@ -121,7 +123,7 @@ public class ReflectionServiceCaller {
 			response.setResponseData(responseMap);
 			return response;
 		} catch (Exception e) {
-			logger.error("Internal Failure", e);
+			logger.log(Level.SEVERE,"Internal Failure", e);
 			response.setError("Not possible to make call because "+e.getMessage());
 		} 
 		return response;

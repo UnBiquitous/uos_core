@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
@@ -13,8 +14,7 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerContr
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 public class CurrentDeviceInitializer implements UOSComponent{
-	private static final Logger logger = Logger.getLogger(UOS.class);
-	
+	private static final Logger logger = UOSLogging.getLogger();
 	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
 	
 	private ResourceBundle properties;

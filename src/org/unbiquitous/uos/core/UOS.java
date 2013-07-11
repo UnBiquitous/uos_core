@@ -3,17 +3,16 @@ package org.unbiquitous.uos.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.connectivity.ConnectivityInitializer;
-import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
-import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.OntologyInitializer;
 
 /**
@@ -26,7 +25,7 @@ import org.unbiquitous.uos.core.ontologyEngine.OntologyInitializer;
  */
 public class UOS {
 
-	private static final Logger logger = Logger.getLogger(UOS.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
@@ -59,7 +58,7 @@ public class UOS {
 	 * @throws ContextException
 	 */
 	public void init(String resourceBundleName) throws ContextException {
-		logger.debug("Retrieving Resource Bundle Information");
+		logger.fine("Retrieving Resource Bundle Information");
 		init(ResourceBundle.getBundle(resourceBundleName));
 	}
 	
@@ -96,7 +95,7 @@ public class UOS {
 			startComponents();
 
 		} catch (DriverManagerException e) {
-			logger.error(e);
+			logger.log(Level.SEVERE,"Not possible to init uOS", e);
 			throw new ContextException(e);
 		} catch (Exception e) {
 			throw new ContextException(e);

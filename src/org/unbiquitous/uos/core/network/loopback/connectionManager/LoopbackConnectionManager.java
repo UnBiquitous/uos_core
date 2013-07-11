@@ -2,8 +2,10 @@ package org.unbiquitous.uos.core.network.loopback.connectionManager;
 
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
@@ -26,7 +28,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
 public class LoopbackConnectionManager implements ConnectionManager {
 	
     /** Object for logging registration.*/
-	public static final Logger logger = Logger.getLogger(LoopbackConnectionManager.class);
+	public static final Logger logger = UOSLogging.getLogger();
 	
 	/** A Connection Manager Listener (ConnectionManagerControlCenter) */
     private ConnectionManagerListener connectionManagerListener;
@@ -111,7 +113,7 @@ public class LoopbackConnectionManager implements ConnectionManager {
 	 */
 	public void tearDown(){
 		try {
-			logger.debug("Closing Loopback Connection Manager...");
+			logger.fine("Closing Loopback Connection Manager...");
 			//Sets true for stopping the Connection Manager thread
 			this.closingLoopbackConnectionManager = true;
 			//Shuts the server
@@ -125,7 +127,7 @@ public class LoopbackConnectionManager implements ConnectionManager {
 		} catch (Exception e) {
 			this.closingLoopbackConnectionManager = false;
 			String msg = "Error stoping Loopback Connection Manager. ";
-            logger.fatal(msg, e);
+            logger.log(Level.SEVERE,msg, e);
             throw new RuntimeException(msg + e);
 		}
 		
@@ -136,7 +138,7 @@ public class LoopbackConnectionManager implements ConnectionManager {
 	 * Waits for new connections indefinitely and handle them properly.
 	 */
 	public void run() {
-		logger.debug("Starting uOS Smart-Space Loopback Connection Manager.");
+		logger.fine("Starting uOS Smart-Space Loopback Connection Manager.");
         logger.info("Starting Loopback Connection Manager...");
         
         //Instantiates the server
@@ -153,11 +155,11 @@ public class LoopbackConnectionManager implements ConnectionManager {
 				//Check if some other error occurred
     			if(!closingLoopbackConnectionManager){
     				String msg = "Error handling connection at Loopback Connection Manager. ";
-                    logger.fatal(msg, ex);
+                    logger.log(Level.SEVERE,msg, ex);
                     throw new RuntimeException(msg + ex);
     			}else{
     				//Another thread closed the Connection Manager. OK, let it closes.
-    				logger.debug("Loopback Connection Manager is closed.");
+    				logger.fine("Loopback Connection Manager is closed.");
     				return;
     			}
     		}

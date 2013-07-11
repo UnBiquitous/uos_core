@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
@@ -23,7 +25,7 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
  */
 public class EventManager implements NotifyHandler {
 	
-	private static Logger logger = Logger.getLogger(EventManager.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	private static final String REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER = "eventKey";
 
@@ -105,7 +107,7 @@ public class EventManager implements NotifyHandler {
 		// If the listener is already registered it cannot be registered again
 		String eventIdentifier = getEventIdentifier(device, driver, instanceId, eventKey);
 		
-		logger.debug("Registering listener for event :"+eventIdentifier);
+		logger.fine("Registering listener for event :"+eventIdentifier);
 		
 		if (findListener(listener, listenerMap.get(eventIdentifier))== null){
 			
@@ -133,7 +135,7 @@ public class EventManager implements NotifyHandler {
 				}
 				
 				listenerMap.get(eventIdentifier).add(info);				
-				logger.debug("Registered listener for event :"+eventIdentifier);
+				logger.fine("Registered listener for event :"+eventIdentifier);
 			} catch (MessageEngineException e) {
 				throw new NotifyException(e);
 			}
@@ -189,7 +191,7 @@ public class EventManager implements NotifyHandler {
 						it.remove();
 						
 					} catch (NotifyException e) {
-						logger.error(e);
+						logger.log(Level.SEVERE,"Failed to unregisterForEvent",e);
 						exception = e;
 					}
 				}
@@ -251,11 +253,11 @@ public class EventManager implements NotifyHandler {
 	 */
 	public void handleNofify(Notify notify, UpDevice device) {
 		if (notify == null || notify.getEventKey() == null || notify.getEventKey().isEmpty()){
-			logger.debug("No information in notify to handle.");
+			logger.fine("No information in notify to handle.");
 		}
 		
 		if (listenerMap == null || listenerMap.isEmpty()){
-			logger.debug("No listeners waiting for notify events.");
+			logger.fine("No listeners waiting for notify events.");
 		}
 		
 		//Notifying listeners from more specific to more general entries
@@ -280,7 +282,7 @@ public class EventManager implements NotifyHandler {
 
 	private void handleNotify(Notify notify, List<ListenerInfo> listeners, String eventIdentifier) {
 		if (listeners == null || listeners.isEmpty()){
-			logger.debug("No listeners waiting for notify events for the key '"+eventIdentifier+"'.");
+			logger.fine("No listeners waiting for notify events for the key '"+eventIdentifier+"'.");
 			return;
 		}
 		
