@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
+import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
 
 public class UOSApplicationContextTest {
@@ -22,13 +23,13 @@ public class UOSApplicationContextTest {
 	private UOS ctx;
 	
 	@Before public void setUp() throws IOException{
-//		new File("resources/owl/uoscontext.owl").createNewFile();
 		new File("resources/owl/uoscontext.owl").delete();
 	}
 	
 	@After public void tearDown(){
 		ctx.tearDown();
 		new File("resources/owl/uoscontext.owl").delete();
+		System.out.println("clear");
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
@@ -82,6 +83,7 @@ public class UOSApplicationContextTest {
 				return new Object[][] {
 					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
 					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+					{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};
 			}
 		};

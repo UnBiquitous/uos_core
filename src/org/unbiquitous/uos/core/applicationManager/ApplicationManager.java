@@ -97,6 +97,9 @@ public class ApplicationManager {
 	private Ontology createInitOntology(UosApplication app) {
 		try {
 			Ontology ontology = new Ontology(properties);
+			if (ontology.getOntologyReasoner() == null){
+				return null;
+			}
 			if (!ontology.getOntologyDeployInstance().hasInstanceOf(app.getClass().getName(), "application")) {
 		        ontology.getOntologyDeployInstance().addInstanceOf(app.getClass().getName(), "application");
 		        return ontology;
@@ -111,12 +114,16 @@ public class ApplicationManager {
 	
 	public void tearDown() throws Exception {
 		for (final UosApplication app : deployed.values()) {
-			Ontology ontology = createUndeployOntology(app);
+			//TODO: disabling ontology during tear down.
+			//		some kind of concurrency over the ontology database file
+			//		is going on.
+//			Ontology ontology = createUndeployOntology(app);
 			app.stop();
-			app.tearDown(ontology);
-			if (ontology != null){
-				ontology.saveChanges();
-			}
+			app.tearDown(null);
+//			app.tearDown(ontology);
+//			if (ontology != null){
+//				ontology.saveChanges();
+//			}
 		}
 		deployed.clear();
 	}
@@ -125,6 +132,9 @@ public class ApplicationManager {
 		Ontology ontology;
 		try {
 			ontology = new Ontology(properties);
+			if (ontology.getOntologyReasoner() == null){
+				return null;
+			}
 			ontology.getOntologyUndeployInstance().removeInstanceOf(
 					app.getClass().getName(), "application");
 		} catch (ReasonerNotDefinedException ex) {

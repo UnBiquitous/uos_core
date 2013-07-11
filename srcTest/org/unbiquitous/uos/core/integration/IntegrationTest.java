@@ -14,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
+import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 
 
 public class IntegrationTest {
@@ -34,17 +36,17 @@ public class IntegrationTest {
 		String pcName = "my.pc";
 		UOS pc = startContext(pcName);
 		EchoDriver echo = new EchoDriver();
-		pc.getDriverManager().deployDriver(echo.getDriver(), echo);
-		pc.getDriverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
+		pc.getFactory().get(AdaptabilityEngine.class).driverManager().deployDriver(echo.getDriver(), echo);
+		pc.getFactory().get(AdaptabilityEngine.class).driverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
 
 		//App side
 		String cellName = "my.cell";
 		UOS cell = startContext(cellName);
 		PingApp ping = new PingApp();
-		cell.getApplicationManager().deploy(ping, "pingApp"); //TODO: id should be plausibly auto assigned
+		cell.getFactory().get(AdaptabilityEngine.class).applicationManager().deploy(ping, "pingApp"); //TODO: id should be plausibly auto assigned
 		
 		//promote radar handshake		
-		cell.getRadarControlCenter().deviceEntered(new IntegrationDevice(pcName));
+		cell.getFactory().get(ConnectionManagerControlCenter.class).radarControlCenter().deviceEntered(new IntegrationDevice(pcName));
 		
 		//Test if handshake was successfull
 		assertThat(cell.getGateway().listDrivers(echo.getDriver().getName())).
@@ -69,12 +71,12 @@ public class IntegrationTest {
 		}
 		
 		//Estimulate the deviceLeft
-		cell.getRadarControlCenter().deviceLeft(new IntegrationDevice(pcName));
+		cell.getFactory().get(ConnectionManagerControlCenter.class).radarControlCenter().deviceLeft(new IntegrationDevice(pcName));
 
 		assertThat(cell.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
 		assertThat(cell.getGateway().listDrivers(null)).hasSize(1);
 		assertThat(cell.getGateway().listDevices()).hasSize(1);
-		pc.getRadarControlCenter().deviceLeft(new IntegrationDevice(cellName));
+		pc.getFactory().get(ConnectionManagerControlCenter.class).radarControlCenter().deviceLeft(new IntegrationDevice(cellName));
 		assertThat(pc.getGateway().listDrivers("uos.DeviceDriver")).hasSize(1);
 		assertThat(pc.getGateway().listDrivers(null)).hasSize(2);
 		assertThat(pc.getGateway().listDevices()).hasSize(1);
@@ -93,7 +95,6 @@ public class IntegrationTest {
 					{"ubiquitos.connectionManager", IntegrationConnectionManager.class.getName()},
 					{"ubiquitos.uos.deviceName", deviceName}, //TODO: Should not be mandatory, and could be automatic
 					{"ubiquitos.driver.deploylist", DeviceDriver.class.getName()}, //TODO: Should not be mandatory
-					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"}, //TODO: Should not be mandatory
 		        };
 			}
 		};

@@ -18,6 +18,7 @@ import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
+import org.unbiquitous.uos.core.network.radar.RadarControlCenter;
 
 /**
  * Manage the ubiquitos-smartspace service interface.
@@ -49,6 +50,8 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 	
     /** The resource bundle from where we can get a set of configurations. */
 	private ResourceBundle resource;
+
+	private RadarControlCenter radarControlCenter;
 	
     /* *****************************
 	 *   	PUBLIC METHODS
@@ -65,20 +68,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	ThreadedConnectionHandler threadedConnectionHandling = new ThreadedConnectionHandler(clientConnection,messageListener);
     	threadedConnectionHandling.start();
 	}
-    
-    /**
-	 * Finalize the Connection Manager.
-	 */
-    public void tearDown(){
-    	for(ConnectionManager cm : connectionManagersList){
-    		cm.tearDown();
-    		try {
-				connectionManagersThreadMap.get(cm).join();
-			} catch (Exception e) {
-				logger.error(e);
-			}
-    	}
-    }
     
     /**
      * A method for retrieve all network devices that are waiting for connection in connection managers.
@@ -291,6 +280,9 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	return connectionManagersMap.get(cManagerClass);
     }
     
+    public RadarControlCenter radarControlCenter(){
+    	return radarControlCenter;
+    }
     
     /************************ USO COmpoment ***************************/
     
@@ -308,18 +300,29 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     @Override
     public void init(UOSComponentFactory factory) {
         loadAndStartConnectionManagers();
+        radarControlCenter = new RadarControlCenter(resource, this);
     }
     
     @Override
     public void start() {
-    	// TODO Auto-generated method stub
-    	
+		radarControlCenter.startRadar();
     }
     
     @Override
     public void stop() {
-    	// TODO Auto-generated method stub
-    	
+    	tearDown();
     }
+
+    public void tearDown() {
+		radarControlCenter.stopRadar();
+    	for(ConnectionManager cm : connectionManagersList){
+    		cm.tearDown();
+    		try {
+				connectionManagersThreadMap.get(cm).join();
+			} catch (Exception e) {
+				logger.error(e);
+			}
+    	}
+	}
     
 }

@@ -209,11 +209,14 @@ public class MessageEngineTest {
 		call.put("type", "ENCAPSULATED_MESSAGE");
 		call.put("innerMessage", "my.msg");
 		call.put("securityType", "abacate");
+		
 		JSONObject innerCall = new JSONObject();
 		innerCall.put("type", "BUGGEDINNERMESSAGE");
 		innerCall.put("driver", "my.driver");
 		innerCall.put("eventKey", "my.event");
+		
 		TranslationHandler translator = mock(TranslationHandler.class);
+		
 		when(translator.decode("my.msg", "my.cell")).thenReturn(innerCall.toString());
 		when(translator.encode(any(String.class), eq("my.cell"))).thenReturn("my.return");
 		when(securityManager.getTranslationHandler("abacate")).thenReturn(translator);

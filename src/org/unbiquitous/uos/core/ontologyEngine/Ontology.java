@@ -83,12 +83,10 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
 
                             localContext = manager.loadOntologyFromOntologyDocument(file);
                         } catch (OWLOntologyCreationException ex) {
-
                             logger.error(ex);
                         } finally {
                             protectArea--;
                             lock.unlock();
-
                         }
                         break;
                     }

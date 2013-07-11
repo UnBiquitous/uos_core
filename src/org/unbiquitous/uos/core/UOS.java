@@ -8,18 +8,11 @@ import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
-import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
-import org.unbiquitous.uos.core.deviceManager.DeviceManager;
-import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
-import org.unbiquitous.uos.core.network.exceptions.NetworkException;
-import org.unbiquitous.uos.core.network.radar.RadarControlCenter;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
-import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
 /**
  * 
@@ -34,11 +27,6 @@ public class UOS {
 	private static final Logger logger = Logger.getLogger(UOS.class);
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
-
-	private RadarControlCenter radarControlCenter;
-//	private UpDevice currentDevice;
-
-	private ApplicationDeployer applicationDeployer;
 
     private Ontology ontology;
     private ResourceBundle properties;
@@ -98,27 +86,11 @@ public class UOS {
 				component.init(factory);
 			}
 			
-			/*---------------------------------------------------------------*/
-			
-			factory.get(MessageEngine.class).setDeviceManager(factory.get(DeviceManager.class));
 
 			/*---------------------------------------------------------------*/
 			
             initOntology();
                         
-            //FIXME: This is trash
-            factory.gateway()
-            	.init(	factory.get(AdaptabilityEngine.class), 
-            			factory.currentDevice(), 
-            			factory.get(SecurityManager.class),
-            			factory.get(ConnectivityManager.class),
-            			factory.get(DeviceManager.class), 
-            			factory.get(DriverManager.class), 
-            			applicationDeployer, ontology);
-
-			/*---------------------------------------------------------------*/
-			
-            
             /*---------------------------------------------------------------*/
 			/* 							START								 */
 			/*---------------------------------------------------------------*/
@@ -132,7 +104,6 @@ public class UOS {
 
 			// Start Radar Control Center
 			logger.debug("Initializing RadarControlCenter");
-			initRadarControlCenter();
 
 		} catch (DriverManagerException e) {
 			logger.error(e);
@@ -163,14 +134,6 @@ public class UOS {
 		init(resourceBundle);
 	}
 
-	private void initRadarControlCenter()
-			throws NetworkException {
-		radarControlCenter = new RadarControlCenter(
-				factory.get(DeviceManager.class),
-				properties, factory.get(ConnectionManagerControlCenter.class));
-		radarControlCenter.startRadar();
-	}
-
 	private void initConnectivityManager() {
 		//Read proxying attribute from the resource bundle
 		boolean doProxying = false;
@@ -188,16 +151,11 @@ public class UOS {
 	}
 
 	private void initOntology() {
-		try {
-			// TODO: check if this is right
-			if (!properties.containsKey("ubiquitos.ontology.path"))
-				return;
-			ontology = new Ontology(properties);
-			// ontology.setDriverManager(driverManager);
-			ontology.initializeOntology();
-		} catch (ReasonerNotDefinedException ex) {
-			logger.info(ex);
-		}
+		if (!properties.containsKey("ubiquitos.ontology.path"))
+			return;
+		ontology = factory.get(Ontology.class);
+		// ontology.setDriverManager(driverManager);
+		ontology.initializeOntology();
 	}
         
 	/**
@@ -211,38 +169,6 @@ public class UOS {
 		for(UOSComponent component:components){
 			component.stop();
 		}
-		
-		// inform the applications about the teardown process
-		try {
-			factory.get(ApplicationManager.class).tearDown();
-		} catch (Exception e) {
-			logger.error(e);
-		}
-
-		// inform the drivers about the teardown process
-		factory.get(DriverManager.class).tearDown();
-
-		// inform the network layer about the tear down process
-		factory.get(ConnectionManagerControlCenter.class).tearDown();
-
-		// stopApplications all radars
-		radarControlCenter.stopRadar();
-
-	}
-
-	/**
-	 * @return Returns the Driver Manager of this Application Context.
-	 */
-	public DriverManager getDriverManager() {
-		return factory.get(DriverManager.class);
-	}
-
-
-	/**
-	 * @return the deviceManager
-	 */
-	public DeviceManager getDeviceManager() {
-		return factory.get(DeviceManager.class);
 	}
 
 	/**
@@ -253,16 +179,8 @@ public class UOS {
 		return factory.gateway();
 	}
 
-	/**
-	 * @return The ApplicationDeployer used to deploy applications dynamically
-	 *         into the middleware.
-	 */
-	public ApplicationManager getApplicationManager() {
-		return factory.get(ApplicationManager.class);
-	}
-
-	public RadarControlCenter getRadarControlCenter(){
-		return radarControlCenter;
+	public UOSComponentFactory getFactory() {
+		return factory;
 	}
 	
 }

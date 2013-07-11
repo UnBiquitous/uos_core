@@ -58,16 +58,18 @@ public class RadarControlCenter implements RadarListener {
 	 * @param deviceManager
 	 * @throws UbiquitOSException
 	 */
-	public RadarControlCenter(RadarListener radarListener, 
-			ResourceBundle resourceBundle,
+	public RadarControlCenter(ResourceBundle resourceBundle,
 			ConnectionManagerControlCenter connectionManagerControlCenter) throws NetworkException {
-		this.radarListener = radarListener;
 		this.resource = resourceBundle;
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		// Instantiates all the Radars("Externals Servers" of this component)
 		loadRadars();
 	}
 
+	
+	public void setListener(RadarListener radarListener){
+		this.radarListener = radarListener;
+	}
 	
 	
 	/* *****************************

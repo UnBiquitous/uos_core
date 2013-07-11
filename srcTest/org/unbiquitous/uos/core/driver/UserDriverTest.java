@@ -20,6 +20,7 @@ import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
@@ -59,7 +60,7 @@ public class UserDriverTest {
 
 	@Test
 	public void should_list_my_driver() throws Exception {
-		List<UosDriver> listDrivers = uosApplicationContext.getDriverManager().listDrivers();
+		List<UosDriver> listDrivers = uosApplicationContext.getFactory().get(AdaptabilityEngine.class).driverManager().listDrivers();
 
 		Assert.assertNotNull(listDrivers);
 		Assert.assertEquals(1, listDrivers.size());

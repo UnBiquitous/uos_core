@@ -11,6 +11,7 @@ import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriverImpl;
+import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
@@ -58,7 +59,8 @@ public class ConnectivityManager {
 		this.applicationContext = applicationContext;
 		this.gateway = gateway;
 		this.device = this.gateway.getCurrentDevice();
-		this.driverManager = this.applicationContext.getDriverManager();
+		//TODO: isn't this needed?
+//		this.driverManager = this.applicationContext.getDriverManager();
 		this.doProxying = doProxying;
 		logger.debug("DoProxying? "+this.doProxying);
 		logger.info("Connectivity Manager is started");
@@ -198,7 +200,7 @@ public class ConnectivityManager {
 	public void filterRemoteDriversList(String callerName, List<DriverData> driversList) {
 		
 		logger.debug("ConnectivityManager - Filtering the remote drivers");
-		UpDevice callerUpDevice = this.applicationContext.getDeviceManager().retrieveDevice(callerName);
+		UpDevice callerUpDevice = this.applicationContext.getFactory().get(DeviceManager.class).retrieveDevice(callerName);
 
 		if(callerUpDevice == null){
 			logger.error("ConnectivityManager - There's no such device");

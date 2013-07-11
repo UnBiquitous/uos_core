@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
@@ -31,6 +32,7 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerContr
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
+import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 
 /**
  * Class responsible for receiving Service Calls from applications and delegating it to the appropriated providers.
@@ -52,6 +54,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	protected ConnectivityManager connectivityManager;
 	protected ResourceBundle properties;
 	protected ApplicationManager applicationManager;
+
+	private DeviceManager deviceManager;
 
 
 	/**
@@ -336,6 +340,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	@Override
 	public void init(UOSComponentFactory factory) {
 		SmartSpaceGateway gateway = factory.gateway(new SmartSpaceGateway());
+		currentDevice = factory.currentDevice();
 		
 		this.connectionManagerControlCenter = factory.get(ConnectionManagerControlCenter.class);
 		
@@ -355,8 +360,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		this.eventManager = new EventManager(messageEngine);
 		this.connectivityManager = factory.get(ConnectivityManager.class);
 		
-		
-		DeviceManager deviceManager = new DeviceManager(
+		deviceManager = new DeviceManager(
 				currentDevice, 
 				deviceDao,  
 				driverDao, 
@@ -364,6 +368,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 				factory.get(ConnectivityManager.class), 
 				gateway, driverManager);
 		
+		connectionManagerControlCenter.radarControlCenter().setListener(deviceManager);
+		this.messageEngine.setDeviceManager(deviceManager);
 		
 		applicationManager = new ApplicationManager(properties,gateway);
 		ApplicationDeployer applicationDeployer = new ApplicationDeployer(properties,applicationManager);
@@ -372,10 +378,19 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		driverManager.initDrivers(gateway);
 		
-		//FIXME
-		factory.set(DeviceManager.class, deviceManager);
-		factory.set(DriverManager.class, driverManager);
-		factory.set(ApplicationManager.class, applicationManager);
+		Ontology ontology = factory.get(Ontology.class);
+		if (ontology.getOntologyReasoner() == null){ //TODO: hack because the way Ontology is initialized
+			ontology = null;
+		}
+		gateway
+    	.init(	this, currentDevice, 
+    			factory.get(SecurityManager.class),
+    			factory.get(ConnectivityManager.class),
+    			deviceManager, 
+    			driverManager, 
+    			applicationDeployer, 
+    			ontology);
+		
 	}
 	
 	@Override
@@ -386,7 +401,23 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-		
+		try {
+			driverManager.tearDown();
+			applicationManager.tearDown();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public DeviceManager deviceManager(){
+		return deviceManager;
+	}
+	
+	public DriverManager driverManager(){
+		return driverManager;
+	}
+	
+	public ApplicationManager applicationManager(){
+		return applicationManager;
 	}
 }

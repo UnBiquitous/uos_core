@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
@@ -55,11 +56,11 @@ public class DeviceDriverTest_handShake {
 		
 		driver = new DeviceDriver();
 		
-		driverManager = ctx.getDriverManager();
+		driverManager = ctx.getFactory().get(AdaptabilityEngine.class).driverManager();
 		driverManager.deployDriver(driver.getDriver(), driver);
 		driverManager.initDrivers(ctx.getGateway());
 		
-		deviceManager = ctx.getDeviceManager();
+		deviceManager = ctx.getFactory().get(AdaptabilityEngine.class).deviceManager();
 	}
 	
 	@After public void tearDown() throws Exception{
