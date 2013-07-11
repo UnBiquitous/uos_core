@@ -8,11 +8,13 @@ import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
+import org.unbiquitous.uos.core.connectivity.ConnectivityInitializer;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
+import org.unbiquitous.uos.core.ontologyEngine.OntologyInitializer;
 
 /**
  * 
@@ -28,7 +30,6 @@ public class UOS {
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
-    private Ontology ontology;
     private ResourceBundle properties;
 
 	private UOSComponentFactory factory;
@@ -57,6 +58,20 @@ public class UOS {
 	 *            the properties of the uOS middleware.
 	 * @throws ContextException
 	 */
+	public void init(String resourceBundleName) throws ContextException {
+		logger.debug("Retrieving Resource Bundle Information");
+		init(ResourceBundle.getBundle(resourceBundleName));
+	}
+	
+	/**
+	 * Initializes the components of the uOS middleware acording to the
+	 * resourceBundle informed.
+	 * 
+	 * @param resourceBundleName
+	 *            Name of the <code>ResourceBundle</code> to be used for finding
+	 *            the properties of the uOS middleware.
+	 * @throws ContextException
+	 */
 	@SuppressWarnings("serial")
 	public void init(ResourceBundle resourceBundle) throws ContextException {
 		
@@ -69,41 +84,16 @@ public class UOS {
 					add(factory.get(CurrentDeviceInitializer.class));
 					add(factory.get(MessageEngine.class));
 					add(factory.get(AdaptabilityEngine.class));
+					add(factory.get(OntologyInitializer.class));
+					add(factory.get(ConnectivityInitializer.class));
 				}
 			};
-			/*---------------------------------------------------------------*/
-			/* 							CREATE								 */
-			/*---------------------------------------------------------------*/
 			
-			for(UOSComponent component:components){
-				component.create(properties);
-			}
+			logger.info("..::|| Starting uOS ||::..");
 			
-			/*---------------------------------------------------------------*/
-			/* 							INIT								 */
-			/*---------------------------------------------------------------*/
-			for(UOSComponent component:components){
-				component.init(factory);
-			}
-			
-
-			/*---------------------------------------------------------------*/
-			
-            initOntology();
-                        
-            /*---------------------------------------------------------------*/
-			/* 							START								 */
-			/*---------------------------------------------------------------*/
-			for(UOSComponent component:components){
-				component.start();
-			}
-            
-			// Start Connectivity Manager
-			logger.debug("Initializing ConnectivityManager");
-			initConnectivityManager();
-
-			// Start Radar Control Center
-			logger.debug("Initializing RadarControlCenter");
+			createComponents();
+			initComponents();
+			startComponents();
 
 		} catch (DriverManagerException e) {
 			logger.error(e);
@@ -113,51 +103,24 @@ public class UOS {
 		} 
 	}
 
-	/**
-	 * Initializes the components of the uOS middleware acording to the
-	 * resourceBundle informed.
-	 * 
-	 * @param resourceBundleName
-	 *            Name of the <code>ResourceBundle</code> to be used for finding
-	 *            the properties of the uOS middleware.
-	 * @throws ContextException
-	 */
-	public void init(String resourceBundleName) throws ContextException {
-		// Log start Message
-		logger.info("..::|| Starting uOS ||::..");
-
-		// Get the resource Bundle
-		logger.debug("Retrieving Resource Bundle Information");
-		ResourceBundle resourceBundle = ResourceBundle
-				.getBundle(resourceBundleName);
-
-		init(resourceBundle);
-	}
-
-	private void initConnectivityManager() {
-		//Read proxying attribute from the resource bundle
-		boolean doProxying = false;
-
-		try {
-			if ((properties.getString("ubiquitos.connectivity.doProxying")).equalsIgnoreCase("yes")) {
-				doProxying = true;
-			}
-		} catch (MissingResourceException e) {
-			logger.info("No proxying attribute found in the properties. Proxying set as false.");
+	private void startComponents() {
+		for(UOSComponent component:components){
+			component.start();
 		}
-
-		factory.get(ConnectivityManager.class)
-			.init(	this, factory.gateway(), doProxying);
 	}
 
-	private void initOntology() {
-		if (!properties.containsKey("ubiquitos.ontology.path"))
-			return;
-		ontology = factory.get(Ontology.class);
-		// ontology.setDriverManager(driverManager);
-		ontology.initializeOntology();
+	private void initComponents() {
+		for(UOSComponent component:components){
+			component.init(factory);
+		}
 	}
-        
+
+	private void createComponents() {
+		for(UOSComponent component:components){
+			component.create(properties);
+		}
+	}
+
 	/**
 	 * Shutdown the middleware infrastructure.
 	 */

@@ -9,6 +9,7 @@ import java.util.Set;
 import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
+import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriverImpl;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
@@ -34,8 +35,7 @@ import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 public class ConnectivityManager {
 	
 	/** The context of the uOS */
-	private UOS applicationContext;
-	private Gateway gateway;
+	private SmartSpaceGateway gateway;
 	
 	/** Our device */
 	private UpDevice device;
@@ -51,12 +51,8 @@ public class ConnectivityManager {
 	
 	public ConnectivityManager(){}
 	
-	public void init(UOS applicationContext, Gateway gateway, boolean doProxying){
+	public void init(SmartSpaceGateway gateway, boolean doProxying){
 		logger.info("Starting up UOS Connectivity Manager");
-		if(applicationContext == null){
-			throw new IllegalArgumentException("Connectivity Manager -- application context cannot be null");
-		}
-		this.applicationContext = applicationContext;
 		this.gateway = gateway;
 		this.device = this.gateway.getCurrentDevice();
 		//TODO: isn't this needed?
@@ -200,7 +196,7 @@ public class ConnectivityManager {
 	public void filterRemoteDriversList(String callerName, List<DriverData> driversList) {
 		
 		logger.debug("ConnectivityManager - Filtering the remote drivers");
-		UpDevice callerUpDevice = this.applicationContext.getFactory().get(DeviceManager.class).retrieveDevice(callerName);
+		UpDevice callerUpDevice = this.gateway.getDeviceManager().retrieveDevice(callerName);
 
 		if(callerUpDevice == null){
 			logger.error("ConnectivityManager - There's no such device");
