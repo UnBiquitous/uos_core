@@ -5,8 +5,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
 /**
@@ -26,7 +28,7 @@ public class ThreadedConnectionHandler extends Thread {
 	 * *****************************/
 	
 	/** Object for logging registration.*/
-    private static final Logger logger = Logger.getLogger(ThreadedConnectionHandler.class);
+    private static final Logger logger = UOSLogging.getLogger();
 	
     /** A Connection to the client */
 	private ClientConnection con = null;
@@ -66,7 +68,7 @@ public class ThreadedConnectionHandler extends Thread {
      * @param con The connection established.
      */
     private void handleUbiquitOSSmartSpaceConnection() {
-        logger.debug("Connection received from an ubiquitos-client device :'"+con.getClientDevice().getNetworkDeviceName()+"' on '"+con.getClientDevice().getNetworkDeviceType()+"'.");
+        logger.fine("Connection received from an ubiquitos-client device :'"+con.getClientDevice().getNetworkDeviceName()+"' on '"+con.getClientDevice().getNetworkDeviceType()+"'.");
         
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getDataInputStream()));
@@ -97,9 +99,9 @@ public class ThreadedConnectionHandler extends Thread {
 						returnedMessage = messageListener.handleIncomingMessage(builder.toString(),con.getClientDevice());
 						writer.write(returnedMessage+MESSAGE_SEPARATOR);
 						writer.flush();
-						logger.debug("Message Handled");
+						logger.fine("Message Handled");
 					} catch (Exception e) {
-						logger.error("Failed to handle ubiquitos-smartspace connection.", e);
+						logger.log(Level.SEVERE,"Failed to handle ubiquitos-smartspace connection.", e);
 					}
 
 
@@ -113,13 +115,13 @@ public class ThreadedConnectionHandler extends Thread {
             }
             
         } catch (Exception e) {
-            logger.error("Failed to handle ubiquitos-smartspace connection.", e);
+            logger.log(Level.SEVERE,"Failed to handle ubiquitos-smartspace connection.", e);
         } finally {
             try {
                 con.closeConnection();
                 con = null;
             } catch (IOException ex) {
-                logger.error("Failed to close ubiquitos-smartspace connection.", ex);
+                logger.log(Level.SEVERE,"Failed to close ubiquitos-smartspace connection.", ex);
             }
         }
     }

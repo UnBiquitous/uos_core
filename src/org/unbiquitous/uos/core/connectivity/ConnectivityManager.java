@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
+import org.unbiquitous.uos.core.UOSLogging;
+import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriverImpl;
 import org.unbiquitous.uos.core.driverManager.DriverData;
@@ -33,8 +33,7 @@ import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 public class ConnectivityManager {
 	
 	/** The context of the uOS */
-	private UOS applicationContext;
-	private Gateway gateway;
+	private SmartSpaceGateway gateway;
 	
 	/** Our device */
 	private UpDevice device;
@@ -43,24 +42,21 @@ public class ConnectivityManager {
 	private boolean doProxying;
 	
 	/** For logging */
-    private static final Logger logger = Logger.getLogger(ConnectivityManager.class);
+    private static final Logger logger = UOSLogging.getLogger();
 	
 	/** For registering drivers */
 	private DriverManager driverManager;
 	
 	public ConnectivityManager(){}
 	
-	public void init(UOS applicationContext, Gateway gateway, boolean doProxying){
+	public void init(SmartSpaceGateway gateway, boolean doProxying){
 		logger.info("Starting up UOS Connectivity Manager");
-		if(applicationContext == null){
-			throw new IllegalArgumentException("Connectivity Manager -- application context cannot be null");
-		}
-		this.applicationContext = applicationContext;
 		this.gateway = gateway;
 		this.device = this.gateway.getCurrentDevice();
-		this.driverManager = this.applicationContext.getDriverManager();
+		//TODO: isn't this needed?
+//		this.driverManager = this.applicationContext.getDriverManager();
 		this.doProxying = doProxying;
-		logger.debug("DoProxying? "+this.doProxying);
+		logger.fine("DoProxying? "+this.doProxying);
 		logger.info("Connectivity Manager is started");
 	}
 	
@@ -95,7 +91,7 @@ public class ConnectivityManager {
 		
 		//Checks if none compatible interface is available
 		if(compatibleNetworks.size() == 0){
-			logger.error("ConnectivityManager - Lacks connectivity between the devices for this service");
+			logger.severe("ConnectivityManager - Lacks connectivity between the devices for this service");
 			throw new ConnectivityException("ConnectivityManager - Lacks connectivity between the devices for this service");
 		}
 		
@@ -197,11 +193,11 @@ public class ConnectivityManager {
 	 */
 	public void filterRemoteDriversList(String callerName, List<DriverData> driversList) {
 		
-		logger.debug("ConnectivityManager - Filtering the remote drivers");
-		UpDevice callerUpDevice = this.applicationContext.getDeviceManager().retrieveDevice(callerName);
+		logger.fine("ConnectivityManager - Filtering the remote drivers");
+		UpDevice callerUpDevice = this.gateway.getDeviceManager().retrieveDevice(callerName);
 
 		if(callerUpDevice == null){
-			logger.error("ConnectivityManager - There's no such device");
+			logger.severe("ConnectivityManager - There's no such device");
 			throw new RuntimeException("ConnectivityManager - There's no such device");
 		}
 		
@@ -268,7 +264,7 @@ public class ConnectivityManager {
 		if( callerDevice != null ){
 			filterRemoteDriversList(callerDevice.getName(), driversList);
 		}else{
-			logger.error("ConnectivityManager - The caller device is null");
+			logger.severe("ConnectivityManager - The caller device is null");
 		}
 	}
 	
@@ -280,7 +276,7 @@ public class ConnectivityManager {
 	 */
 	public void filterDriversList(List<DriverData> driversList) {
 		
-		logger.debug("ConnectivityManager - Filtering the local drivers");
+		logger.fine("ConnectivityManager - Filtering the local drivers");
 		
 		Iterator<DriverData> iterator = driversList.iterator();
 		
@@ -364,14 +360,14 @@ public class ConnectivityManager {
 	 * @throws DriverNotFoundException 
 	 */
 	public void registerProxyDriver(UpDriver driver, UpDevice device, String id) throws DriverNotFoundException{
-		logger.debug("Connectivity Manager -- New driver is being registered for proxying");
+		logger.fine("Connectivity Manager -- New driver is being registered for proxying");
 
 		ProxyDriver proxyDriver = new ProxyDriverImpl(driver, device);
 		try{
 			this.driverManager.deployDriver(driver, proxyDriver, id);
 			driverManager.initDrivers(gateway);
 		}catch(DriverManagerException e){
-			logger.error(e.getMessage());
+			logger.severe(e.getMessage());
 		}
 	}
 	

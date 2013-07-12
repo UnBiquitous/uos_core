@@ -1,8 +1,9 @@
 package org.unbiquitous.uos.core.driver;
 
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 
 /**
  * This class represents a user information from the middleware view.
@@ -15,7 +16,7 @@ import org.unbiquitous.uos.core.Logger;
  * @since 2011.11.07
  */
 public abstract class UserDriverNativeSupport implements UserDriver {
-	private static Logger logger = Logger.getLogger(UserDriverNativeSupport.class);
+	private static Logger logger = UOSLogging.getLogger();
 
 	public static UserDriverNativeSupport userDriver;
 	
@@ -166,7 +167,7 @@ public abstract class UserDriverNativeSupport implements UserDriver {
 			try {
 				Thread.sleep(TIME_IN_SLEEP);
 			} catch (InterruptedException e) {
-				logger.error(e.getMessage());
+				logger.severe(e.getMessage());
 			}
 		}
 		

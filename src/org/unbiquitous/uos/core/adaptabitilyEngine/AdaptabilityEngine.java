@@ -1,13 +1,24 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
-import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.SecurityManager;
+import org.unbiquitous.uos.core.UOSComponent;
+import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.UOSLogging;
+import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
+import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
+import org.unbiquitous.uos.core.deviceManager.DeviceDao;
+import org.unbiquitous.uos.core.deviceManager.DeviceManager;
+import org.unbiquitous.uos.core.driverManager.DriverDao;
+import org.unbiquitous.uos.core.driverManager.DriverDeployer;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
+import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
@@ -16,12 +27,13 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
+import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 
 /**
  * Class responsible for receiving Service Calls from applications and delegating it to the appropriated providers.
@@ -29,41 +41,23 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
  * @author Fabricio Nogueira Buzeto
  *
  */
-public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
+public class AdaptabilityEngine implements ServiceCallHandler,
+											NotifyHandler,
+											UOSComponent{
 	
-	private static Logger logger = Logger.getLogger(AdaptabilityEngine.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
-	private DriverManager driverManager;
-	
-	private UpDevice currentDevice;
-	
-	private ConnectionManagerControlCenter connectionManagerControlCenter;
-	
-	private MessageEngine messageEngine;
-	
-	private EventManager eventManager;
-	
-	private ConnectivityManager connectivityManager;
+	protected DriverManager driverManager;
+	protected UpDevice currentDevice;
+	protected ConnectionManagerControlCenter connectionManagerControlCenter;
+	protected MessageEngine messageEngine;
+	protected EventManager eventManager;
+	protected ConnectivityManager connectivityManager;
+	protected ResourceBundle properties;
+	protected ApplicationManager applicationManager;
 
-	private UOS context;
+	private DeviceManager deviceManager;
 
-	//TODO: this is a hell lot of dependencies
-	public void init(
-				ConnectionManagerControlCenter connectionManagerControlCenter, 
-				DriverManager driverManager, 
-				UpDevice currentDevice,
-				UOS context,
-				MessageEngine messageEngine,
-				ConnectivityManager connectivityManager,
-				EventManager eventManager) {
-		this.connectionManagerControlCenter = connectionManagerControlCenter;
-		this.driverManager = driverManager;
-		this.currentDevice = currentDevice;
-		this.context = context;
-		this.messageEngine = messageEngine;
-		this.eventManager = eventManager;
-		this.connectivityManager = connectivityManager;
-	}
 
 	/**
 	 * Method responsible for creating a call for {@link AdaptabilityEngine#callService(String, ServiceCall)} with the following parameters.
@@ -327,7 +321,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext)
 			throws DriverManagerException {
 		if (isApplicationCall(serviceCall)){
-			return context.getApplicationManager().handleServiceCall(serviceCall, messageContext);
+			return applicationManager.handleServiceCall(serviceCall, messageContext);
 		}else{
 			return driverManager.handleServiceCall(serviceCall, messageContext);
 		}
@@ -335,5 +329,105 @@ public class AdaptabilityEngine implements ServiceCallHandler,NotifyHandler {
 
 	private boolean isApplicationCall(ServiceCall serviceCall) {
 		return serviceCall.getDriver() != null && serviceCall.getDriver().equals("app");
+	}
+	
+	
+	/************************ USO Compoment ***************************/
+	
+	@Override
+	public void create(ResourceBundle properties) {
+		this.properties = properties;
+	}
+	@Override
+	public void init(UOSComponentFactory factory) {
+		SmartSpaceGateway gateway = factory.gateway(new SmartSpaceGateway());
+		currentDevice = factory.currentDevice();
+		
+		this.connectionManagerControlCenter = factory.get(ConnectionManagerControlCenter.class);
+		
+		DriverDao driverDao = factory.get(DriverDao.class);
+		DeviceDao deviceDao = factory.get(DeviceDao.class);
+		
+		this.driverManager = new DriverManager(	currentDevice, 
+						driverDao, 
+						deviceDao, 
+						new ReflectionServiceCaller(connectionManagerControlCenter));
+		
+		// Deploy service-drivers
+		DriverDeployer driverDeployer = new DriverDeployer(driverManager,properties);
+		driverDeployer.deployDrivers();
+		
+		this.messageEngine = factory.get(MessageEngine.class);
+		this.eventManager = new EventManager(messageEngine);
+		this.connectivityManager = factory.get(ConnectivityManager.class);
+		
+		deviceManager = new DeviceManager(
+				currentDevice, 
+				deviceDao,  
+				driverDao, 
+				connectionManagerControlCenter, 
+				factory.get(ConnectivityManager.class), 
+				gateway, driverManager);
+		
+		connectionManagerControlCenter.radarControlCenter().setListener(deviceManager);
+		this.messageEngine.setDeviceManager(deviceManager);
+		
+		applicationManager = new ApplicationManager(properties,gateway);
+		ApplicationDeployer applicationDeployer = new ApplicationDeployer(properties,applicationManager);
+		applicationDeployer.deployApplications();
+		applicationManager.startApplications();
+		
+		driverManager.initDrivers(gateway);
+		
+		initGateway(factory, gateway, applicationDeployer);
+		
+	}
+
+	private void initGateway(UOSComponentFactory factory,
+			SmartSpaceGateway gateway, ApplicationDeployer applicationDeployer){
+		try {
+			Ontology ontology = null;
+			if (properties.containsKey("ubiquitos.ontology.path")){ //TODO: hack because the way Ontology is initialized
+				ontology = new Ontology(properties);
+			}
+			gateway
+			.init(	this, currentDevice, 
+					factory.get(SecurityManager.class),
+					factory.get(ConnectivityManager.class),
+					deviceManager, 
+					driverManager, 
+					applicationDeployer, 
+					ontology);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void stop() {
+		try {
+			driverManager.tearDown();
+			applicationManager.tearDown();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public DeviceManager deviceManager(){
+		return deviceManager;
+	}
+	
+	public DriverManager driverManager(){
+		return driverManager;
+	}
+	
+	public ApplicationManager applicationManager(){
+		return applicationManager;
 	}
 }

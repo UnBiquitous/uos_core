@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import junit.framework.Assert;
 
@@ -18,19 +19,18 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.UOSLogging;
+import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
-import org.unbiquitous.uos.core.driver.UserDriver;
-import org.unbiquitous.uos.core.driver.UserDriverImpl;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
 
 @Ignore //FIXME: This test doesn't seems to make much sense
@@ -43,7 +43,7 @@ public class UserDriverTest {
 
 	private int MAX_NOT_READY_TRIES = 100;
 
-	private static final Logger logger = Logger.getLogger(UserDriverTest.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	private static UOS uosApplicationContext;
 
@@ -59,7 +59,7 @@ public class UserDriverTest {
 
 	@Test
 	public void should_list_my_driver() throws Exception {
-		List<UosDriver> listDrivers = uosApplicationContext.getDriverManager().listDrivers();
+		List<UosDriver> listDrivers = uosApplicationContext.getFactory().get(AdaptabilityEngine.class).driverManager().listDrivers();
 
 		Assert.assertNotNull(listDrivers);
 		Assert.assertEquals(1, listDrivers.size());
@@ -199,7 +199,7 @@ public class UserDriverTest {
 		out.write(imageData);
 		out.close();
 
-		logger.debug("Size => " + out.size());
+		logger.fine("Size => " + out.size());
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -216,7 +216,7 @@ public class UserDriverTest {
 				in.read(byteArray);
 				String s = new String(byteArray);
 
-				logger.debug("CHANNEL[" + channel + "]: RECEBIDO MSG: [" + s + "]");
+				logger.fine("CHANNEL[" + channel + "]: RECEBIDO MSG: [" + s + "]");
 				break;
 			}
 

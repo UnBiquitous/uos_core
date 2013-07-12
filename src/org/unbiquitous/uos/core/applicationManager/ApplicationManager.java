@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
@@ -15,7 +16,7 @@ import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedExcep
 
 
 public class ApplicationManager {
-	private static final Logger logger = Logger.getLogger(ApplicationManager.class); 
+	private static final Logger logger = UOSLogging.getLogger(); 
 	
 	private Map<String, UosApplication> toInitialize = new HashMap<String, UosApplication>();
 	private Map<String, UosApplication> deployed = new HashMap<String, UosApplication>();
@@ -97,11 +98,14 @@ public class ApplicationManager {
 	private Ontology createInitOntology(UosApplication app) {
 		try {
 			Ontology ontology = new Ontology(properties);
+			if (ontology.getOntologyReasoner() == null){
+				return null;
+			}
 			if (!ontology.getOntologyDeployInstance().hasInstanceOf(app.getClass().getName(), "application")) {
 		        ontology.getOntologyDeployInstance().addInstanceOf(app.getClass().getName(), "application");
 		        return ontology;
 		    } else {
-		        logger.error("ApplicationClass '" + app.getClass().getName() + " is already deployed.");
+		        logger.severe("ApplicationClass '" + app.getClass().getName() + " is already deployed.");
 		    }
 		} catch (ReasonerNotDefinedException e) {
 			 logger.info("Ontology component disabled.");
@@ -111,12 +115,16 @@ public class ApplicationManager {
 	
 	public void tearDown() throws Exception {
 		for (final UosApplication app : deployed.values()) {
-			Ontology ontology = createUndeployOntology(app);
+			//TODO: disabling ontology during tear down.
+			//		some kind of concurrency over the ontology database file
+			//		is going on.
+//			Ontology ontology = createUndeployOntology(app);
 			app.stop();
-			app.tearDown(ontology);
-			if (ontology != null){
-				ontology.saveChanges();
-			}
+			app.tearDown(null);
+//			app.tearDown(ontology);
+//			if (ontology != null){
+//				ontology.saveChanges();
+//			}
 		}
 		deployed.clear();
 	}
@@ -125,6 +133,9 @@ public class ApplicationManager {
 		Ontology ontology;
 		try {
 			ontology = new Ontology(properties);
+			if (ontology.getOntologyReasoner() == null){
+				return null;
+			}
 			ontology.getOntologyUndeployInstance().removeInstanceOf(
 					app.getClass().getName(), "application");
 		} catch (ReasonerNotDefinedException ex) {

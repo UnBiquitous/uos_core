@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.network.exceptions;
 
-public class NetworkException extends Exception{
+public class NetworkException extends RuntimeException{
 
 	private static final long serialVersionUID = 3595546954657100674L;
 

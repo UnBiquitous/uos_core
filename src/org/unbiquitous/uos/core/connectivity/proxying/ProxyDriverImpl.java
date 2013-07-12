@@ -7,8 +7,10 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
@@ -42,7 +44,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 	private Gateway gateway;
 	
 	/** Logging object */
-	private static final Logger logger = Logger.getLogger(ProxyDriverImpl.class);
+	private static final Logger logger = UOSLogging.getLogger();
 	
 	/** Threading attribute */
 	private boolean doneServiceCall;
@@ -81,7 +83,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 						serviceCall);
 				serviceCall.setChannelType(netInt.getNetType());
 			} catch (NetworkException e) {
-				logger.error(e.getMessage());
+				logger.severe(e.getMessage());
 			}
 		}
 		
@@ -95,7 +97,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 				try{
 					serviceCallThread.wait();
 				}catch(InterruptedException e){
-					logger.debug("ProxyDriverImpl - Problem sleeping");
+					logger.fine("ProxyDriverImpl - Problem sleeping");
 				}
 			}
 		}
@@ -176,7 +178,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 				newServiceResponse = ProxyDriverImpl.this.gateway.callService(ProxyDriverImpl.this.provider,
 						this.serviceCall);				
 			}catch(ServiceCallException e){
-				logger.error(e.getMessage());
+				logger.severe(e.getMessage());
 			}
 			
 			//If the service type is stream, redirect the streams
@@ -195,12 +197,12 @@ public class ProxyDriverImpl implements ProxyDriver {
 				try {
 					redirectStreams();
 				} catch (ConnectivityException e) {
-					logger.error(e);
+					logger.log(Level.SEVERE,"Error running.",e);
 					this.serviceResponse.setError("Error during proxying. Cause:"+e.getMessage());
 					
 					//Lets the upper thread knows we have finished our work
 					ProxyDriverImpl.this.doneServiceCall = true;
-					logger.debug("The proxyied service call has been done.");
+					logger.fine("The proxyied service call has been done.");
 					notify();
 					return;
 				}
@@ -211,7 +213,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 			
 			//Lets the upper thread knows we have finished our work
 			ProxyDriverImpl.this.doneServiceCall = true;
-			logger.debug("The proxyied service call has been done.");
+			logger.fine("The proxyied service call has been done.");
 			notify();
 			
 		}
@@ -261,7 +263,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 			 */
 			public RedirectStream(DataInputStream input, DataOutputStream output) throws ConnectivityException{
 				if(input == null || output == null ){
-					logger.error("Constructor: Input or output is null");
+					logger.severe("Constructor: Input or output is null");
 					throw new ConnectivityException("Problem getting the message context");
 				}
 				this.input = input;

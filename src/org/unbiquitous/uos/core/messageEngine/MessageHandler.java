@@ -8,11 +8,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
-import org.unbiquitous.uos.core.Logger;
 import org.unbiquitous.uos.core.SecurityManager;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -36,7 +37,7 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
  */
 public class MessageHandler {
 	
-	private static Logger logger = Logger.getLogger(MessageHandler.class);
+	private static Logger logger = UOSLogging.getLogger();
 	
 	//TODO: must be parameters (or not even be here)
 	private int maxRetries = 30;
@@ -106,7 +107,7 @@ public class MessageHandler {
 	}
 
 	private String sendEncapsulated(String message, String securityType, UpDevice target) throws Exception{
-		logger.debug("Authentication needed for type : '"+securityType+"'");
+		logger.fine("Authentication needed for type : '"+securityType+"'");
 		
 		AuthenticationHandler ah = securityManager.getAuthenticationHandler(securityType);
 		if (ah == null)
@@ -117,7 +118,7 @@ public class MessageHandler {
 			
 		ah.authenticate(target, this);
 		
-		logger.debug("Proceed to encode original message");
+		logger.fine("Proceed to encode original message");
 
 		message = tHandler.encode(message, target.getName());
 		message = new JSONEncapsulatedMessage(new EncapsulatedMessage(securityType,message)).toString();
@@ -205,7 +206,7 @@ public class MessageHandler {
 				Thread.sleep(waitTime);
 			}
 			
-			logger.debug("Received message : " + builder);
+			logger.fine("Received message : " + builder);
 			return builder.toString();
 		}
 		return null;

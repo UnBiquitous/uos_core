@@ -5,8 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -22,7 +23,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  */
 public class RadarControlCenter implements RadarListener {
 	
-	private static final Logger logger = Logger.getLogger(RadarControlCenter.class);
+	private static final Logger logger = UOSLogging.getLogger();
 
 	// Separator token for resource parameters
 	private static final String PARAM_SEPARATOR = ",";
@@ -58,16 +59,18 @@ public class RadarControlCenter implements RadarListener {
 	 * @param deviceManager
 	 * @throws UbiquitOSException
 	 */
-	public RadarControlCenter(RadarListener radarListener, 
-			ResourceBundle resourceBundle,
+	public RadarControlCenter(ResourceBundle resourceBundle,
 			ConnectionManagerControlCenter connectionManagerControlCenter) throws NetworkException {
-		this.radarListener = radarListener;
 		this.resource = resourceBundle;
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		// Instantiates all the Radars("Externals Servers" of this component)
 		loadRadars();
 	}
 
+	
+	public void setListener(RadarListener radarListener){
+		this.radarListener = radarListener;
+	}
 	
 	
 	/* *****************************
@@ -147,7 +150,7 @@ public class RadarControlCenter implements RadarListener {
 			String message = "Error reading UbiquitOS Resource Bundle Propertie File. " +
 														   "Check if the files exists or there is no errors in his definitions." +
 														   " The found error is: "+e.getMessage();
-			logger.error(message);
+			logger.severe(message);
 		}
 		
 		// Check if there is any radar in the Control Center
@@ -189,7 +192,7 @@ public class RadarControlCenter implements RadarListener {
 					radar.contains(CONNECTION_MANAGER_INDICATOR_BEGIN)){
 				// Driver data with malformed specified instanceID
 				String erroMessage = "Radar Data '"+radar+"' in "+RADAR_CLASS_KEY+" is malformed.";
-				logger.error(erroMessage);
+				logger.severe(erroMessage);
 				//throw new NetworkException(erroMessage);
 				//continue;
 			}else{

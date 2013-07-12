@@ -11,20 +11,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.unbiquitous.uos.core.Logger;
+import org.unbiquitous.uos.core.UOSComponent;
+import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
+import org.unbiquitous.uos.core.network.radar.RadarControlCenter;
 
 /**
  * Manage the ubiquitos-smartspace service interface.
  *
  * @author Passarinho
  */
-public class ConnectionManagerControlCenter implements ConnectionManagerListener{
+public class ConnectionManagerControlCenter implements ConnectionManagerListener, UOSComponent{
    
-	private static Logger logger = Logger.getLogger(ConnectionManagerControlCenter.class); 
+	private static Logger logger = UOSLogging.getLogger(); 
 	
 	// Separator token for resource parameters
 	private static final String PARAM_SEPARATOR = ",";
@@ -47,23 +52,9 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 	
     /** The resource bundle from where we can get a set of configurations. */
 	private ResourceBundle resource;
+
+	private RadarControlCenter radarControlCenter;
 	
-    /* *****************************
-	 *   	CONSTRUCTOR
-	 * *****************************/
-	
-    /**
-	 * Constructor using AdaptabilityEngine
-	 * @param AdaptabilityEngine
-	 * @throws UbiquitOSException
-	 */
-    public ConnectionManagerControlCenter(MessageListener messageListener ,ResourceBundle resourceBundle) throws NetworkException {
-        this.resource = resourceBundle;
-        this.messageListener = messageListener;
-        // Instantiates all the Connection Managers("Externals Servers" of this component)
-        loadAndStartConnectionManagers();
-    }
-    
     /* *****************************
 	 *   	PUBLIC METHODS
 	 * *****************************/
@@ -79,20 +70,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	ThreadedConnectionHandler threadedConnectionHandling = new ThreadedConnectionHandler(clientConnection,messageListener);
     	threadedConnectionHandling.start();
 	}
-    
-    /**
-	 * Finalize the Connection Manager.
-	 */
-    public void tearDown(){
-    	for(ConnectionManager cm : connectionManagersList){
-    		cm.tearDown();
-    		try {
-				connectionManagersThreadMap.get(cm).join();
-			} catch (Exception e) {
-				logger.error(e);
-			}
-    	}
-    }
     
     /**
      * A method for retrieve all network devices that are waiting for connection in connection managers.
@@ -243,7 +220,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	try {
 			// Retrieve all defined Connection Managers.
     		if (!resource.containsKey(CONNECTION_MANAGER_CLASS_KEY)){
-    			logger.warn("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
+    			logger.warning("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
     			return;
     		}
 			String connectionPropertie = null; 
@@ -304,4 +281,50 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     public ConnectionManager findConnectionManagerInstance(String cManagerClass){
     	return connectionManagersMap.get(cManagerClass);
     }
+    
+    public RadarControlCenter radarControlCenter(){
+    	return radarControlCenter;
+    }
+    
+    /************************ USO COmpoment ***************************/
+    
+    public ConnectionManagerControlCenter() {}
+    
+    public void setListener(MessageListener listener){
+    	this.messageListener = listener;
+    }
+    
+    @Override
+    public void create(ResourceBundle properties) {
+    	this.resource = properties;
+    }
+    
+    @Override
+    public void init(UOSComponentFactory factory) {
+        loadAndStartConnectionManagers();
+        radarControlCenter = new RadarControlCenter(resource, this);
+    }
+    
+    @Override
+    public void start() {
+		radarControlCenter.startRadar();
+    }
+    
+    @Override
+    public void stop() {
+    	tearDown();
+    }
+
+    public void tearDown() {
+		radarControlCenter.stopRadar();
+    	for(ConnectionManager cm : connectionManagersList){
+    		cm.tearDown();
+    		try {
+				connectionManagersThreadMap.get(cm).join();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE,"Problems tearing down.",e);
+			}
+    	}
+	}
+    
 }
