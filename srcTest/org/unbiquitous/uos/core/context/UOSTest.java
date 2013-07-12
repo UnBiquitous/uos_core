@@ -18,7 +18,7 @@ import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
 
-public class UOSApplicationContextTest {
+public class UOSTest {
 
 	private UOS ctx;
 	
@@ -29,7 +29,6 @@ public class UOSApplicationContextTest {
 	@After public void tearDown(){
 		ctx.tearDown();
 		new File("resources/owl/uoscontext.owl").delete();
-		System.out.println("clear");
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
@@ -58,7 +57,6 @@ public class UOSApplicationContextTest {
 		};
 		ctx.init(prop);
 		
-		System.out.println(ctx.getGateway().getCurrentDevice().getName());
 		assertThat(ctx.getGateway().getCurrentDevice().getName()).isNotEqualTo("localhost");
 	}
 	

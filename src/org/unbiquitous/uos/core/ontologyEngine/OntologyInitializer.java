@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
+import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
 public class OntologyInitializer implements UOSComponent{
 
@@ -16,9 +17,13 @@ public class OntologyInitializer implements UOSComponent{
 
 	@Override
 	public void init(UOSComponentFactory factory) {
-		if (properties.containsKey("ubiquitos.ontology.path")){
-			Ontology ontology = factory.get(Ontology.class);
-			ontology.initializeOntology();
+		try {
+			if (properties.containsKey("ubiquitos.ontology.path")){
+				Ontology ontology = new Ontology(properties);
+				ontology.initializeOntology();
+			}
+		} catch (ReasonerNotDefinedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

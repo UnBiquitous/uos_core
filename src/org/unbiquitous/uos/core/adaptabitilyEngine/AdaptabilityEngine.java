@@ -379,19 +379,28 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		driverManager.initDrivers(gateway);
 		
-		Ontology ontology = factory.get(Ontology.class);
-		if (ontology.getOntologyReasoner() == null){ //TODO: hack because the way Ontology is initialized
-			ontology = null;
-		}
-		gateway
-    	.init(	this, currentDevice, 
-    			factory.get(SecurityManager.class),
-    			factory.get(ConnectivityManager.class),
-    			deviceManager, 
-    			driverManager, 
-    			applicationDeployer, 
-    			ontology);
+		initGateway(factory, gateway, applicationDeployer);
 		
+	}
+
+	private void initGateway(UOSComponentFactory factory,
+			SmartSpaceGateway gateway, ApplicationDeployer applicationDeployer){
+		try {
+			Ontology ontology = null;
+			if (properties.containsKey("ubiquitos.ontology.path")){ //TODO: hack because the way Ontology is initialized
+				ontology = new Ontology(properties);
+			}
+			gateway
+			.init(	this, currentDevice, 
+					factory.get(SecurityManager.class),
+					factory.get(ConnectivityManager.class),
+					deviceManager, 
+					driverManager, 
+					applicationDeployer, 
+					ontology);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override

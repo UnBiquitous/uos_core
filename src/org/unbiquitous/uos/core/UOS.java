@@ -102,21 +102,21 @@ public class UOS {
 		} 
 	}
 
-	private void startComponents() {
+	private void createComponents() {
 		for(UOSComponent component:components){
-			component.start();
+			component.create(properties);
 		}
 	}
-
+	
 	private void initComponents() {
 		for(UOSComponent component:components){
 			component.init(factory);
 		}
 	}
-
-	private void createComponents() {
+	
+	private void startComponents() {
 		for(UOSComponent component:components){
-			component.create(properties);
+			component.start();
 		}
 	}
 
@@ -124,10 +124,6 @@ public class UOS {
 	 * Shutdown the middleware infrastructure.
 	 */
 	public void tearDown() {
-
-		/*---------------------------------------------------------------*/
-		/* 							STOP								 */
-		/*---------------------------------------------------------------*/
 		for(UOSComponent component:components){
 			component.stop();
 		}
