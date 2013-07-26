@@ -249,6 +249,19 @@ public class ApplicationManagerTest {
 		manager.deploy(app, "myId");
 		
 		ServiceCall call = new ServiceCall("app","callback","myId")
+		.addParameter("echo", "ping");
+		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		
+		assertThat(r.getResponseData())
+		.contains(MapEntry.entry("echo", "ping"));
+	}
+	
+	@Ignore
+	@Test public void handleServiceReturnsMapAsResponseWithourId() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall call = new ServiceCall("app","callback")
 									.addParameter("echo", "ping");
 		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
 		
