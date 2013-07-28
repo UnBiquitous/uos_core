@@ -120,6 +120,7 @@ public class ThreadedConnectionHandler extends Thread {
             try {
                 con.closeConnection();
                 con = null;
+                logger.log(Level.INFO,"Closing Connection !!!");
             } catch (IOException ex) {
                 logger.log(Level.SEVERE,"Failed to close ubiquitos-smartspace connection.", ex);
             }
