@@ -181,7 +181,7 @@ public class DriverManager {
 			driverDao.insert(model);
 			instances.put(model.rowid(), uDriver);
 			toInitialize.add(instanceId);
-			logger.fine(	"Deployied Driver : "+model.driver().getName()+
+			logger.fine(	"Deployed Driver : "+model.driver().getName()+
 							" with id "+instanceId);
 		}else{
 			throw new IllegalArgumentException("The deployed DriverIntance must be of type UosDriver.");
@@ -385,14 +385,15 @@ public class DriverManager {
 			throw new RuntimeException(e); 
 		}
 		Iterator<String> it = toInitialize.iterator();
+		logger.fine(String.format("Initializing %s drivers.", toInitialize.size()));
 		while(it.hasNext()){
 			String id = it.next();
 			DriverModel model = driverDao.retrieve(id,currentDevice.getName());
 			UosDriver driver = instances.get(model.rowid());
 			driver.init(gateway, id);
 			it.remove();
-			logger.fine(	"Initialized Driver : "+model.driver().getName()+
-							" with id "+id);
+			logger.fine(String.format("Initialized Driver %s with id '%s'", 
+							model.driver().getName(),id));
 		}
 	}
 	

@@ -379,7 +379,6 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		applicationDeployer.deployApplications();
 		applicationManager.startApplications();
-		
 		driverManager.initDrivers(gateway);
 		
 		
