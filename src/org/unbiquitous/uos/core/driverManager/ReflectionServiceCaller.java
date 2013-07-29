@@ -59,17 +59,28 @@ public class ReflectionServiceCaller {
 					logger.info("Finished service call.");
 					return response;
 				}else{
-					String message = "No Service Implementation found for service "+serviceCall.getService()+" on driver :" +serviceCall.getDriver() +"(@"+serviceCall.getInstanceId()+")";
-					logger.severe(message);
-					throw new DriverManagerException(message);
+					String msg = String.format(
+							"No Service Implementation found " +
+							"for service '%s' on driver '%s' with id '%s'.",
+							serviceCall.getService(), serviceCall.getDriver(),
+							serviceCall.getInstanceId()
+							);
+					logger.severe(msg);
+					throw new DriverManagerException(msg);
 				}
 			} catch (Exception e) {
 				logInternalError(serviceCall, e);
 				return null;
 			} 
 		}else{
-			logger.severe("No Intance Driver Found for this ServiceCall");
-			throw new DriverManagerException("No Intance Driver Found for this ServiceCall");
+			String msg = "Null Service Call";
+			if (serviceCall != null){
+				msg = String.format(
+						"No Instance Driver (%s) Found for ServiceCall.",
+						serviceCall.getDriver());
+			}
+			logger.severe(msg);
+			throw new DriverManagerException(msg);
 		}
 	}
 

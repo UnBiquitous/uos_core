@@ -377,6 +377,7 @@ public class DriverManager {
 	public void initDrivers(Gateway gateway){
 		try {
 			if (driverDao.list("uos.DeviceDriver").isEmpty()){
+				
 				DeviceDriver deviceDriver = new DeviceDriver();
 				deployDriver(deviceDriver.getDriver(), deviceDriver);
 			}

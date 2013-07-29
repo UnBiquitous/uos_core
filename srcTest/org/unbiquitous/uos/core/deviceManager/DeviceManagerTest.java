@@ -922,17 +922,8 @@ public class DeviceManagerTest {
 		when(enteree.getNetworkDeviceType()).thenReturn("Ethernet:TCP");
 		when(connManager.getHost("127.0.0.1:8080")).thenReturn("127.0.0.1");
 		when(connManager.getHost("127.0.0.1:80")).thenReturn("127.0.0.1");
-		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("myDevice").addNetworkInterface("127.0.0.1:8080", "Ethernet:TCP").toString()));
-		
-		JSONObject driverList = new JSONObject();
-		driverList.put("id1", new JSONDriver(new UpDriver("DummyDriver")));
-
-		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
-						driverList.toString()));
-		
 		deviceManager.deviceEntered(enteree);
+		verify(gateway, never()).callService((UpDevice)any(), (ServiceCall)any());
 	}
 	
 
