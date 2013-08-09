@@ -107,7 +107,7 @@ public class ServiceCall extends Message {
 		this.channelType = channelType;
 	}
 
-	public ServiceCall addParameter(String key, String value){
+	public ServiceCall addParameter(String key, Object value){
 		if (parameters == null){
 			parameters = new HashMap<String, Object>();
 		}
