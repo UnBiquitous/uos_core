@@ -1,11 +1,8 @@
 - Criar email do grupo e colocar no jenkins
-- Criar novas dependências sem api
-- HSQLDB não faz mais sentido no core
-- Core não devia depender do BasicAuthAPI
 
 - Trocar os NetworkDevices (DeviceManager e EventDriver) por UpNetworkInterface
 - Tirar os prefixos (Up, Uos) dos nomes das classes.
-- Os JSON que convertem as mensagens podem ser concentrados em um parser.
+- Os JSON que convertem as mensagens podem ser concentrados em um parser (ou nos próprios objetos).
 - Trocar os pacotes de "br.unb.unbiquitous.ubiquitos.uos" para "org.unbiquitous.uos"
 - Trocar o group-id para "org.unbiquitous.uos" (no caso dos uos stuff)
 - No MessageHandler temos um tratamento quen devia ser da camada de rede (envio de mensagem)
@@ -41,26 +38,10 @@
 				3 - Isso deve ativar o handshake e o list drivers
 				4 - Ativa-se a aplicação para usar o driver (testar chamadas sync/async , discretas/contínuas) 
 	
-- Colocar no github
-- O listDrivers pertence realmente ao DriverManager ?
 - Deveriam as aplicações serem consideradas Drivers externalizando interfaces de comunicação?
 - Repensar a forma que os eventos são gerenciados. Não seria melhor deixar isso com o middlewar, no lugar dos prórprios devices?
 
-
-##############################
-
-OK - Trocar o código do Json da api pelo maven do json.org
-
-OK - Daos: Ajustar pro DeviceManager/DeviceDriver/RegisterDriver usar outros Daos
-	- DriverManager -> OK
-	- DeviceManager -> OK 
-	- DeviceDriver -> Não precisa mais
-
-- Próximos "alvos" de teste:
-	OK - Reflection Service Caller
-	OK - DeviceManager
-	OK - Message Engine
-
-OK - Eliminar os TODOS
-OK - Eliminar Warnings
-OK - Se livrar da uos.api
+- Diminuir o uso de mocks (deixá-los apenas para a rede e outros recursos intestáveis)
+- trocar o ResourceBundle por um objeto de Configuração (com valores default) ou um mapa
+- Mudar o nome do application context
+- Nome do dispositivo tem que ser automático
