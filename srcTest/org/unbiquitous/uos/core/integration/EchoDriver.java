@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosEventDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
@@ -49,13 +49,13 @@ public class EchoDriver implements UosEventDriver {
 	}
 
 	public void echo(ServiceCall call, ServiceResponse response,
-			UOSMessageContext ctx) {
+			CallContext ctx) {
 		response.addParameter("text", (String) call.getParameter("text"));
 	}
 
 	@Override
 	public void registerListener(ServiceCall call, ServiceResponse response,
-			final UOSMessageContext ctx) {
+			final CallContext ctx) {
 		// if (call.getParameter("event").equals(reminder)){ //TODO:Validate the event
 		new Thread() {
 			public void run() {
@@ -74,7 +74,7 @@ public class EchoDriver implements UosEventDriver {
 
 	@Override
 	public void unregisterListener(ServiceCall call, ServiceResponse response,
-			UOSMessageContext ctx) {
+			CallContext ctx) {
 		// TODO Auto-generated method stub
 
 	}

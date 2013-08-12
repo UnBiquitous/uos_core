@@ -3,14 +3,14 @@ package org.unbiquitous.uos.core.messageEngine.messages;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 
 
 public class ServiceResponse extends Message{
 	
 	private Map<String,Object> responseData;
 	
-	private UOSMessageContext messageContext;
+	private CallContext messageContext;
 	
 	public ServiceResponse() {
 		setType(Message.Type.SERVICE_CALL_RESPONSE);
@@ -74,11 +74,11 @@ public class ServiceResponse extends Message{
 		return super.hashCode();
 	}
 
-	public UOSMessageContext getMessageContext() {
+	public CallContext getMessageContext() {
 		return messageContext;
 	}
 
-	public void setMessageContext(UOSMessageContext messageContext) {
+	public void setMessageContext(CallContext messageContext) {
 		this.messageContext = messageContext;
 	}
 }

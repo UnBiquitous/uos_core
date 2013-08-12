@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.messageEngine.MessageHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
@@ -23,7 +23,7 @@ public interface AuthenticationHandler {
 	 * @param serviceResponse <code>ServiceResponse</code> with the response of the execution of the current step.
 	 * @param messageContext <code>UOSMessageContext</code>with the information about the sender (like its ID).
 	 */
-	public void authenticate(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public void authenticate(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 	/**
 	 * This method is responsible for handling the process of authentication in the caller's (A) side of an authentication.

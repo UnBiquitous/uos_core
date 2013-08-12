@@ -11,7 +11,7 @@ import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -62,7 +62,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			if (messageType != null){
 				if (messageType == Message.Type.SERVICE_CALL_REQUEST){
 					logger.info("Incoming Service Call");
-					UOSMessageContext messageContext = new UOSMessageContext();
+					CallContext messageContext = new CallContext();
 					messageContext.setCallerDevice(clientDevice);
 					return handleServiceCall(message, messageContext);
 				}else if (messageType == Message.Type.NOTIFY){
@@ -87,7 +87,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	/**
 	 * Redirect ServiceCalls to the adequate responsible entity.
 	 */
-	private String handleServiceCall(String message, UOSMessageContext messageContext) throws MessageEngineException{
+	private String handleServiceCall(String message, CallContext messageContext) throws MessageEngineException{
 		try {
 			JSONServiceCall jsonServiceCall = new JSONServiceCall(message);
 			ServiceCall serviceCall = jsonServiceCall.getAsObject();

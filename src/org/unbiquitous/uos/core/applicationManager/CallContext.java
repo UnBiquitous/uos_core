@@ -16,7 +16,7 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  * @author Fabricio Nogueira Buzeto
  *
  */
-public class UOSMessageContext {
+public class CallContext {
 	
 	/**
 	 * Device Object representing the caller device of the request. 
@@ -31,7 +31,7 @@ public class UOSMessageContext {
 	 * This constructor is defined with a protected visibility level so only it's controller can 
 	 * instantiate it.
 	 */
-	public UOSMessageContext() {
+	public CallContext() {
 		this.dataInputStream = new ArrayList<DataInputStream>();
 		this.dataOutputStream = new ArrayList<DataOutputStream>();
 	}

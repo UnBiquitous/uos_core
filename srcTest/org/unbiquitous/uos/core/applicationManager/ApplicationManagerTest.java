@@ -239,9 +239,24 @@ public class ApplicationManagerTest {
 		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
-		manager.handleServiceCall(serviceCall,new UOSMessageContext());
+		manager.handleServiceCall(serviceCall,new CallContext());
 		
 		assertThat(app.callbackMap).isSameAs(parameters);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceOnACommonSignature() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		ServiceCall serviceCall = new ServiceCall("app","commonCallback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		CallContext context = new CallContext();
+		manager.handleServiceCall(serviceCall,context);
+		
+		assertThat(app.serviceCall).isSameAs(serviceCall);
+		assertThat(app.context).isSameAs(context);
 	}
 	
 	@Test public void handleServiceReturnsMapAsResponse() throws Exception{
@@ -250,7 +265,7 @@ public class ApplicationManagerTest {
 		
 		ServiceCall call = new ServiceCall("app","callback","myId")
 		.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		ServiceResponse r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 		.contains(MapEntry.entry("echo", "ping"));
@@ -263,7 +278,7 @@ public class ApplicationManagerTest {
 		
 		ServiceCall call = new ServiceCall("app","callback")
 									.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		ServiceResponse r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 									.contains(MapEntry.entry("echo", "ping"));
@@ -276,7 +291,7 @@ public class ApplicationManagerTest {
 		
 		ServiceCall call = new ServiceCall("app","callback","NotMyId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -289,7 +304,7 @@ public class ApplicationManagerTest {
 		
 		ServiceCall call = new ServiceCall("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -302,7 +317,7 @@ public class ApplicationManagerTest {
 		
 		ServiceCall call = new ServiceCall("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();

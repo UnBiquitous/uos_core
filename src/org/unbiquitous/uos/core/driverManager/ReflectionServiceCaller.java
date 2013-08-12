@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.UOSLogging;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
@@ -44,7 +44,7 @@ public class ReflectionServiceCaller {
 	 * @return The service Response to return to the caller device.
 	 * @throws DriverManagerException
 	 */
-	public ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, UOSMessageContext messageContext) throws DriverManagerException{
+	public ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
 		if (instanceDriver != null){
 			try {
 				Method serviceMethod = findMethod(serviceCall, instanceDriver);
@@ -85,7 +85,7 @@ public class ReflectionServiceCaller {
 	}
 
 	private void handleStreamCall(ServiceCall serviceCall,
-			UOSMessageContext messageContext) throws NetworkException,
+			CallContext messageContext) throws NetworkException,
 			IOException {
 		if(serviceCall.getServiceType().equals(ServiceType.STREAM)){
 			NetworkDevice networkDevice = messageContext.getCallerDevice();
@@ -126,17 +126,27 @@ public class ReflectionServiceCaller {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ServiceResponse callServiceOnApp(UosApplication app,ServiceCall call) {
+	public ServiceResponse callServiceOnApp(UosApplication app,
+											ServiceCall call,
+											CallContext context) {
 		ServiceResponse response = new ServiceResponse();
-		try {
-			Method method = app.getClass().getMethod(call.getService(), Map.class);
-			Map responseMap = (Map) method.invoke(app, call.getParameters());
-			response.setResponseData(responseMap);
-			return response;
+		try{
+			try {
+				Method method = app.getClass().getMethod(call.getService(), 
+																	Map.class);
+				Map responseMap = (Map) method.invoke(app, call.getParameters());
+				response.setResponseData(responseMap);
+				return response;
+			} catch (NoSuchMethodException e) {
+				Method method = app.getClass().getMethod(call.getService(), 
+													ServiceCall.class,
+													CallContext.class);
+				return (ServiceResponse) method.invoke(app, call, context);
+			} 
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Internal Failure", e);
 			response.setError("Not possible to make call because "+e.getMessage());
-		} 
+		}
 		return response;
 	}
 }

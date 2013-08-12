@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.driverManager.drivers.DefaultDrivers;
@@ -83,7 +83,7 @@ public class DriverManager {
 	/**
 	 * @see ServiceCallHandler#handleServiceCall(ServiceCall)
 	 */
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext) throws DriverManagerException{
+	public ServiceResponse handleServiceCall(ServiceCall serviceCall, CallContext messageContext) throws DriverManagerException{
 		//Handle named InstanceCall
 		DriverModel model = null;
 		if (serviceCall.getInstanceId() != null ){
@@ -128,7 +128,7 @@ public class DriverManager {
 	 * @return Response to return to the caller device.
 	 * @throws DriverManagerException
 	 */
-	private ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, UOSMessageContext messageContext) throws DriverManagerException{
+	private ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
 		return serviceCaller.callServiceOnDriver(serviceCall, instanceDriver, messageContext);
 	}
 	

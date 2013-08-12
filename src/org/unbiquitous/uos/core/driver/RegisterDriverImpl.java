@@ -16,7 +16,7 @@ import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
@@ -42,11 +42,11 @@ public class RegisterDriverImpl implements RegisterDriver {
 	private Gateway gateway;
 	
 	/** 
-	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.ServiceCall, org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse, br.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
+	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.ServiceCall, org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse, CallContext.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
 	 */
 	@Override
 	public void listDrivers(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+			ServiceResponse serviceResponse, CallContext messageContext) {
 		
 		
 		// Parameters 

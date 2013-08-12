@@ -10,7 +10,7 @@ import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
@@ -104,7 +104,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
-		UOSMessageContext messageContext = new UOSMessageContext();
+		CallContext messageContext = new CallContext();
 		messageContext.setCallerDevice(new LoopbackDevice(1)); // FIXME: Tales - 21/07/2012 
 																// Linha de codigo necessária para que o objeto 'messageContext' tenha um 'callerDevice'. 
 																// Caso prossiga sem o mesmo uma 'NullpointerException' é lançada.
@@ -132,7 +132,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	private ServiceResponse remoteServiceCall(UpDevice device,
 			ServiceCall serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
-			UOSMessageContext messageContext) throws ServiceCallException {
+			CallContext messageContext) throws ServiceCallException {
 		// If not a local service call, delegate to the serviceHandler
 		try{
 			ServiceResponse response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
@@ -146,7 +146,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 
 	private ServiceResponse localServiceCall(ServiceCall serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
-			UOSMessageContext messageContext) throws ServiceCallException {
+			CallContext messageContext) throws ServiceCallException {
 		logger.info("Handling Local ServiceCall");
 		
 		try {
@@ -187,7 +187,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @throws ServiceCallException
 	 */
 	private StreamConnectionThreaded[] openStreamChannel(UpDevice device,
-			ServiceCall serviceCall, UOSMessageContext messageContext)
+			ServiceCall serviceCall, CallContext messageContext)
 			throws ServiceCallException {
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
@@ -228,10 +228,10 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * Inner class for waiting a connection in case of stream service type.
 	 */
 	private class StreamConnectionThreaded extends Thread{
-		private UOSMessageContext msgContext;
+		private CallContext msgContext;
 		private NetworkDevice networkDevice;
 		
-		public StreamConnectionThreaded(UOSMessageContext msgContext, NetworkDevice networkDevice){
+		public StreamConnectionThreaded(CallContext msgContext, NetworkDevice networkDevice){
 			this.msgContext = msgContext;
 			this.networkDevice = networkDevice;
 		}
@@ -318,7 +318,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * ServiceCallHandler#handleServiceCall(ServiceCall)
 	 */
 	@Override
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext)
+	public ServiceResponse handleServiceCall(ServiceCall serviceCall, CallContext messageContext)
 			throws DriverManagerException {
 		if (isApplicationCall(serviceCall)){
 			return applicationManager.handleServiceCall(serviceCall, messageContext);

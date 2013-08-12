@@ -149,9 +149,10 @@ public class ApplicationManager {
 	}
 
 	public ServiceResponse handleServiceCall(ServiceCall serviceCall,
-			UOSMessageContext messageContext) {
+			CallContext messageContext) {
 		ReflectionServiceCaller caller = new ReflectionServiceCaller(null);
-		return caller.callServiceOnApp(findApplication(serviceCall.getInstanceId()),serviceCall);
+		UosApplication app = findApplication(serviceCall.getInstanceId());
+		return caller.callServiceOnApp(app,serviceCall,messageContext);
 	}
 
 }

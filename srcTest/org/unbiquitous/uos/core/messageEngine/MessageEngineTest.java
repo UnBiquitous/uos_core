@@ -17,7 +17,7 @@ import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
@@ -89,7 +89,7 @@ public class MessageEngineTest {
 			call.put("driver", "my.driver");
 			call.put("service", "my.service");
 		NetworkDevice caller = mock(NetworkDevice.class);
-		when(callHandler.handleServiceCall(any(ServiceCall.class), any(UOSMessageContext.class)))
+		when(callHandler.handleServiceCall(any(ServiceCall.class), any(CallContext.class)))
 			.thenReturn(new ServiceResponse().addParameter("bla", "0"));
 		
 		JSONObject response = new JSONObject(engine.handleIncomingMessage(call.toString(), caller));
@@ -99,7 +99,7 @@ public class MessageEngineTest {
 		assertEquals("0",response.optJSONObject("responseData").optString("bla"));
 		
 		ArgumentCaptor<ServiceCall> callCatcher = ArgumentCaptor.forClass(ServiceCall.class);
-		ArgumentCaptor<UOSMessageContext> ctxCatcher = ArgumentCaptor.forClass(UOSMessageContext.class);
+		ArgumentCaptor<CallContext> ctxCatcher = ArgumentCaptor.forClass(CallContext.class);
 		verify(callHandler).handleServiceCall(callCatcher.capture(), ctxCatcher.capture());
 		
 		assertEquals("my.driver",callCatcher.getValue().getDriver());
@@ -113,7 +113,7 @@ public class MessageEngineTest {
 		call.put("driver", "my.driver");
 		call.put("service", "my.service");
 		NetworkDevice caller = mock(NetworkDevice.class);
-		when(callHandler.handleServiceCall(any(ServiceCall.class), any(UOSMessageContext.class)))
+		when(callHandler.handleServiceCall(any(ServiceCall.class), any(CallContext.class)))
 		.thenThrow(new RuntimeException());
 		
 		JSONObject response = new JSONObject(engine.handleIncomingMessage(call.toString(), caller));
@@ -168,7 +168,7 @@ public class MessageEngineTest {
 		TranslationHandler translator = mock(TranslationHandler.class);
 		when(translator.decode("my.msg", "my.cell")).thenReturn(innerCall.toString());
 		when(translator.encode(any(String.class), eq("my.cell"))).thenReturn("my.return");
-		when(callHandler.handleServiceCall(any(ServiceCall.class), any(UOSMessageContext.class))).thenReturn(new ServiceResponse());
+		when(callHandler.handleServiceCall(any(ServiceCall.class), any(CallContext.class))).thenReturn(new ServiceResponse());
 		when(securityManager.getTranslationHandler("abacate")).thenReturn(translator);
 		when(deviceManager.retrieveDevice(null, null)).thenReturn(new UpDevice("my.cell"));
 		

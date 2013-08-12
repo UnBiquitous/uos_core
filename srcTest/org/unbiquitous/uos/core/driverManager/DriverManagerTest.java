@@ -15,7 +15,7 @@ import org.fest.assertions.core.Condition;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -719,7 +719,7 @@ public class DriverManagerTest {
 			destroyed = true;
 			destroyCount++;
 		}
-		public void service(ServiceCall s, ServiceResponse r, UOSMessageContext c){
+		public void service(ServiceCall s, ServiceResponse r, CallContext c){
 			called = true;
 		}
 		@Override

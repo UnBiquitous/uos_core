@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.UOSLogging;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
@@ -198,7 +198,7 @@ public class DriverDeployer {
 		}
 		for (UpService ups : driverInstance.getDriver().getServices()){
 			try {
-				driverInstance.getClass().getDeclaredMethod(ups.getName(), ServiceCall.class , ServiceResponse.class, UOSMessageContext.class);
+				driverInstance.getClass().getDeclaredMethod(ups.getName(), ServiceCall.class , ServiceResponse.class, CallContext.class);
 			} catch (SecurityException e) {
 				String erroMessage = "Service '"+ups.getName()+"' on DriverClass '"+driverInstance.getClass().getName()+"' has security acces issues.";
 				logger.log(Level.FINE,erroMessage,e);

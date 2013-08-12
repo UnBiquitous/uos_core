@@ -14,7 +14,7 @@ import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
@@ -73,7 +73,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 	 * @param messageContext Our message context of streams respective to the caller device
 	 */
 	public synchronized void forwardServiceCall(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+			ServiceResponse serviceResponse, CallContext messageContext) {
 
 		//Sets the right channel type
 		if(serviceCall.getServiceType().equals(ServiceCall.ServiceType.STREAM)){
@@ -143,9 +143,9 @@ public class ProxyDriverImpl implements ProxyDriver {
 		
 		private ServiceResponse serviceResponse;
 		
-		private UOSMessageContext messageContextBefore;
+		private CallContext messageContextBefore;
 		
-		private UOSMessageContext messageContextAfter;
+		private CallContext messageContextAfter;
 		
 		private int numberChannels;
 		
@@ -157,7 +157,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 		 */
 		public ProxyServiceCall(ServiceCall serviceCall,
 				ServiceResponse serviceResponse,
-				UOSMessageContext messageContextBefore){
+				CallContext messageContextBefore){
 			
 			this.serviceCall = serviceCall;
 			this.serviceResponse = serviceResponse;

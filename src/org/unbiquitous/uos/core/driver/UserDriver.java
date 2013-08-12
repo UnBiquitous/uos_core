@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.driver;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosEventDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
@@ -56,7 +56,7 @@ public interface UserDriver extends UosEventDriver {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public abstract void retrieveUserInfo(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public abstract void retrieveUserInfo(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 	/**
 	 * Save image for the user with email in parameter
@@ -65,7 +65,7 @@ public interface UserDriver extends UosEventDriver {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public abstract void saveUserImage(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public abstract void saveUserImage(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 	/**
 	 * Remove images of user
@@ -74,7 +74,7 @@ public interface UserDriver extends UosEventDriver {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public abstract void removeUserImages(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public abstract void removeUserImages(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 	/**
 	 * List all known users
@@ -83,7 +83,7 @@ public interface UserDriver extends UosEventDriver {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public abstract void listKnownUsers(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public abstract void listKnownUsers(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 	/**
 	 * Retrain the recognition algorithm
@@ -92,6 +92,6 @@ public interface UserDriver extends UosEventDriver {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public abstract void retrain(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext);
+	public abstract void retrain(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
 
 }
