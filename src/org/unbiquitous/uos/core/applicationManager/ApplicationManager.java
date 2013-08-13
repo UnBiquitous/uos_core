@@ -10,7 +10,11 @@ import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
+import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
+import org.unbiquitous.uos.core.network.model.NetworkDevice;
+import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
@@ -23,10 +27,14 @@ public class ApplicationManager {
 	private final ResourceBundle properties;
 
 	private final Gateway gateway;
+	private ConnectionManagerControlCenter connectionManagerControlCenter;
 
-	public ApplicationManager(ResourceBundle properties, Gateway gateway) {
+
+	public ApplicationManager(ResourceBundle properties, Gateway gateway,
+			ConnectionManagerControlCenter connectionManagerControlCenter) {
 		this.properties = properties;
 		this.gateway = gateway;
+		this.connectionManagerControlCenter = connectionManagerControlCenter;
 	}
 
 	public void add(UosApplication app) {
@@ -152,6 +160,39 @@ public class ApplicationManager {
 			CallContext messageContext) {
 		ReflectionServiceCaller caller = new ReflectionServiceCaller(null);
 		UosApplication app = findApplication(serviceCall.getInstanceId());
+		//TODO: [Fabs] This is duplicated with ReflectionServiceCaller
+		//TODO: Untested code
+		if(serviceCall.getServiceType().equals(ServiceType.STREAM)){
+			logger.fine(String.format("Stream call requires to establish passive channels"));
+			try {
+				NetworkDevice networkDevice = messageContext.getCallerDevice();
+				
+				String host = connectionManagerControlCenter.getHost(networkDevice.getNetworkDeviceName());
+				for(int i = 0; i < serviceCall.getChannels(); i++){
+					// TODO: this is TCP oriented
+					String hostAddress = host+":"+serviceCall.getChannelIDs()[i];
+					
+					ClientConnection con = null;
+					int waitTime = 100;
+					while(con == null && waitTime < 500){
+						con = connectionManagerControlCenter.openActiveConnection(hostAddress, serviceCall.getChannelType());
+						try {Thread.sleep(waitTime*=2);} catch (Exception e) {}
+					}
+					if(con == null){
+						String msg = String.format(
+								"Not possible to open passive channel with %s.", 
+								hostAddress);
+						logger.severe(msg);
+						throw new RuntimeException(msg);
+					}else{
+						logger.fine(String.format("Opened connection with %s",hostAddress));
+					}
+					messageContext.addDataStreams(con.getDataInputStream(), con.getDataOutputStream());
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
 		return caller.callServiceOnApp(app,serviceCall,messageContext);
 	}
 

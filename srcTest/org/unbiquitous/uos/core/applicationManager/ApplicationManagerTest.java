@@ -38,7 +38,7 @@ public class ApplicationManagerTest {
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway);
+		manager = new ApplicationManager(bundle,gateway,null);
 	}
 	
 	private void createOntologyDisabledManager() {
@@ -49,7 +49,7 @@ public class ApplicationManagerTest {
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway);
+		manager = new ApplicationManager(bundle,gateway,null);
 	}
 	
 	@After public void tearDown(){

@@ -42,8 +42,7 @@ public interface Gateway {
 	 * @param serviceCall	Call Object.
 	 * @return Response of the execution.
 	 */
-	public ServiceResponse callService(UpDevice device,
-			ServiceCall serviceCall) throws ServiceCallException;
+	public ServiceResponse callService(UpDevice device,ServiceCall serviceCall) throws ServiceCallException;
 
 	/**
 	 * Register a Listener for a event, driver and device specified.

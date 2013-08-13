@@ -103,7 +103,7 @@ public class AdaptabitilyEngineTest {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null);
+		final ApplicationManager manager = new ApplicationManager(properties, null,null);
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
@@ -281,7 +281,7 @@ public class AdaptabitilyEngineTest {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void handleServiceCall_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null);
+		final ApplicationManager manager = new ApplicationManager(properties, null,null);
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
