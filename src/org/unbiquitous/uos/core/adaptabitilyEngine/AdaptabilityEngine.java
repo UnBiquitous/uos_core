@@ -237,7 +237,6 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		public void run(){
 			try {
-				System.out.println("do something plz");
 				ClientConnection con = connectionManagerControlCenter.openPassiveConnection(networkDevice.getNetworkDeviceName(), networkDevice.getNetworkDeviceType());
 				msgContext.addDataStreams(con.getDataInputStream(), con.getDataOutputStream());
 			} catch (Exception e) {
