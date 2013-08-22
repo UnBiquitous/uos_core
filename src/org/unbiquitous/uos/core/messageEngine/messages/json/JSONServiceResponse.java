@@ -35,7 +35,7 @@ public class JSONServiceResponse extends JSONMessage  {
 				Iterator<String>it = obj.sortedKeys();
 				while (it.hasNext() ){
 					String prop = it.next();
-					map.put(prop, obj.getString(prop));
+					map.put(prop, obj.get(prop));
 				}
 			}
 			serviceResponse.setResponseData(map);
