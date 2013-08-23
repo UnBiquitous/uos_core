@@ -23,7 +23,6 @@ import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
@@ -168,11 +167,11 @@ public class DeviceDriver implements UosDriver {
 			return;
 		}
 		try {
-			UpDevice device = new JSONDevice(deviceParameter).getAsObject();
+			UpDevice device = UpDevice.fromJSON(new JSONObject(deviceParameter));
 			// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
 			deviceManager.registerDevice(device);
 			serviceResponse.addParameter(DEVICE_KEY, 
-								new JSONDevice(gateway.getCurrentDevice())
+								gateway.getCurrentDevice().toJSON()
 									.toString()
 									);
 			ServiceResponse driversResponse = 

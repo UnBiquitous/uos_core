@@ -25,7 +25,6 @@ import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
@@ -73,7 +72,7 @@ public class DeviceDriverTest_handShake {
 		
 		ServiceCall call = new ServiceCall()
 								.addParameter(	"device", 
-												new JSONDevice(toRegister)
+												toRegister.toJSON()
 													.toString()
 											);
 		
@@ -87,14 +86,14 @@ public class DeviceDriverTest_handShake {
 		
 		ServiceCall call = new ServiceCall()
 								.addParameter(	"device", 
-												new JSONDevice(toRegister)
+												toRegister.toJSON()
 													.toString()
 											);
 		
 		ServiceResponse response = new ServiceResponse();
 		driver.handshake(call, response, null);
 		assertThat(response.getResponseData("device"))
-			.isEqualTo(new JSONDevice(currentDevice).toString());
+			.isEqualTo(currentDevice.toJSON().toString());
 	}
 	
 	@Test public void doesNothingWhenTheSameDeviceShowsUpAgain() throws Exception{
@@ -110,7 +109,7 @@ public class DeviceDriverTest_handShake {
 		
 		ServiceCall call = new ServiceCall()
 								.addParameter(	"device", 
-												new JSONDevice(toRegister)
+												toRegister.toJSON()
 													.toString()
 											);
 		
@@ -120,7 +119,7 @@ public class DeviceDriverTest_handShake {
 		
 		assertThat(deviceManager.listDevices()).contains(toRegister);
 		assertThat(response.getResponseData("device"))
-					.isEqualTo(new JSONDevice(currentDevice).toString());
+					.isEqualTo(currentDevice.toJSON().toString());
 		assertThat(response.getError()).isNullOrEmpty(); 
 		// FIXME: error when the driver is already registered
 		assertThat(deviceManager.listDevices()).contains(toRegister);
@@ -166,7 +165,7 @@ public class DeviceDriverTest_handShake {
 				.addNetworkInterface("HERE", "LOCAL");
 		
 		ServiceCall call = new ServiceCall()
-				.addParameter("device",new JSONDevice(toRegister).toString());
+				.addParameter("device",toRegister.toJSON().toString());
 		
 		ServiceResponse response = new ServiceResponse();
 		driver.handshake(call, response, null);
@@ -197,7 +196,7 @@ public class DeviceDriverTest_handShake {
 										.addNetworkInterface("HERE", "LOCAL");
 
 		ServiceCall call = new ServiceCall()
-					.addParameter("device",new JSONDevice(toRegister).toString());
+					.addParameter("device",toRegister.toJSON().toString());
 		
 		ServiceResponse response = new ServiceResponse();
 		driver.handshake(call, response, null);

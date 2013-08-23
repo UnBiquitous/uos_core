@@ -18,9 +18,9 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.DriverData;
+import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
@@ -56,8 +56,8 @@ public class RegisterDriverImpl implements RegisterDriver {
 		
 		String deviceCaller = null;
 		try{
-			JSONDevice jsonDevice = new JSONDevice((String) serviceCall.getParameter("device"));
-			deviceCaller = (jsonDevice.getAsObject()).getName();
+			JSONObject jsonDevice = new JSONObject((String) serviceCall.getParameter("device"));
+			deviceCaller = UpDevice.fromJSON(jsonDevice).getName();
 		} catch (JSONException e) {
 			logger.log(Level.SEVERE,"Not possible to list devices.",e);
 		}
@@ -74,7 +74,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 					JSONObject json = new JSONObject();
 					
 					json.put("driver", rdd.getDriver().toJSON().toString());
-					json.put("device", new JSONDevice(rdd.getDevice()).toString());
+					json.put("device", rdd.getDevice().toJSON().toString());
 					json.put("instanceID", rdd.getInstanceID());
 					
 					listJson.add(json);

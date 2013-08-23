@@ -24,7 +24,6 @@ import org.unbiquitous.uos.core.driverManager.InterfaceValidationException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
@@ -279,14 +278,14 @@ public class DeviceManager implements RadarListener {
 											.addNetworkInterface(device.getNetworkDeviceName(), device.getNetworkDeviceType());
 			
 			ServiceCall call = new ServiceCall(DEVICE_DRIVER_NAME, "handshake", null);
-			call.addParameter("device", new JSONDevice(currentDevice).toString());
+			call.addParameter("device", currentDevice.toJSON().toString());
 
 			ServiceResponse response = gateway.callService(dummyDevice, call);
 			if (response != null && ( response.getError() == null || response.getError().isEmpty())){
 				// in case of a success greeting process, register the device in the neighborhood database
 				String responseDevice = response.getResponseString("device");
 				if (responseDevice != null){
-					UpDevice remoteDevice = new JSONDevice(responseDevice).getAsObject();
+					UpDevice remoteDevice = UpDevice.fromJSON(new JSONObject(responseDevice));
 					registerDevice(remoteDevice);
 					logger.info("Registered device "+remoteDevice.getName());
 					return remoteDevice;

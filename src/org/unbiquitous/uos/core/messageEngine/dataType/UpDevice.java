@@ -1,7 +1,5 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
-import java.math.BigDecimal;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +8,6 @@ import java.util.Map;
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 
 /**
  * This class represents a device from the middleware view.
@@ -79,8 +76,7 @@ public class UpDevice {
 	@Override
 	public String toString() {
 		try {
-			JSONDevice json = new JSONDevice(this);
-			return json.toString();
+			return toJSON().toString();
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
