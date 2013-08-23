@@ -130,9 +130,9 @@ public class UpDriver {
 	private void addStrings(	JSONObject json, 
 										String propName, List<String> stringList) 
 			throws JSONException {
-		JSONArray equivalent_drivers = new JSONArray();
-		json.put(propName,equivalent_drivers);
 		if (stringList != null){
+			JSONArray equivalent_drivers = new JSONArray();
+			json.put(propName,equivalent_drivers);
 			for(String eq: equivalentDrivers){
 				equivalent_drivers.put(eq);
 			}
@@ -142,9 +142,9 @@ public class UpDriver {
 	private void addServices(JSONObject json, 
 							String propName, List<UpService> serviceList) 
 			throws JSONException {
-		JSONArray services = new JSONArray();
-		json.put(propName,services);
 		if (serviceList != null){
+			JSONArray services = new JSONArray();
+			json.put(propName,services);
 			for(UpService s : serviceList){
 				services.put(s.toJSON());
 			}
@@ -152,7 +152,7 @@ public class UpDriver {
 	}
 
 	public static UpDriver fromJSON(JSONObject json) throws JSONException {
-		UpDriver d = new UpDriver(json.getString("name"));
+		UpDriver d = new UpDriver(json.optString("name",null));
 		
 		d.services = addServices(json, "services");
 		d.events = addServices(json, "events");
@@ -163,22 +163,28 @@ public class UpDriver {
 
 	private static List<String> addStrings(JSONObject json, String propName)
 			throws JSONException {
-		JSONArray jsonArray = json.getJSONArray(propName);
-		List<String> strings = new ArrayList<String>();
-		for( int i = 0 ; i < jsonArray.length(); i++){
-			strings.add( jsonArray.getString(i));
+		JSONArray jsonArray = json.optJSONArray(propName);
+		if(jsonArray != null){
+			List<String> strings = new ArrayList<String>();
+			for( int i = 0 ; i < jsonArray.length(); i++){
+				strings.add( jsonArray.getString(i));
+			}
+			return strings;
 		}
-		return strings;
+		return null;
 	}
 
 	private static List<UpService> addServices(JSONObject json, String propName)
 			throws JSONException {
-		JSONArray jsonArray = json.getJSONArray(propName);
-		List<UpService> services = new ArrayList<UpService>();
-		for( int i = 0 ; i < jsonArray.length(); i++){
-			services.add(UpService.fromJSON(jsonArray.getJSONObject(i)));
+		JSONArray jsonArray = json.optJSONArray(propName);
+		if (jsonArray != null){
+			List<UpService> services = new ArrayList<UpService>();
+			for( int i = 0 ; i < jsonArray.length(); i++){
+				services.add(UpService.fromJSON(jsonArray.getJSONObject(i)));
+			}
+			return services;
 		}
-		return services;
+		return null;
 	}
 
 }

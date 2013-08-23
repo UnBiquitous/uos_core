@@ -25,7 +25,6 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
@@ -189,7 +188,7 @@ public class DeviceManager implements RadarListener {
 	private void registerRemoteDriverInstances(UpDevice upDevice, JSONObject driversListMap, String[] instanceIds)throws JSONException {
 		for (String id : instanceIds){
 			
-			UpDriver upDriver = new JSONDriver(driversListMap.getString(id)).getAsObject();
+			UpDriver upDriver = UpDriver.fromJSON(new JSONObject(driversListMap.getString(id)));
 			DriverModel driverModel = new DriverModel(id, upDriver , upDevice.getName());
 			
 			try {
@@ -239,7 +238,7 @@ public class DeviceManager implements RadarListener {
 					JSONArray interfacesJson = new JSONArray(interfaces);
 					
 					for(int i = 0; i < interfacesJson.length(); i++) {
-						UpDriver upDriver = new JSONDriver(interfacesJson.getString(i)).getAsObject();
+						UpDriver upDriver = UpDriver.fromJSON(new JSONObject(interfacesJson.getString(i)));
 						drivers.add(upDriver);
 					}
 					

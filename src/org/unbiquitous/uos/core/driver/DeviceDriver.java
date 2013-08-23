@@ -24,7 +24,6 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
@@ -117,9 +116,7 @@ public class DeviceDriver implements UosDriver {
 			for (DriverData driverData : listDrivers) {
 				
 				try {
-					JSONDriver jsonDriver = new JSONDriver(driverData.getDriver());
-					
-					driversList.put(driverData.getInstanceID(), jsonDriver);
+					driversList.put(driverData.getInstanceID(), driverData.getDriver().toJSON());
 				} catch (JSONException e) {
 					logger.log(Level.SEVERE,"Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
 				}
@@ -185,7 +182,7 @@ public class DeviceDriver implements UosDriver {
 				Map<String, Object> driverMap = new JSONObject( driverList.toString()).toMap();
 				// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
 				for (String id : driverMap.keySet()){
-					UpDriver upDriver = new JSONDriver(driverMap.get(id).toString()).getAsObject();
+					UpDriver upDriver = UpDriver.fromJSON(new JSONObject(driverMap.get(id).toString()));
 					DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
 					gtw.getDriverManager().insert(driverModel);
 				}
@@ -212,7 +209,7 @@ public class DeviceDriver implements UosDriver {
 			
 			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);
 			JSONArray equivalentDriversJson = new JSONArray(equivalentDrivers);
-			List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+			List<JSONObject> jsonList = new ArrayList<JSONObject>();
 			Map<String,Object> responseData = new HashMap<String, Object>();
 			
 			for(int i = 0; i < equivalentDriversJson.length(); i++) {
@@ -230,7 +227,7 @@ public class DeviceDriver implements UosDriver {
 		}
 	}
 	
-	private void addToEquivalanceList(List<JSONDriver> jsonList, UpDriver upDriver) throws JSONException {
+	private void addToEquivalanceList(List<JSONObject> jsonList, UpDriver upDriver) throws JSONException {
 		
 		List<String> equivalentDrivers = upDriver.getEquivalentDrivers();
 		
@@ -242,7 +239,7 @@ public class DeviceDriver implements UosDriver {
 				}
 			}
 		}
-		jsonList.add(new JSONDriver(upDriver));
+		jsonList.add(upDriver.toJSON());
 	}
 
 }

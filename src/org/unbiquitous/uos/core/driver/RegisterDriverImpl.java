@@ -21,7 +21,6 @@ import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 
@@ -74,7 +73,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 				try {
 					JSONObject json = new JSONObject();
 					
-					json.put("driver", new JSONDriver(rdd.getDriver()).toString());
+					json.put("driver", rdd.getDriver().toJSON().toString());
 					json.put("device", new JSONDevice(rdd.getDevice()).toString());
 					json.put("instanceID", rdd.getInstanceID());
 					

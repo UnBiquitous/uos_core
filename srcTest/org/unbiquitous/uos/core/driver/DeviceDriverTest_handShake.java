@@ -26,7 +26,6 @@ import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
@@ -157,7 +156,7 @@ public class DeviceDriverTest_handShake {
 		JSONObject driversList = new JSONObject();
 		UpDriver dummyInterface = new UpDriver("ddd");
 		dummyInterface.addService("s");
-		driversList.put("id_d", new JSONDriver(dummyInterface));
+		driversList.put("id_d", dummyInterface.toJSON());
 		
 		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
 		.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
@@ -188,7 +187,7 @@ public class DeviceDriverTest_handShake {
 		JSONObject driversList = new JSONObject();
 		UpDriver dummyInterface = new UpDriver("ddd");
 		dummyInterface.addService("s");
-		driversList.put("id_d", new JSONDriver(dummyInterface));
+		driversList.put("id_d", dummyInterface.toJSON());
 		
 		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
 			.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
