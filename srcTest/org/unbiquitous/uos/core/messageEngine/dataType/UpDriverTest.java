@@ -93,9 +93,6 @@ public class UpDriverTest {
 		UpDriver driver = new UpDriver();
 		JSONObject json = new JSONObject();
 		json.put("name", (String)null);
-//		json.put("services", new JSONArray());
-//		json.put("events", new JSONArray());
-//		json.put("equivalent_drivers", new JSONArray());
 		
 		assertThat(driver.toJSON().toMap())
 					.isEqualTo(json.toMap());
