@@ -3,6 +3,10 @@ package org.unbiquitous.uos.core.messageEngine.dataType;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unbiquitous.json.JSONArray;
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
+
 public class UpDriver {
 
 	private String name;
@@ -111,5 +115,70 @@ public class UpDriver {
 	public void setEvents(List<UpService> events) {
 		this.events = events;
 	}
-	
+
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put("name", this.getName());
+		
+		addServices(json, "services", this.services);
+		addServices(json, "events", this.events);
+		addStrings(json, "equivalent_drivers", equivalentDrivers);
+		
+		return json;
+	}
+
+	private void addStrings(	JSONObject json, 
+										String propName, List<String> stringList) 
+			throws JSONException {
+		JSONArray equivalent_drivers = new JSONArray();
+		json.put(propName,equivalent_drivers);
+		if (stringList != null){
+			for(String eq: equivalentDrivers){
+				equivalent_drivers.put(eq);
+			}
+		}
+	}
+
+	private void addServices(JSONObject json, 
+							String propName, List<UpService> serviceList) 
+			throws JSONException {
+		JSONArray services = new JSONArray();
+		json.put(propName,services);
+		if (serviceList != null){
+			for(UpService s : serviceList){
+				services.put(s.toJSON());
+			}
+		}
+	}
+
+	public static UpDriver fromJSON(JSONObject json) throws JSONException {
+		UpDriver d = new UpDriver(json.getString("name"));
+		
+		d.services = addServices(json, "services");
+		d.events = addServices(json, "events");
+		d.equivalentDrivers = addStrings(json, "equivalent_drivers");
+		
+		return d;
+	}
+
+	private static List<String> addStrings(JSONObject json, String propName)
+			throws JSONException {
+		JSONArray jsonArray = json.getJSONArray(propName);
+		List<String> strings = new ArrayList<String>();
+		for( int i = 0 ; i < jsonArray.length(); i++){
+			strings.add( jsonArray.getString(i));
+		}
+		return strings;
+	}
+
+	private static List<UpService> addServices(JSONObject json, String propName)
+			throws JSONException {
+		JSONArray jsonArray = json.getJSONArray(propName);
+		List<UpService> services = new ArrayList<UpService>();
+		for( int i = 0 ; i < jsonArray.length(); i++){
+			services.add(UpService.fromJSON(jsonArray.getJSONObject(i)));
+		}
+		return services;
+	}
+
 }
