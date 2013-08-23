@@ -1,11 +1,15 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import java.math.BigDecimal;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
 
 /**
@@ -58,7 +62,18 @@ public class UpDevice {
 		
 		UpDevice d = (UpDevice) obj;
 		
-		return this.name == d.name || this.name.equals(d.name);
+		boolean equals = this.name == d.name ||
+				( this.name != null && this.name.equals(d.name));
+		
+		equals &= this.networks == d.networks ||
+				( this.networks != null  && d.networks != null
+					&& this.networks.containsAll(d.networks)
+					&& d.networks.containsAll(this.networks));
+		
+		equals &= this.meta == d.meta ||
+				( this.meta != null && this.meta.equals(d.meta));
+		
+		return equals;
 	}
 	
 	@Override
@@ -94,4 +109,66 @@ public class UpDevice {
 	public void setMeta(Map<String, String> meta) {
 		this.meta = meta;
 	}
+
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put("name", this.name);
+		
+		addNetworks(json, "networks");
+		addMeta(json);
+		return json;
+	}
+
+	private void addMeta(JSONObject json) throws JSONException {
+		if(this.meta != null){
+			json.put("meta", meta);
+		}
+	}
+
+	private void addNetworks(JSONObject json, String propName) 
+			throws JSONException {
+		if (this.networks != null){
+			JSONArray networks = new JSONArray();
+			json.put(propName, networks);
+			for(UpNetworkInterface ni : this.networks){
+				networks.put(ni.toJSON());
+			}
+		}
+	}
+
+	public static UpDevice fromJSON(JSONObject json) throws JSONException {
+		UpDevice device = new UpDevice();
+		device.name = json.optString("name", null);
+
+		device.networks = fromNetworks(json, "networks");
+		
+		device.meta = fromMeta(json);
+		return device;
+	}
+
+	private static Map<String, String> fromMeta(JSONObject json)
+			throws JSONException {
+		JSONObject j_meta = json.optJSONObject("meta");
+		Map<String,String> meta = null;
+		if(j_meta != null){
+			meta = (Map)j_meta.toMap();
+		}
+		return meta;
+	}
+
+	private static List<UpNetworkInterface> fromNetworks(JSONObject json, String propName)
+			throws JSONException {
+		JSONArray j_networks = json.optJSONArray(propName);
+		if(j_networks != null){
+			List<UpNetworkInterface> networks = new ArrayList<UpNetworkInterface>(); 
+			for(int i = 0; i < j_networks.length(); i++){
+				networks.add(
+					UpNetworkInterface.fromJSON(j_networks.getJSONObject(i))
+				);
+			}
+			return networks;
+		}
+		return null;
+	}
+
 }

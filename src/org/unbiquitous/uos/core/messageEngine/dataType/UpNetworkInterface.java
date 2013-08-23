@@ -1,5 +1,8 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
+
 
 public class UpNetworkInterface {
 
@@ -40,7 +43,25 @@ public class UpNetworkInterface {
 		
 		UpNetworkInterface d = (UpNetworkInterface) obj;
 		
-		return this.networkAddress == d.networkAddress || this.networkAddress.equals(d.networkAddress);
+		return (this.networkAddress == d.networkAddress 
+				|| this.networkAddress.equals(d.networkAddress))
+				&&
+				(this.netType == d.netType 
+				|| this.netType.equals(d.netType));
 	}
 	
+	public JSONObject toJSON() throws JSONException {
+		JSONObject ni_json = new JSONObject();
+		ni_json.put("networkAddress", this.getNetworkAddress());
+		ni_json.put("netType", this.getNetType());
+		return ni_json;
+	}
+	
+	public static UpNetworkInterface fromJSON(JSONObject json)
+			throws JSONException {
+		UpNetworkInterface ni =  new UpNetworkInterface();
+		ni.setNetworkAddress(json.getString("networkAddress"));
+		ni.setNetType(json.getString("netType"));
+		return ni;
+	}
 }

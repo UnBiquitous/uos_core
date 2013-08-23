@@ -107,18 +107,6 @@ public class UpDriverTest {
 		assertThat(UpDriver.fromJSON(new JSONObject())).isEqualTo(new UpDriver());
 	}
 	
-//	@Test public void fromJsonForEmtyData() throws JSONException{
-//		UpDriver driver = new UpDriver();
-//		JSONObject json = new JSONObject();
-//		json.put("name", (String)null);
-//		json.put("services", new JSONArray());
-//		json.put("events", new JSONArray());
-//		json.put("equivalent_drivers", new JSONArray());
-//		
-//		assertThat(driver.toJSON().toMap())
-//		.isEqualTo(json.toMap());
-//	}
-
 	private UpDriver dummyDriver() {
 		UpDriver driver = new UpDriver("d");
 		
