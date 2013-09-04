@@ -1,5 +1,8 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
+
 
 
 public class Message {
@@ -32,5 +35,16 @@ public class Message {
 		this.error = error;
 	}
 
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = new JSONObject();
+		
+		json.put("type", getType().name());
+		json.put("error", getError());
+		
+		return json;
+	}
 	
+	public static void fromJSON(Message msg, JSONObject json) throws JSONException {
+		msg.setError(json.optString("error",null));
+	}
 }

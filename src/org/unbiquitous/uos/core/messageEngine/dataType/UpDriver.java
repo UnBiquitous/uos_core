@@ -1,5 +1,7 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,15 +74,10 @@ public class UpDriver {
 		if (obj == null || ! (obj instanceof UpDriver) ) return false;
 		
 		UpDriver d = (UpDriver) obj;
-		if (this == d) return true;
-		else {
-			if ((this.name != null && !this.name.equals(d.name)) || (this.name == null && d.name != null))
-				return false;
-			else if (this.services != null && !this.services.equals(d.services) || ((this.services == null) && (d.services != null)))
-				return false;
-			else if (this.events != null && !this.events.equals(d.events) || ((this.events == null) && (d.events != null)))
-				return false;
-		}
+		if(!compare(this.name,d.name)) return false;
+		if(!compare(this.services,d.services)) return false;
+		if(!compare(this.events,d.events)) return false;
+		
 		return true;
 	}
 

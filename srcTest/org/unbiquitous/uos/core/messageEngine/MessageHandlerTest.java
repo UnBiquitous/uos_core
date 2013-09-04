@@ -303,7 +303,10 @@ public class MessageHandlerTest {
 		
 		handler.notifyEvent(scenario.userEntered,scenario.target);
 		
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.userEntered,new JSONNotify(scenario.grabSentString()).getAsObject());
+		assertEquals("The JSON sent should be compatible with the snapshot created.",
+				scenario.userEntered,
+				Notify.fromJSON(new JSONObject(scenario.grabSentString())));
+		
 	}
 	
 	@Test(expected=MessageEngineException.class) public void notifyEvent_ACallWithProblemsThrowsAnException() throws Exception{

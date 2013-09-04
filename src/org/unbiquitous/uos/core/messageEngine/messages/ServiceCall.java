@@ -1,8 +1,8 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
-import java.util.Arrays;
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.unbiquitous.json.JSONArray;
@@ -146,17 +146,6 @@ public class ServiceCall extends Message {
 		return true;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	static boolean compare(Object a, Object b){
-		if(a != null && b != null && 
-				a.getClass().isArray() && b.getClass().isArray()){
-			List _a = Arrays.asList((Object[])a);
-			List _b = Arrays.asList((Object[])b);
-			return a == b || (  _a.containsAll(_b) && _b.containsAll(_a) );
-		}
-		return a == b || (a != null && a.equals(b));
-	}
-	
 	@Override
 	public int hashCode() {
 		if (this.driver != null && this.service != null){
@@ -181,10 +170,7 @@ public class ServiceCall extends Message {
 	}
 
 	public JSONObject toJSON() throws JSONException {
-		JSONObject json = new JSONObject();
-		
-		json.put("type", getType().name());
-		json.put("error", getError());
+		JSONObject json = super.toJSON();
 		
 		json.put("driver", driver);
 		json.put("service", service);
@@ -204,7 +190,7 @@ public class ServiceCall extends Message {
 	public static ServiceCall fromJSON(JSONObject json) throws JSONException {
 		ServiceCall call = new ServiceCall();
 		
-		call.setError(json.optString("error",null));
+		Message.fromJSON(call, json);
 		
 		call.driver = json.optString("driver",null);
 		call.service = json.optString("service",null);

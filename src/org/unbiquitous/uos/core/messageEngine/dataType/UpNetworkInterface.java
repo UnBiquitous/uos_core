@@ -1,5 +1,7 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 
@@ -43,11 +45,10 @@ public class UpNetworkInterface {
 		
 		UpNetworkInterface d = (UpNetworkInterface) obj;
 		
-		return (this.networkAddress == d.networkAddress 
-				|| this.networkAddress.equals(d.networkAddress))
-				&&
-				(this.netType == d.netType 
-				|| this.netType.equals(d.netType));
+		if(!compare(this.networkAddress,d.networkAddress)) return false;
+		if(!compare(this.netType,d.netType)) return false;
+		
+		return true;
 	}
 	
 	public JSONObject toJSON() throws JSONException {

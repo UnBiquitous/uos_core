@@ -1,5 +1,7 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,18 +61,11 @@ public class UpDevice {
 		
 		UpDevice d = (UpDevice) obj;
 		
-		boolean equals = this.name == d.name ||
-				( this.name != null && this.name.equals(d.name));
+		if(!compare(this.name,d.name)) return false;
+		if(!compare(this.networks,d.networks)) return false;
+		if(!compare(this.meta,d.meta)) return false;
 		
-		equals &= this.networks == d.networks ||
-				( this.networks != null  && d.networks != null
-					&& this.networks.containsAll(d.networks)
-					&& d.networks.containsAll(this.networks));
-		
-		equals &= this.meta == d.meta ||
-				( this.meta != null && this.meta.equals(d.meta));
-		
-		return equals;
+		return true;
 	}
 	
 	@Override
@@ -150,6 +145,7 @@ public class UpDevice {
 		return device;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Map<String, String> fromMeta(JSONObject json)
 			throws JSONException {
 		JSONObject j_meta = json.optJSONObject("meta");

@@ -12,6 +12,7 @@ import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
 
 public class ServiceCallTest {
+	
 	@Test
 	public void equalsNull() {
 		assertFalse(new ServiceCall().equals(null));
@@ -209,13 +210,10 @@ public class ServiceCallTest {
 					    .isEqualTo(dummyServiceCall());
 	}
 	
-	@SuppressWarnings({ "rawtypes", "serial", "unchecked" })
 	@Test public void fromJSONWithChannelIDs() throws JSONException{
-		JSONObject json = new JSONObject(
-				new HashMap() {{ 
+		JSONObject json = new JSONObject(){{ 
 					put("channelIDs",new String[]{"123","456"});
-				}}
-			);
+				}};
 		
 		assertThat(ServiceCall.fromJSON(new JSONObject(json.toString())).getChannelIDs())
 					    .containsOnly("123","456");
