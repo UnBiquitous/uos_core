@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
-import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
 
 public class UpDriverTest {
@@ -82,6 +81,14 @@ public class UpDriverTest {
 		UpDriver driver2 = new UpDriver("driver");
 		driver2.addEvent("e1");
 		assertTrue(driver1.equals(driver2));
+	}
+	
+	@Test public void hash(){
+		UpDriver driver1 = new UpDriver("driver");
+		UpDriver driver2 = new UpDriver("driver");
+		UpDriver driver3 = new UpDriver("notdriver");
+		assertThat(driver2.hashCode()).isEqualTo(driver1.hashCode());
+		assertThat(driver3.hashCode()).isNotEqualTo(driver1.hashCode());
 	}
 	
 	@Test public void toJson() throws JSONException{

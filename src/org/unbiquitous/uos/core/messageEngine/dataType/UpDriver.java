@@ -84,6 +84,14 @@ public class UpDriver {
 		return true;
 	}
 
+	@Override
+	public int hashCode() {
+		if(name != null){
+			return name.hashCode();
+		}
+		return super.hashCode();
+	}
+	
 	public UpDriver addEvent(UpService event){
 		if (events == null){
 			events = new ArrayList<UpService>();

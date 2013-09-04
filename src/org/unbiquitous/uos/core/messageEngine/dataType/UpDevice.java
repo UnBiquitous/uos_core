@@ -74,6 +74,14 @@ public class UpDevice {
 	}
 	
 	@Override
+	public int hashCode() {
+		if(name != null){
+			return name.hashCode();
+		}
+		return super.hashCode();
+	}
+	
+	@Override
 	public String toString() {
 		try {
 			return toJSON().toString();

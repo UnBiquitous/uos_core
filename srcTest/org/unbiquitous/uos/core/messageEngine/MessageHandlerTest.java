@@ -1,5 +1,6 @@
 package org.unbiquitous.uos.core.messageEngine;
 
+import static org.fest.assertions.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -18,6 +19,7 @@ import java.util.ResourceBundle;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
@@ -134,17 +136,22 @@ public class MessageHandlerTest {
 			scenario.wifiInterfaceIn.write(c);
 		}
 		
-		ServiceResponse response = handler.callService(scenario.target, scenario.snapshot);
+		ServiceResponse response = handler
+								.callService(scenario.target, scenario.snapshot);
 		
-		assertEquals("Should return the same response that was stimulated.","NotAvailable",response.getResponseData("pic"));
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.snapshot,new JSONServiceCall(scenario.grabSentString()).getAsObject());
+		assertEquals("Should return the same response that was stimulated.",
+						"NotAvailable",response.getResponseData("pic"));
+		assertThat(ServiceCall.fromJSON(new JSONObject(scenario.grabSentString())))
+			.isEqualTo(scenario.snapshot);
 	}
 
 	@Test public void callService_aSimpleCallMustBeSentButWhenNoResponseIsRetrievedNullShouldBeReturned() throws Exception{
 		SnapshotScenario scenario = new SnapshotScenario();
 		
-		assertNull("No response must be returned.", handler.callService(scenario.target, scenario.snapshot));
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.snapshot,new JSONServiceCall(scenario.grabSentString()).getAsObject());
+		assertNull("No response must be returned.", 
+				handler.callService(scenario.target, scenario.snapshot));
+		assertThat(ServiceCall.fromJSON(new JSONObject(scenario.grabSentString())))
+				.isEqualTo(scenario.snapshot);
 	}
 	
 	@Test public void callService_aSimpleCallMustBeSentButWhenNoConnectionIsPossibleNullShouldBeReturned() throws Exception{

@@ -1,7 +1,13 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.unbiquitous.json.JSONArray;
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
 
 public class ServiceCall extends Message {
 	
@@ -9,21 +15,13 @@ public class ServiceCall extends Message {
 	public enum ServiceType {DISCRETE, STREAM};
 	
 	private String driver;
-	
 	private String service;
-	
 	private Map<String,Object> parameters;
-	
 	private String instanceId;
-	
 	private ServiceType serviceType;
-	
 	private int channels;
-	
 	private String[] channelIDs;
-	
 	private String channelType;
-	
 	private String securityType;
 
 	public ServiceCall() {
@@ -134,40 +132,35 @@ public class ServiceCall extends Message {
 			return false;
 		}
 		ServiceCall temp = (ServiceCall) obj; 
-		if (	!( this.driver == temp.driver || (this.driver != null && this.driver.equals(temp.driver)))){
-			return false;
-		}
-		if (	!( this.instanceId == temp.instanceId || (this.instanceId != null && this.instanceId.equals(temp.instanceId)))){
-			return false;
-		}
-		if (	!( this.parameters == temp.parameters || (this.parameters != null && this.parameters.equals(temp.parameters)))){
-			return false;
-		}
-		if (	!( this.service == temp.service || (this.service != null && this.service.equals(temp.service)))){
-			return false;
-		}
+		
+		if(!compare(this.driver,temp.driver)) return false;
+		if(!compare(this.service,temp.service)) return false;
+		if(!compare(this.parameters,temp.parameters)) return false;
+		if(!compare(this.instanceId,temp.instanceId)) return false;
+		if(!compare(this.serviceType,temp.serviceType)) return false;
+		if(!compare(this.channels,temp.channels)) return false;
+		if(!compare(this.channelIDs,temp.channelIDs)) return false;
+		if(!compare(this.channelType,temp.channelType)) return false;
+		if(!compare(this.securityType,temp.securityType)) return false;
 		
 		return true;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	static boolean compare(Object a, Object b){
+		if(a != null && b != null && 
+				a.getClass().isArray() && b.getClass().isArray()){
+			List _a = Arrays.asList((Object[])a);
+			List _b = Arrays.asList((Object[])b);
+			return a == b || (  _a.containsAll(_b) && _b.containsAll(_a) );
+		}
+		return a == b || (a != null && a.equals(b));
+	}
+	
 	@Override
 	public int hashCode() {
-		int hash = 0;
-		if (this.driver != null){
-			hash += this.driver.hashCode();
-		}
-		if (this.instanceId != null){
-			hash += this.instanceId.hashCode();
-		}
-		if (this.parameters != null){
-			hash += this.parameters.hashCode();
-		}
-		if (this.service != null){
-			hash += this.service.hashCode();
-		}
-			
-		if (hash != 0){
-			return hash;
+		if (this.driver != null && this.service != null){
+			return this.driver.hashCode() + this.service.hashCode();
 		}
 		
 		return super.hashCode();
@@ -185,5 +178,62 @@ public class ServiceCall extends Message {
 	 */
 	public void setSecurityType(String securityType) {
 		this.securityType = securityType;
+	}
+
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = new JSONObject();
+		
+		json.put("type", getType().name());
+		json.put("error", getError());
+		
+		json.put("driver", driver);
+		json.put("service", service);
+		if(parameters != null)
+			json.put("parameters",parameters);
+		json.put("instanceId",instanceId);
+		json.put("serviceType",serviceType.name());
+		json.put("channels",channels);
+		json.put("channelIDs",channelIDs);
+		json.put("channelType",channelType);
+		json.put("securityType",securityType);
+		
+		return json;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static ServiceCall fromJSON(JSONObject json) throws JSONException {
+		ServiceCall call = new ServiceCall();
+		
+		call.setError(json.optString("error",null));
+		
+		call.driver = json.optString("driver",null);
+		call.service = json.optString("service",null);
+		if(json.has("parameters")){
+			call.parameters = json.optJSONObject("parameters").toMap();
+		}
+		call.instanceId = json.optString("instanceId",null);
+		if(json.has("serviceType")){
+			call.serviceType = ServiceType.valueOf(json.optString("serviceType"));
+		}
+		if(json.has("channels")){
+			call.channels = json.optInt("channels");
+		}
+		if(json.has("channelIDs")){
+			JSONArray jsonArray = json.getJSONArray("channelIDs");
+			call.channelIDs = (String[]) jsonArray.toArray().toArray(new String[]{});
+		}
+		call.channelType = json.optString("channelType",null);
+		call.securityType = json.optString("securityType",null);
+		
+		return call;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
 	}
 }
