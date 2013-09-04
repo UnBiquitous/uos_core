@@ -30,7 +30,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 

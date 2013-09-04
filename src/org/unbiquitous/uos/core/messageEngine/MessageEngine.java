@@ -21,7 +21,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
@@ -77,7 +76,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			logger.log(Level.INFO,"Failure to handle the incoming message",e);
 			Notify event = new Notify();
 			event.setError("Failure to handle the incoming message");
-			try {return new JSONNotify(event).toString();} 
+			try {return event.toJSON().toString();} 
 			catch (JSONException z) {logger.severe("Never Happens");}
 		}
 		return null;
@@ -110,7 +109,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	
 	private void handleNotify(String message,NetworkDevice clientDevice) throws MessageEngineException{
 		try {
-			Notify notify = new JSONNotify(message).getAsObject();
+			Notify notify = Notify.fromJSON(new JSONObject(message));
 			
 			notifyHandler.handleNofify(notify,
 					deviceManager.retrieveDevice(

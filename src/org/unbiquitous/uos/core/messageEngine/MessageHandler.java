@@ -23,7 +23,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -140,7 +139,7 @@ public class MessageHandler {
 			throw new IllegalArgumentException("Either the Device or Service is invalid.");
 		}
 		try {
-			String message = new JSONNotify(notify).toString();
+			String message = notify.toJSON().toString();
 			send(message, device,false);
 		} catch (Exception e) {
 			throw new MessageEngineException(e);
