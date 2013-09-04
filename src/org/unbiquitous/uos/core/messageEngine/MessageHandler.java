@@ -24,7 +24,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -93,7 +92,7 @@ public class MessageHandler {
 		}
 		
 		try {
-			JSONObject  jsonCall = new JSONServiceCall(serviceCall);
+			JSONObject  jsonCall = serviceCall.toJSON();
 			if (serviceCall.getSecurityType() != null ){
 				return (new JSONServiceResponse(sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device))).getAsObject();
 			}

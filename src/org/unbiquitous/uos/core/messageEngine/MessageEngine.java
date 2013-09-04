@@ -22,7 +22,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
@@ -89,8 +88,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	 */
 	private String handleServiceCall(String message, CallContext messageContext) throws MessageEngineException{
 		try {
-			JSONServiceCall jsonServiceCall = new JSONServiceCall(message);
-			ServiceCall serviceCall = jsonServiceCall.getAsObject();
+			ServiceCall serviceCall = ServiceCall.fromJSON(new JSONObject(message)); 
 			ServiceResponse response = serviceCallHandler.handleServiceCall(serviceCall, messageContext);
 			logger.info("Returning service response");
 			
