@@ -23,7 +23,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
@@ -93,11 +92,12 @@ public class MessageHandler {
 		try {
 			JSONObject  jsonCall = serviceCall.toJSON();
 			if (serviceCall.getSecurityType() != null ){
-				return (new JSONServiceResponse(sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device))).getAsObject();
+				String data = sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device);
+				return ServiceResponse.fromJSON(new JSONObject(data));
 			}
 			String returnedMessage = send(jsonCall.toString(), device,true);
 			if (returnedMessage != null)
-				return (new JSONServiceResponse(returnedMessage)).getAsObject();
+				return ServiceResponse.fromJSON(new JSONObject(returnedMessage));
 		} catch (Exception e) {
 			throw new MessageEngineException(e);
 		} 

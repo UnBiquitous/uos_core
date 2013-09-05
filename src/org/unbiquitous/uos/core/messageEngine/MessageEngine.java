@@ -21,7 +21,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
 import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
@@ -91,15 +90,13 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			ServiceResponse response = serviceCallHandler.handleServiceCall(serviceCall, messageContext);
 			logger.info("Returning service response");
 			
-			JSONServiceResponse jsonResponse = new JSONServiceResponse(response);
-			return jsonResponse.toString();
+			return response.toJSON().toString();
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Internal Failure", e);
 			ServiceResponse errorResponse = new ServiceResponse();
 			errorResponse.setError(e.getMessage() == null ?"Internal Error":e.getMessage());
 			try {
-				JSONServiceResponse jsonResponse = new JSONServiceResponse(errorResponse);
-				return jsonResponse.toString();
+				return errorResponse.toJSON().toString();
 			} catch (JSONException e1) {
 				// Never Should Happens
 				throw new MessageEngineException("Unexpected Error",e1);

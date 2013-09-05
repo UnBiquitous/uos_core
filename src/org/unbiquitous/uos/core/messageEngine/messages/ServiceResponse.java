@@ -3,6 +3,8 @@ package org.unbiquitous.uos.core.messageEngine.messages;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 
 
@@ -66,12 +68,7 @@ public class ServiceResponse extends Message{
 		if (this.responseData != null){
 			hash += this.responseData.hashCode();
 		}
-			
-		if (hash != 0){
-			return hash;
-		}
-		
-		return super.hashCode();
+		return hash;
 	}
 
 	public CallContext getMessageContext() {
@@ -80,5 +77,32 @@ public class ServiceResponse extends Message{
 
 	public void setMessageContext(CallContext messageContext) {
 		this.messageContext = messageContext;
+	}
+	
+	@Override
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = super.toJSON();
+		if (this.responseData != null){
+			json.put("responseData", this.responseData);
+		}
+		return json;
+	}
+
+	public static ServiceResponse fromJSON(JSONObject json) throws JSONException {
+		ServiceResponse r = new ServiceResponse();
+		Message.fromJSON(r, json);
+		if (json.has("responseData")){
+			r.responseData = json.optJSONObject("responseData").toMap();
+		}
+		return r;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
 	}
 }
