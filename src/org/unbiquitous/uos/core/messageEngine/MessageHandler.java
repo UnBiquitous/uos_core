@@ -22,7 +22,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
@@ -119,10 +118,11 @@ public class MessageHandler {
 		logger.fine("Proceed to encode original message");
 
 		message = tHandler.encode(message, target.getName());
-		message = new JSONEncapsulatedMessage(new EncapsulatedMessage(securityType,message)).toString();
+		message = new EncapsulatedMessage(securityType,message).toJSON().toString();
 		message = send(message, target,true);
-			
-		return tHandler.decode(new JSONEncapsulatedMessage(message).getAsObject().getInnerMessage(), target.getName());
+		
+		EncapsulatedMessage e = EncapsulatedMessage.fromJSON(new JSONObject(message));
+		return tHandler.decode(e.getInnerMessage(), target.getName());
 	}
 	
 	/**

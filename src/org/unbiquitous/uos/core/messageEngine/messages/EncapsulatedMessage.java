@@ -1,5 +1,10 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
+
 
 public class EncapsulatedMessage extends Message {
 
@@ -18,7 +23,6 @@ public class EncapsulatedMessage extends Message {
 	}
 
 
-
 	public String getInnerMessage() {
 		return innerMessage;
 	}
@@ -27,18 +31,50 @@ public class EncapsulatedMessage extends Message {
 		this.innerMessage = innerMessage;
 	}
 
-	/**
-	 * @return the securityType
-	 */
 	public String getSecurityType() {
 		return securityType;
 	}
 
-	/**
-	 * @param securityType the securityType to set
-	 */
 	public void setSecurityType(String securityType) {
 		this.securityType = securityType;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !( obj instanceof EncapsulatedMessage)){
+			return false;
+		}
+		EncapsulatedMessage temp = (EncapsulatedMessage) obj; 
+		
+		if(!compare(this.innerMessage,temp.innerMessage)) return false;
+		if(!compare(this.securityType,temp.securityType)) return false;
+		
+		return true;
+	}
+	
+	@Override
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = super.toJSON();
+		
+		json.put("innerMessage", this.innerMessage);
+		json.put("securityType", this.securityType);
+		return json;
+	}
+
+	public static EncapsulatedMessage fromJSON(JSONObject json) throws JSONException {
+		EncapsulatedMessage e = new EncapsulatedMessage();
+		Message.fromJSON(e, json);
+		e.innerMessage = json.optString("innerMessage",null);
+		e.securityType = json.optString("securityType",null);
+		return e;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
+	}
 }

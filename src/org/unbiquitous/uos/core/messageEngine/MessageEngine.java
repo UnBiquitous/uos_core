@@ -20,7 +20,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Message;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
@@ -122,8 +121,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	
 	private String handleEncapsulatedMessage(String message,NetworkDevice clientDevice) throws MessageEngineException{
 		try {
-			JSONEncapsulatedMessage jsonEncapsulatedMessage = new JSONEncapsulatedMessage(message);
-			EncapsulatedMessage encapsulatedMessage = jsonEncapsulatedMessage.getAsObject();
+			EncapsulatedMessage encapsulatedMessage = EncapsulatedMessage.fromJSON(new JSONObject(message)); 
 			
 			String securityType = encapsulatedMessage.getSecurityType();
 			
@@ -153,9 +151,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 				encapsulatedResponse.setInnerMessage(encodedMessage);
 				encapsulatedResponse.setSecurityType(securityType);
 				 
-				JSONEncapsulatedMessage jsonEncapsulatedResponse = new JSONEncapsulatedMessage(encapsulatedResponse);
-				
-				return jsonEncapsulatedResponse.toString();
+				return encapsulatedResponse.toJSON().toString();
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Problems handling EncapsulatedMessage: ",e);
