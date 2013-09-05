@@ -18,10 +18,10 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
+import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
@@ -81,7 +81,7 @@ public class MessageHandler {
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(UpDevice device,ServiceCall serviceCall) throws MessageEngineException{
+	public Response callService(UpDevice device,Call serviceCall) throws MessageEngineException{
 		if (	device == null || serviceCall == null ||
 				serviceCall.getDriver() == null || serviceCall.getDriver().isEmpty() ||
 				serviceCall.getService() == null || serviceCall.getService().isEmpty()){
@@ -92,11 +92,11 @@ public class MessageHandler {
 			JSONObject  jsonCall = serviceCall.toJSON();
 			if (serviceCall.getSecurityType() != null ){
 				String data = sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device);
-				return ServiceResponse.fromJSON(new JSONObject(data));
+				return Response.fromJSON(new JSONObject(data));
 			}
 			String returnedMessage = send(jsonCall.toString(), device,true);
 			if (returnedMessage != null)
-				return ServiceResponse.fromJSON(new JSONObject(returnedMessage));
+				return Response.fromJSON(new JSONObject(returnedMessage));
 		} catch (Exception e) {
 			throw new MessageEngineException(e);
 		} 
@@ -118,10 +118,10 @@ public class MessageHandler {
 		logger.fine("Proceed to encode original message");
 
 		message = tHandler.encode(message, target.getName());
-		message = new EncapsulatedMessage(securityType,message).toJSON().toString();
+		message = new Capsule(securityType,message).toJSON().toString();
 		message = send(message, target,true);
 		
-		EncapsulatedMessage e = EncapsulatedMessage.fromJSON(new JSONObject(message));
+		Capsule e = Capsule.fromJSON(new JSONObject(message));
 		return tHandler.decode(e.getInnerMessage(), target.getName());
 	}
 	

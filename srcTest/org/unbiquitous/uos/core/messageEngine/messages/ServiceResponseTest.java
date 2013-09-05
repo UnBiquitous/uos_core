@@ -12,23 +12,23 @@ public class ServiceResponseTest {
 
 	@Test
 	public void equalsNull() {
-		assertFalse(new ServiceResponse().equals(null));
+		assertFalse(new Response().equals(null));
 	}
 	
 	@Test public void notEquals(){
-		assertFalse(new ServiceResponse().equals("somthing"));
+		assertFalse(new Response().equals("somthing"));
 	}
 	
 	@Test public void equalsWithEmpty(){
-		assertTrue(new ServiceResponse().equals(new ServiceResponse()));
+		assertTrue(new Response().equals(new Response()));
 	}
 	
 	@Test public void notEqualsWithDifferentParameter(){
-		ServiceResponse r1 = new ServiceResponse();
+		Response r1 = new Response();
 		r1.addParameter("a", 1);
-		ServiceResponse r2 = new ServiceResponse();
+		Response r2 = new Response();
 		r2.addParameter("a", 2);
-		ServiceResponse r3 = new ServiceResponse();
+		Response r3 = new Response();
 		r2.addParameter("b", 1);
 		
 		assertFalse(r1.equals(r2));
@@ -36,20 +36,20 @@ public class ServiceResponseTest {
 	}
 	
 	@Test public void equalsWithSameParameter(){
-		ServiceResponse r1 = new ServiceResponse();
+		Response r1 = new Response();
 		r1.addParameter("a", 1);
-		ServiceResponse r2 = new ServiceResponse();
+		Response r2 = new Response();
 		r2.addParameter("a", 1);
 		
 		assertTrue(r1.equals(r2));
 	}
 	
 	@Test public void hash(){
-		ServiceResponse r1 = new ServiceResponse().addParameter("a", 1);
-		ServiceResponse r2 = new ServiceResponse().addParameter("a", 1);
-		ServiceResponse r3 = new ServiceResponse().addParameter("b", 1);
-		ServiceResponse r4 = new ServiceResponse().addParameter("a", 2);
-		ServiceResponse r5 = new ServiceResponse();
+		Response r1 = new Response().addParameter("a", 1);
+		Response r2 = new Response().addParameter("a", 1);
+		Response r3 = new Response().addParameter("b", 1);
+		Response r4 = new Response().addParameter("a", 2);
+		Response r5 = new Response();
 		
 		assertThat(r2.hashCode()).isEqualTo(r1.hashCode());
 		assertThat(r3.hashCode()).isNotEqualTo(r1.hashCode());
@@ -62,20 +62,20 @@ public class ServiceResponseTest {
 	}
 	
 	@Test public void toJSONWithEmpty() throws JSONException{
-		assertThat(new ServiceResponse().toJSON())
+		assertThat(new Response().toJSON())
 					.isEqualTo(new JSONObject(){{
 						put("type", Message.Type.SERVICE_CALL_RESPONSE.name());
 					}});
 	}
 	
 	@Test public void fromJSON() throws JSONException{
-		assertThat(ServiceResponse.fromJSON(dummyJSON()))
+		assertThat(Response.fromJSON(dummyJSON()))
 				.isEqualTo(dummyResponse());
 	}
 	
 	@Test public void fromJSONWithEmpty() throws JSONException{
-		assertThat(ServiceResponse.fromJSON(new JSONObject()))
-				.isEqualTo(new ServiceResponse());
+		assertThat(Response.fromJSON(new JSONObject()))
+				.isEqualTo(new Response());
 	}
 
 	private JSONObject dummyJSON() throws JSONException {
@@ -90,8 +90,8 @@ public class ServiceResponseTest {
 		return json;
 	}
 
-	private ServiceResponse dummyResponse() {
-		ServiceResponse r = new ServiceResponse();
+	private Response dummyResponse() {
+		Response r = new Response();
 		r.setError("err");
 		r.addParameter("a", "a");
 		r.addParameter("b", 1);

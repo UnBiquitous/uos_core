@@ -19,8 +19,8 @@ import org.unbiquitous.uos.core.connectivity.ConnectivityException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 
 
@@ -72,11 +72,11 @@ public class ProxyDriverImpl implements ProxyDriver {
 	 * @param serviceResponse The service response
 	 * @param messageContext Our message context of streams respective to the caller device
 	 */
-	public synchronized void forwardServiceCall(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, CallContext messageContext) {
+	public synchronized void forwardServiceCall(Call serviceCall,
+			Response serviceResponse, CallContext messageContext) {
 
 		//Sets the right channel type
-		if(serviceCall.getServiceType().equals(ServiceCall.ServiceType.STREAM)){
+		if(serviceCall.getServiceType().equals(Call.ServiceType.STREAM)){
 			//Sets the right interface to do the service call
 			try {
 				UpNetworkInterface netInt = ((SmartSpaceGateway)this.gateway).getConnectivityManager().getAppropriateInterface(this.provider,
@@ -139,9 +139,9 @@ public class ProxyDriverImpl implements ProxyDriver {
 	 */
 	private class ProxyServiceCall extends Thread {
 		
-		private ServiceCall serviceCall;
+		private Call serviceCall;
 		
-		private ServiceResponse serviceResponse;
+		private Response serviceResponse;
 		
 		private CallContext messageContextBefore;
 		
@@ -155,8 +155,8 @@ public class ProxyDriverImpl implements ProxyDriver {
 		 * @param serviceResponse
 		 * @param messageContextBefore
 		 */
-		public ProxyServiceCall(ServiceCall serviceCall,
-				ServiceResponse serviceResponse,
+		public ProxyServiceCall(Call serviceCall,
+				Response serviceResponse,
 				CallContext messageContextBefore){
 			
 			this.serviceCall = serviceCall;
@@ -173,7 +173,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 		public synchronized void run() {
 			
 			//Calls the service and gets a new service response
-			ServiceResponse newServiceResponse = null;
+			Response newServiceResponse = null;
 			try{
 				newServiceResponse = ProxyDriverImpl.this.gateway.callService(ProxyDriverImpl.this.provider,
 						this.serviceCall);				
@@ -182,7 +182,7 @@ public class ProxyDriverImpl implements ProxyDriver {
 			}
 			
 			//If the service type is stream, redirect the streams
-			if(this.serviceCall.getServiceType().equals(ServiceCall.ServiceType.STREAM) ){
+			if(this.serviceCall.getServiceType().equals(Call.ServiceType.STREAM) ){
 				
 				//Gives some time to establish the streams correctly
 				try {

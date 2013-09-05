@@ -25,8 +25,8 @@ import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
 public class DeviceDriverTest_handShake {
@@ -70,13 +70,13 @@ public class DeviceDriverTest_handShake {
 		UpDevice toRegister = new UpDevice("Dummy")
 									.addNetworkInterface("HERE", "LOCAL");
 		
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 								.addParameter(	"device", 
 												toRegister.toJSON()
 													.toString()
 											);
 		
-		driver.handshake(call, new ServiceResponse(), null);
+		driver.handshake(call, new Response(), null);
 		assertThat(deviceManager.listDevices()).contains(toRegister);
 	}
 	
@@ -84,13 +84,13 @@ public class DeviceDriverTest_handShake {
 		UpDevice toRegister = new UpDevice("Dummy")
 									.addNetworkInterface("HERE", "LOCAL");
 		
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 								.addParameter(	"device", 
 												toRegister.toJSON()
 													.toString()
 											);
 		
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		driver.handshake(call, response, null);
 		assertThat(response.getResponseData("device"))
 			.isEqualTo(currentDevice.toJSON().toString());
@@ -101,20 +101,20 @@ public class DeviceDriverTest_handShake {
 		SmartSpaceGateway gateway = mockGateway(currentDevice);
 		
 		driver.init(gateway, "id");
-		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
-				.thenReturn(new ServiceResponse());
+		when(gateway.callService((UpDevice)any(), (Call)any()))
+				.thenReturn(new Response());
 		
 		UpDevice toRegister = new UpDevice("Dummy")
 									.addNetworkInterface("HERE", "LOCAL");
 		
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 								.addParameter(	"device", 
 												toRegister.toJSON()
 													.toString()
 											);
 		
-		driver.handshake(call, new ServiceResponse(), null);
-		ServiceResponse response = new ServiceResponse();
+		driver.handshake(call, new Response(), null);
+		Response response = new Response();
 		driver.handshake(call, response, null);
 		
 		assertThat(deviceManager.listDevices()).contains(toRegister);
@@ -126,8 +126,8 @@ public class DeviceDriverTest_handShake {
 	}
 	
 	@Test public void doesNothingWhenThereIsNoDevice() throws Exception{
-		ServiceResponse response = new ServiceResponse();
-		driver.handshake(new ServiceCall(), response, null);
+		Response response = new Response();
+		driver.handshake(new Call(), response, null);
 		
 		assertThat(response.getResponseData()).isNullOrEmpty();
 		assertThat(response.getError()).isNotEmpty();
@@ -135,11 +135,11 @@ public class DeviceDriverTest_handShake {
 	
 	@Test public void doesNothingWhenTheDeviceIsNotCorrectlyTransfered() throws Exception{
 
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 								.addParameter(	"device", 
 												"Not valid JSON"
 											);
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		driver.handshake(call, response, null);
 		
 		assertThat(response.getResponseData()).isNullOrEmpty();
@@ -157,22 +157,22 @@ public class DeviceDriverTest_handShake {
 		dummyInterface.addService("s");
 		driversList.put("id_d", dummyInterface.toJSON());
 		
-		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
-		.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
+		when(gateway.callService((UpDevice)any(), (Call)any()))
+		.thenReturn(new Response().addParameter("driverList", driversList ));
 		
 		driver.init(gateway, "id");
 		UpDevice toRegister = new UpDevice("Dummy")
 				.addNetworkInterface("HERE", "LOCAL");
 		
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 				.addParameter("device",toRegister.toJSON().toString());
 		
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		driver.handshake(call, response, null);
 		driver.handshake(call, response, null);
 		
-		ArgumentCaptor<ServiceCall> getCall = ArgumentCaptor
-				.forClass(ServiceCall.class); 
+		ArgumentCaptor<Call> getCall = ArgumentCaptor
+				.forClass(Call.class); 
 		verify(gateway, times(2)).callService(eq(toRegister), getCall.capture());
 		assertThat(getCall.getValue().getDriver()).isEqualTo("uos.DeviceDriver");
 		assertThat(getCall.getValue().getService()).isEqualTo("listDrivers");
@@ -188,21 +188,21 @@ public class DeviceDriverTest_handShake {
 		dummyInterface.addService("s");
 		driversList.put("id_d", dummyInterface.toJSON());
 		
-		when(gateway.callService((UpDevice)any(), (ServiceCall)any()))
-			.thenReturn(new ServiceResponse().addParameter("driverList", driversList ));
+		when(gateway.callService((UpDevice)any(), (Call)any()))
+			.thenReturn(new Response().addParameter("driverList", driversList ));
 		
 		driver.init(gateway, "id");
 		UpDevice toRegister = new UpDevice("Dummy")
 										.addNetworkInterface("HERE", "LOCAL");
 
-		ServiceCall call = new ServiceCall()
+		Call call = new Call()
 					.addParameter("device",toRegister.toJSON().toString());
 		
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		driver.handshake(call, response, null);
 		
-		ArgumentCaptor<ServiceCall> getCall = ArgumentCaptor
-													.forClass(ServiceCall.class); 
+		ArgumentCaptor<Call> getCall = ArgumentCaptor
+													.forClass(Call.class); 
 		verify(gateway, times(1)).callService(eq(toRegister), getCall.capture());
 		assertThat(getCall.getValue().getDriver()).isEqualTo("uos.DeviceDriver");
 		assertThat(getCall.getValue().getService()).isEqualTo("listDrivers");

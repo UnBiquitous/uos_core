@@ -20,8 +20,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.ontologyEngine.OntologyInstance;
 import org.unbiquitous.uos.core.ontologyEngine.api.StartReasoner;
@@ -43,8 +43,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     public static final String REMOVE = "remove";
     
     @Override
-    public void isInstanceOf(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void isInstanceOf(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
 
         String instanceName = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM);
@@ -61,8 +61,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void isSubClassOf(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void isSubClassOf(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
 
         String subClassName = (String) serviceCall.getParameter(SUBCLASS_NAME_PARAM);
@@ -79,8 +79,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void hasObjectProperty(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void hasObjectProperty(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String instanceName1 = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM+1);
         String objectPropertyName = (String) serviceCall.getParameter(OBJECT_PROPERTY_NAME_PARAM);
@@ -98,8 +98,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void getInstancesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void getInstancesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
         String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
@@ -116,8 +116,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void getSubClassesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void getSubClassesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
         String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
@@ -134,8 +134,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void getSuperClassesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void getSuperClassesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String className = (String) serviceCall.getParameter(CLASS_NAME_PARAM);
         String direct = (String) serviceCall.getParameter(DIRECT_PARAM);
@@ -152,8 +152,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void getDataPropertyValues(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void getDataPropertyValues(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String instanceName = (String) serviceCall.getParameter(INSTANCE_NAME_PARAM);
         String dataPropertyName = (String) serviceCall.getParameter(DATA_PROPERTY_NAME_PARAM);
@@ -169,8 +169,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void areDisjointClasses(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void areDisjointClasses(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String className1 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+1);
         String className2 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+2);
@@ -186,8 +186,8 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void areEquivalentClasses(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, CallContext messageContext) {
+    public void areEquivalentClasses(Call serviceCall,
+            Response serviceResponse, CallContext messageContext) {
         JSONObject returned_object = new JSONObject();
         String className1 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+1);
         String className2 = (String) serviceCall.getParameter(CLASS_NAME_PARAM+2);
@@ -234,7 +234,7 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void registerListener(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+    public void registerListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
         NetworkDevice networkDevice = messageContext.getCallerDevice();
         UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
         String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
@@ -255,7 +255,7 @@ public class OntologyDriverImpl implements OntologyDriver {
     }
 
     @Override
-    public void unregisterListener(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+    public void unregisterListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
         NetworkDevice networkDevice = messageContext.getCallerDevice();
         UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
         String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);

@@ -24,8 +24,8 @@ import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 
@@ -74,20 +74,20 @@ public class AdaptabitilyEngineTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void callService_shouldFailWithoutADriverSpecified() throws ServiceCallException{
-		engine.callService(null, new ServiceCall());
-		engine.callService(null, new ServiceCall("",null));
+		engine.callService(null, new Call());
+		engine.callService(null, new Call("",null));
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void callService_shouldFailWithoutAServiceSpecified() throws ServiceCallException{
-		engine.callService(null, new ServiceCall());
-		engine.callService(null, new ServiceCall(null,""));
+		engine.callService(null, new Call());
+		engine.callService(null, new Call(null,""));
 	}
 	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForNullDevice() throws Exception {
 		final DriverManager _driverManager = mock(DriverManager.class);
-		ServiceResponse response = new ServiceResponse();
-		when(_driverManager.handleServiceCall((ServiceCall)anyObject(), (CallContext)anyObject())).thenReturn(response);
+		Response response = new Response();
+		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
@@ -96,7 +96,7 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		assertEquals(response,engine.callService(null, call));
 	}
 	
@@ -114,7 +114,7 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
 		engine.callService(null,serviceCall);
@@ -124,9 +124,9 @@ public class AdaptabitilyEngineTest {
 	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForCurrentDevice() throws Exception {
 		final DriverManager _driverManager = mock(DriverManager.class);
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		final UpDevice _currentDevice = new UpDevice("me");
-		when(_driverManager.handleServiceCall((ServiceCall)anyObject(), (CallContext)anyObject())).thenReturn(response);
+		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
@@ -136,7 +136,7 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		assertEquals(response,engine.callService(_currentDevice, call));
 	}
 	
@@ -144,9 +144,9 @@ public class AdaptabitilyEngineTest {
 		final CallContext[] ctx = {null};
 		
 		final DriverManager _driverManager = new DriverManager(null,null,null,null){
-			public ServiceResponse handleServiceCall(ServiceCall call, CallContext c){
+			public Response handleServiceCall(Call call, CallContext c){
 				ctx[0] = c;
-				return new ServiceResponse();
+				return new Response();
 			}
 		};
 		engine = new AdaptabilityEngine(){
@@ -155,7 +155,7 @@ public class AdaptabitilyEngineTest {
 			}
 		};
 		engine.init(null);
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		engine.callService(null, call);
 		
 		assertNotNull(ctx[0]);
@@ -164,9 +164,9 @@ public class AdaptabitilyEngineTest {
 
 	@Test public void callService_shouldRedirectRemoteCallToMessageEngibeForOtherDevice() throws Exception {
 		final MessageEngine _messageEngine = mock(MessageEngine.class);
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		UpDevice callee = new UpDevice("other");
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		when(_messageEngine.callService(callee, call)).thenReturn(response);
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
@@ -273,7 +273,7 @@ public class AdaptabitilyEngineTest {
 			}
 		};
 		engine.init(null);
-		ServiceCall serviceCall = new ServiceCall();
+		Call serviceCall = new Call();
 		CallContext messageContext = new CallContext();
 		engine.handleServiceCall(serviceCall,messageContext);
 		verify(_driverManager).handleServiceCall(serviceCall,messageContext);
@@ -292,7 +292,7 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
 		engine.handleServiceCall(serviceCall,new CallContext());

@@ -26,9 +26,9 @@ import org.unbiquitous.uos.core.messageEngine.ServiceCallHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -60,7 +60,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 
 
 	/**
-	 * Method responsible for creating a call for {@link AdaptabilityEngine#callService(String, ServiceCall)} with the following parameters.
+	 * Method responsible for creating a call for {@link AdaptabilityEngine#callService(String, Call)} with the following parameters.
 	 * 
 	 * @param deviceName Device providing the service to be called.
 	 * @param serviceName The name of the service to be called.
@@ -70,14 +70,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(
+	public Response callService(
 									UpDevice device,
 									String serviceName, 
 									String driverName, 
 									String instanceId,
 									String securityType,
 									Map<String,Object> parameters) throws ServiceCallException{
-		ServiceCall serviceCall = new ServiceCall();
+		Call serviceCall = new Call();
 		serviceCall.setDriver(driverName);
 		serviceCall.setInstanceId(instanceId);
 		serviceCall.setService(serviceName);
@@ -95,7 +95,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(UpDevice device, ServiceCall serviceCall) throws ServiceCallException{
+	public Response callService(UpDevice device, Call serviceCall) throws ServiceCallException{
 		if (	serviceCall == null ||
 				serviceCall.getDriver() == null || serviceCall.getDriver().isEmpty() ||
 				serviceCall.getService() == null || serviceCall.getService().isEmpty()){
@@ -129,13 +129,13 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 				device.getName().equalsIgnoreCase(currentDevice.getName());
 	}
 
-	private ServiceResponse remoteServiceCall(UpDevice device,
-			ServiceCall serviceCall,
+	private Response remoteServiceCall(UpDevice device,
+			Call serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
 			CallContext messageContext) throws ServiceCallException {
 		// If not a local service call, delegate to the serviceHandler
 		try{
-			ServiceResponse response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			Response response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
 			response.setMessageContext(messageContext);
 			return response;
 		}catch (MessageEngineException e){
@@ -144,7 +144,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		}
 	}
 
-	private ServiceResponse localServiceCall(ServiceCall serviceCall,
+	private Response localServiceCall(Call serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
 			CallContext messageContext) throws ServiceCallException {
 		logger.info("Handling Local ServiceCall");
@@ -153,7 +153,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 			// in the case of a local service call, must inform that the current device is the same.
 			//FIXME : AdaptabilityEngine : Must set the local device  
 			//messageContext.setCallerDevice(callerDevice)
-			ServiceResponse response = handleServiceCall(serviceCall, messageContext);
+			Response response = handleServiceCall(serviceCall, messageContext);
 			response.setMessageContext(messageContext);
 			
 			return response;
@@ -187,7 +187,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @throws ServiceCallException
 	 */
 	private StreamConnectionThreaded[] openStreamChannel(UpDevice device,
-			ServiceCall serviceCall, CallContext messageContext)
+			Call serviceCall, CallContext messageContext)
 			throws ServiceCallException {
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
@@ -317,7 +317,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * ServiceCallHandler#handleServiceCall(ServiceCall)
 	 */
 	@Override
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, CallContext messageContext)
+	public Response handleServiceCall(Call serviceCall, CallContext messageContext)
 			throws DriverManagerException {
 		if (isApplicationCall(serviceCall)){
 			return applicationManager.handleServiceCall(serviceCall, messageContext);
@@ -326,7 +326,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		}
 	}
 
-	private boolean isApplicationCall(ServiceCall serviceCall) {
+	private boolean isApplicationCall(Call serviceCall) {
 		return serviceCall.getDriver() != null && serviceCall.getDriver().equals("app");
 	}
 	

@@ -7,8 +7,8 @@ import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * The Gateway represents a way to access the Smart Space capabilities 
@@ -30,7 +30,7 @@ public interface Gateway {
 	 * @param parameters Service Parameters.
 	 * @return Response of the execution.
 	 */
-	public ServiceResponse callService(UpDevice device,
+	public Response callService(UpDevice device,
 			String serviceName, String driverName, String instanceId,
 			String securityType, Map<String, Object> parameters)
 			throws ServiceCallException;
@@ -42,7 +42,7 @@ public interface Gateway {
 	 * @param serviceCall	Call Object.
 	 * @return Response of the execution.
 	 */
-	public ServiceResponse callService(UpDevice device,ServiceCall serviceCall) throws ServiceCallException;
+	public Response callService(UpDevice device,Call serviceCall) throws ServiceCallException;
 
 	/**
 	 * Register a Listener for a event, driver and device specified.

@@ -11,48 +11,48 @@ import org.unbiquitous.json.JSONObject;
 public class EncapsulatedMessageTest {
 	@Test
 	public void equalsNull() {
-		assertFalse(new EncapsulatedMessage().equals(null));
+		assertFalse(new Capsule().equals(null));
 	}
 	
 	@Test public void notEquals(){
-		assertFalse(new EncapsulatedMessage().equals("somthing"));
+		assertFalse(new Capsule().equals("somthing"));
 	}
 	
 	@Test public void equalsWithEmpty(){
-		assertTrue(new EncapsulatedMessage().equals(new EncapsulatedMessage()));
+		assertTrue(new Capsule().equals(new Capsule()));
 	}
 	
 	@Test public void notEqualsWithDifferentInnerMessage(){
-		EncapsulatedMessage e1 = new EncapsulatedMessage();
+		Capsule e1 = new Capsule();
 		e1.setInnerMessage("msg1");
-		EncapsulatedMessage e2 = new EncapsulatedMessage();
+		Capsule e2 = new Capsule();
 		e2.setInnerMessage("msg2");
 		
 		assertFalse(e1.equals(e2));
 	}
 
 	@Test public void equalsWithSameInnerMessage(){
-		EncapsulatedMessage e1 = new EncapsulatedMessage();
+		Capsule e1 = new Capsule();
 		e1.setInnerMessage("msg1");
-		EncapsulatedMessage e2 = new EncapsulatedMessage();
+		Capsule e2 = new Capsule();
 		e2.setInnerMessage("msg1");
 		
 		assertTrue(e1.equals(e2));
 	}
 	
 	@Test public void notEqualsWithDifferentSecurityType(){
-		EncapsulatedMessage e1 = new EncapsulatedMessage();
+		Capsule e1 = new Capsule();
 		e1.setSecurityType("t1");
-		EncapsulatedMessage e2 = new EncapsulatedMessage();
+		Capsule e2 = new Capsule();
 		e2.setSecurityType("t2");
 		
 		assertFalse(e1.equals(e2));
 	}
 	
 	@Test public void equalsWithSameSecurityType(){
-		EncapsulatedMessage e1 = new EncapsulatedMessage();
+		Capsule e1 = new Capsule();
 		e1.setSecurityType("t1");
-		EncapsulatedMessage e2 = new EncapsulatedMessage();
+		Capsule e2 = new Capsule();
 		e2.setSecurityType("t1");
 		
 		assertTrue(e1.equals(e2));
@@ -64,20 +64,20 @@ public class EncapsulatedMessageTest {
 	}
 	
 	@Test public void toJSONWithEmpty() throws JSONException{
-		assertThat(new EncapsulatedMessage().toJSON())
+		assertThat(new Capsule().toJSON())
 					.isEqualTo(new JSONObject(){{
 						put("type", Message.Type.ENCAPSULATED_MESSAGE.name());
 					}});
 	}
 	
 	@Test public void fromJSON() throws JSONException{
-		assertThat(EncapsulatedMessage.fromJSON(dummyJSON()))
+		assertThat(Capsule.fromJSON(dummyJSON()))
 		.isEqualTo(dummyEncapsulated());
 	}
 	
 	@Test public void fromJSONWithEmpty() throws JSONException{
-		assertThat(EncapsulatedMessage.fromJSON(new JSONObject()))
-					.isEqualTo(new EncapsulatedMessage());
+		assertThat(Capsule.fromJSON(new JSONObject()))
+					.isEqualTo(new Capsule());
 	}
 
 	private JSONObject dummyJSON() throws JSONException {
@@ -91,8 +91,8 @@ public class EncapsulatedMessageTest {
 		return json;
 	}
 
-	private EncapsulatedMessage dummyEncapsulated() {
-		EncapsulatedMessage e = new EncapsulatedMessage();
+	private Capsule dummyEncapsulated() {
+		Capsule e = new Capsule();
 		e.setError("err");
 		
 		e.setInnerMessage("msg1");

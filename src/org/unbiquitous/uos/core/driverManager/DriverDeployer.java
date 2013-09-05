@@ -8,8 +8,8 @@ import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Class responsible for loading the specified driver in the Driver Manager.
@@ -198,7 +198,7 @@ public class DriverDeployer {
 		}
 		for (UpService ups : driverInstance.getDriver().getServices()){
 			try {
-				driverInstance.getClass().getDeclaredMethod(ups.getName(), ServiceCall.class , ServiceResponse.class, CallContext.class);
+				driverInstance.getClass().getDeclaredMethod(ups.getName(), Call.class , Response.class, CallContext.class);
 			} catch (SecurityException e) {
 				String erroMessage = "Service '"+ups.getName()+"' on DriverClass '"+driverInstance.getClass().getName()+"' has security acces issues.";
 				logger.log(Level.FINE,erroMessage,e);

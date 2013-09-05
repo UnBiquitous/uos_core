@@ -22,8 +22,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * This Class is responsible for dealing with the installed drivers in this device. Here we handle its
@@ -81,9 +81,9 @@ public class DriverManager {
 	}
 	
 	/**
-	 * @see ServiceCallHandler#handleServiceCall(ServiceCall)
+	 * @see ServiceCallHandler#handleServiceCall(Call)
 	 */
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, CallContext messageContext) throws DriverManagerException{
+	public Response handleServiceCall(Call serviceCall, CallContext messageContext) throws DriverManagerException{
 		//Handle named InstanceCall
 		DriverModel model = null;
 		if (serviceCall.getInstanceId() != null ){
@@ -128,7 +128,7 @@ public class DriverManager {
 	 * @return Response to return to the caller device.
 	 * @throws DriverManagerException
 	 */
-	private ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
+	private Response callServiceOnDriver(Call serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
 		return serviceCaller.callServiceOnDriver(serviceCall, instanceDriver, messageContext);
 	}
 	

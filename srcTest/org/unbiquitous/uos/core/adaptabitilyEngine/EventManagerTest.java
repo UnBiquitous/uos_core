@@ -16,24 +16,24 @@ import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 public class EventManagerTest {
 
 	private MessageEngine engine;
 	private EventManager manager;
 	private UosEventListener listener;
-	private ArgumentCaptor<ServiceCall> call;
+	private ArgumentCaptor<Call> call;
 
 	@Before
 	public void setUp() throws MessageEngineException {
 		engine = mock(MessageEngine.class);
-		when(engine.callService((UpDevice)any(), (ServiceCall)any()))
-		.thenReturn(new ServiceResponse());
+		when(engine.callService((UpDevice)any(), (Call)any()))
+		.thenReturn(new Response());
 		manager = new EventManager(engine);
 		listener = mock(UosEventListener.class);
-		call = ArgumentCaptor.forClass(ServiceCall.class);
+		call = ArgumentCaptor.forClass(Call.class);
 	}
 	
 	@Test
@@ -51,7 +51,7 @@ public class EventManagerTest {
 	public void registeringDontDelegatesForNullDevice() throws Exception{
 		manager.registerForEvent(listener, null, "driver", "id", "key");
 		
-		verify(engine,never()).callService((UpDevice)any(),(ServiceCall)any());
+		verify(engine,never()).callService((UpDevice)any(),(Call)any());
 	}
 	
 	@Test

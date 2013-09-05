@@ -2,8 +2,8 @@ package org.unbiquitous.uos.core.messageEngine;
 
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.DriverManagerException;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Interface Responsible for handling the service call messages
@@ -19,5 +19,5 @@ public interface ServiceCallHandler {
 	 * @param serviceCall ServiceCall message Received.
 	 * @return serviceResponse returned from the service.
 	 */
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, CallContext messageContext) throws DriverManagerException;
+	public Response handleServiceCall(Call serviceCall, CallContext messageContext) throws DriverManagerException;
 }

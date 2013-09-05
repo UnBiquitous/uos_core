@@ -9,7 +9,7 @@ import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 
-public class ServiceCall extends Message {
+public class Call extends Message {
 	
 	/** enum to specify the type of data transmission from the called service*/
 	public enum ServiceType {DISCRETE, STREAM};
@@ -24,19 +24,19 @@ public class ServiceCall extends Message {
 	private String channelType;
 	private String securityType;
 
-	public ServiceCall() {
+	public Call() {
 		setType(Message.Type.SERVICE_CALL_REQUEST);
 		setServiceType(ServiceType.DISCRETE);
 		setChannels(1);
 	}
 	
-	public ServiceCall(String driver, String service){
+	public Call(String driver, String service){
 		this();
 		this.driver = driver;
 		this.service = service;
 	}
 	
-	public ServiceCall(String driver, String service, String instanceId){
+	public Call(String driver, String service, String instanceId){
 		this(driver,service);
 		this.instanceId = instanceId;
 	}
@@ -105,7 +105,7 @@ public class ServiceCall extends Message {
 		this.channelType = channelType;
 	}
 
-	public ServiceCall addParameter(String key, Object value){
+	public Call addParameter(String key, Object value){
 		if (parameters == null){
 			parameters = new HashMap<String, Object>();
 		}
@@ -128,10 +128,10 @@ public class ServiceCall extends Message {
 		if (obj == null){
 			return false;
 		}
-		if (!( obj instanceof ServiceCall)){
+		if (!( obj instanceof Call)){
 			return false;
 		}
-		ServiceCall temp = (ServiceCall) obj; 
+		Call temp = (Call) obj; 
 		
 		if(!compare(this.driver,temp.driver)) return false;
 		if(!compare(this.service,temp.service)) return false;
@@ -187,8 +187,8 @@ public class ServiceCall extends Message {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ServiceCall fromJSON(JSONObject json) throws JSONException {
-		ServiceCall call = new ServiceCall();
+	public static Call fromJSON(JSONObject json) throws JSONException {
+		Call call = new Call();
 		
 		Message.fromJSON(call, json);
 		

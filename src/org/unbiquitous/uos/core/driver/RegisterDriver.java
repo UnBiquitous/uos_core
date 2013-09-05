@@ -2,8 +2,8 @@ package org.unbiquitous.uos.core.driver;
 
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * 
@@ -20,6 +20,6 @@ public interface RegisterDriver extends UosDriver {
 	 * This listing service can have its result filtered with the use of the parameters 'serviceName', 'driverName' or 'deviceName' .
 	 * It responds in a single responseMap within the parameter 'driverList'
 	 */
-	public void listDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext);
+	public void listDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext);
 	
 }

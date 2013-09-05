@@ -14,8 +14,8 @@ import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Class responsible for managing the events received and the event listeners in the current device.
@@ -122,9 +122,9 @@ public class EventManager implements NotifyHandler {
 			try {
 				if (device != null){
 					// Send the event register request to the called device
-					ServiceCall serviceCall = new ServiceCall(driver,REGISTER_LISTENER_SERVICE,instanceId);
+					Call serviceCall = new Call(driver,REGISTER_LISTENER_SERVICE,instanceId);
 					serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, eventKey);
-					ServiceResponse response = messageEngine.callService(device, serviceCall);
+					Response response = messageEngine.callService(device, serviceCall);
 					if (response == null || (response.getError() != null && !response.getError().isEmpty())){
 						throw new NotifyException(response.getError());
 					}
@@ -232,12 +232,12 @@ public class EventManager implements NotifyHandler {
 	 */
 	private void unregisterForEvent(ListenerInfo listenerInfo) throws NotifyException{
 		// Send the event register request to the called device
-		ServiceCall serviceCall = new ServiceCall(listenerInfo.driver,UNREGISTER_LISTENER_SERVICE,listenerInfo.instanceId);
+		Call serviceCall = new Call(listenerInfo.driver,UNREGISTER_LISTENER_SERVICE,listenerInfo.instanceId);
 		
 		serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, listenerInfo.eventKey);
 		
 		try {
-			ServiceResponse response = messageEngine.callService(listenerInfo.device, serviceCall);
+			Response response = messageEngine.callService(listenerInfo.device, serviceCall);
 			if (response == null || (response.getError() != null && !response.getError().isEmpty())){
 				throw new NotifyException(response.getError());
 			}

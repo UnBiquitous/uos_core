@@ -9,9 +9,9 @@ import java.util.logging.Logger;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -156,7 +156,7 @@ public class ApplicationManager {
 		return deployed.get(id);
 	}
 
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall,
+	public Response handleServiceCall(Call serviceCall,
 			CallContext messageContext) {
 		ReflectionServiceCaller caller = new ReflectionServiceCaller(null);
 		UosApplication app = findApplication(serviceCall.getInstanceId());

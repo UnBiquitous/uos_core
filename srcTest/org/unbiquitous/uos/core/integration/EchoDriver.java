@@ -14,8 +14,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 public class EchoDriver implements UosEventDriver {
@@ -48,13 +48,13 @@ public class EchoDriver implements UosEventDriver {
 	public void destroy() {
 	}
 
-	public void echo(ServiceCall call, ServiceResponse response,
+	public void echo(Call call, Response response,
 			CallContext ctx) {
 		response.addParameter("text", (String) call.getParameter("text"));
 	}
 
 	@Override
-	public void registerListener(ServiceCall call, ServiceResponse response,
+	public void registerListener(Call call, Response response,
 			final CallContext ctx) {
 		// if (call.getParameter("event").equals(reminder)){ //TODO:Validate the event
 		new Thread() {
@@ -73,7 +73,7 @@ public class EchoDriver implements UosEventDriver {
 	}
 
 	@Override
-	public void unregisterListener(ServiceCall call, ServiceResponse response,
+	public void unregisterListener(Call call, Response response,
 			CallContext ctx) {
 		// TODO Auto-generated method stub
 

@@ -21,8 +21,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 /**
@@ -143,7 +143,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public void retrieveUserInfo(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void retrieveUserInfo(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 
 		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 
@@ -175,7 +175,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public void saveUserImage(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void saveUserImage(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		String name = (String) serviceCall.getParameter(NAME_PARAM);
 		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 		Integer index = Integer.parseInt((String) serviceCall.getParameter(INDEX_IMAGE_PARAM));
@@ -195,7 +195,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public void removeUserImages(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void removeUserImages(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		String name = (String) serviceCall.getParameter(NAME_PARAM);
 		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 		String id = name + SPECIAL_CHARACTER_SEPARATOR + email;
@@ -214,7 +214,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public void listKnownUsers(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void listKnownUsers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		List<String> users = listUsers();
 
 		List<JSONObject> userJson = new ArrayList<JSONObject>(users.size());
@@ -243,7 +243,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param serviceResponse
 	 * @param messageContext
 	 */
-	public void retrain(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void retrain(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		train();
 		stopTracker();
 		try {
@@ -258,7 +258,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * Register listener for the driver events.
 	 */
 	@Override
-	public void registerListener(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void registerListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		NetworkDevice networkDevice = messageContext.getCallerDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 
@@ -283,7 +283,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * Unregister listeners for the drivers events.
 	 */
 	@Override
-	public void unregisterListener(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void unregisterListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		NetworkDevice networkDevice = messageContext.getCallerDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 

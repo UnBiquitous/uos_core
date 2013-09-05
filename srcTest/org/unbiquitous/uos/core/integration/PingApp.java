@@ -10,8 +10,8 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyUndeploy;
@@ -79,9 +79,9 @@ public class PingApp implements UosApplication, UosEventListener {
 			throw new AssertionError("The driver must be on 'my.pc'");
 		}else{
 			DriverData data = echoDriver.get(0);
-			ServiceCall echoGo = new ServiceCall(data.getDriver().getName(), "echo");
+			Call echoGo = new Call(data.getDriver().getName(), "echo");
 						echoGo.addParameter("text", "my text");
-			ServiceResponse echoComeback = gateway.callService(data.getDevice(), echoGo);
+			Response echoComeback = gateway.callService(data.getDevice(), echoGo);
 			String echoMsg = echoComeback.getResponseString("text");
 			if (!echoMsg.equals("my text")){
 				throw new AssertionError("The returned message wasn't 'my text' it was '"+echoMsg+"'.");

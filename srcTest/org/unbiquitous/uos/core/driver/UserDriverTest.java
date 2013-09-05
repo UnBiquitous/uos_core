@@ -28,9 +28,9 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 @Ignore //FIXME: This test doesn't seems to make much sense
@@ -72,7 +72,7 @@ public class UserDriverTest {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -96,7 +96,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -125,7 +125,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -158,7 +158,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -184,7 +184,7 @@ public class UserDriverTest {
 		parameters.put(UserDriver.LENGTH_IMAGE_PARAM, String.valueOf(imageData.length));
 
 		// request stream for save image
-		ServiceCall serviceCall = new ServiceCall();
+		Call serviceCall = new Call();
 		serviceCall.setDriver(UserDriver.USER_DRIVER);
 		serviceCall.setService("saveUserImage");
 		serviceCall.setInstanceId(INSTANCE_ID);
@@ -192,7 +192,7 @@ public class UserDriverTest {
 		serviceCall.setChannels(channel);
 		serviceCall.setParameters(parameters);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), serviceCall);
+		Response response = gateway.callService(gateway.getCurrentDevice(), serviceCall);
 
 		// write image data
 		DataOutputStream out = response.getMessageContext().getDataOutputStream(channel);
@@ -235,7 +235,7 @@ public class UserDriverTest {
 		parameters.put(UserDriver.NAME_PARAM, NAME);
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNull(response.getError());
 

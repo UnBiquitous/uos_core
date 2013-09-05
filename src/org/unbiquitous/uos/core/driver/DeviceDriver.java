@@ -23,8 +23,8 @@ import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Driver responsible for providing information about the device.
@@ -87,7 +87,7 @@ public class DeviceDriver implements UosDriver {
 	 * It responds in a single responseMap within the parameter 'driverList'
 	 */
 	@SuppressWarnings("unchecked")
-	public void listDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void listDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		logger.info("Handling DeviceDriverImpl#listDrivers service");
 
 		List<DriverData> listDrivers = null;
@@ -134,8 +134,8 @@ public class DeviceDriver implements UosDriver {
 	 * with multiple steps. 
 	 * The authentication algorithm is determined by the parameter 'securityType'.
 	 */
-	public void authenticate(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, CallContext messageContext) {
+	public void authenticate(Call serviceCall,
+			Response serviceResponse, CallContext messageContext) {
 		
 		String securityType = (String) serviceCall.getParameters().get(SECURITY_TYPE_KEY);
 		
@@ -156,7 +156,7 @@ public class DeviceDriver implements UosDriver {
 	 * This information must be informed in the parameter 'device'(<code>UpDevice</code>) by the caller device 
 	 * and will be returned in the same parameter with the information of the called device.
 	 */
-	public void handshake(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext){
+	public void handshake(Call serviceCall, Response serviceResponse, CallContext messageContext){
 		SmartSpaceGateway gtw = (SmartSpaceGateway)this.gateway;
 		DeviceManager deviceManager = gtw.getDeviceManager();
 		
@@ -174,8 +174,8 @@ public class DeviceDriver implements UosDriver {
 								gateway.getCurrentDevice().toJSON()
 									.toString()
 									);
-			ServiceResponse driversResponse = 
-					gateway.callService(device, new ServiceCall("uos.DeviceDriver","listDrivers"));
+			Response driversResponse = 
+					gateway.callService(device, new Call("uos.DeviceDriver","listDrivers"));
 			Object driverList = driversResponse.getResponseData("driverList");
 			if (driverList != null){
 				Map<String, Object> driverMap = new JSONObject( driverList.toString()).toMap();
@@ -196,14 +196,14 @@ public class DeviceDriver implements UosDriver {
 	 * This method is responsible for informing that the caller device is leaving the smart-space, so all its data 
 	 * must be removed.
 	 */
-	public void goodbye(ServiceCall serviceCall,ServiceResponse serviceResponse, CallContext messageContext) {
+	public void goodbye(Call serviceCall,Response serviceResponse, CallContext messageContext) {
 		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerDevice());
 	}
 	
 	/**
 	 * This method is responsible for informing the unknown equivalent driverss.
 	 */
-	public void tellEquivalentDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, CallContext messageContext) {
+	public void tellEquivalentDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		try {
 			
 			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);

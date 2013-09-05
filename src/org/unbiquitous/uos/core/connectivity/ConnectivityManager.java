@@ -18,7 +18,7 @@ import org.unbiquitous.uos.core.driverManager.DriverNotFoundException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 
 
@@ -67,7 +67,7 @@ public class ConnectivityManager {
 	 * @return The best network interface to this service
 	 * @throws NetworkException
 	 */
-	public UpNetworkInterface getAppropriateInterface(UpDevice deviceProvider, ServiceCall serviceCall) throws NetworkException{
+	public UpNetworkInterface getAppropriateInterface(UpDevice deviceProvider, Call serviceCall) throws NetworkException{
 		
 		//List of compatible network interfaces
 		List<UpNetworkInterface> compatibleNetworks = new ArrayList<UpNetworkInterface>();
@@ -110,7 +110,7 @@ public class ConnectivityManager {
 	 * @return A compatible network interface to this service
 	 * @throws NetworkException
 	 */
-	public UpNetworkInterface getAppropriateInterface(UpDevice deviceProvider, ServiceCall serviceCall, String preferredNetwork) throws NetworkException{
+	public UpNetworkInterface getAppropriateInterface(UpDevice deviceProvider, Call serviceCall, String preferredNetwork) throws NetworkException{
 		
 		//If there is no preferred network interface, calls the standard method
 		if( preferredNetwork == null ){
@@ -173,7 +173,7 @@ public class ConnectivityManager {
 	 * @param serviceCall The service call object.
 	 * @return The best choice of network Interface for the given service.
 	 */
-	private UpNetworkInterface servicesBestInterface(List<UpNetworkInterface> networks, ServiceCall serviceCall){
+	private UpNetworkInterface servicesBestInterface(List<UpNetworkInterface> networks, Call serviceCall){
 		
 		//Insert QoS issues here. Check if service call is null.
 		//if(serviceCall != null){

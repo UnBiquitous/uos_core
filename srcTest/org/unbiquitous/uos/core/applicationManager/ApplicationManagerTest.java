@@ -16,8 +16,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
 
@@ -236,7 +236,7 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
 		manager.handleServiceCall(serviceCall,new CallContext());
@@ -249,7 +249,7 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall serviceCall = new ServiceCall("app","commonCallback","myId");
+		Call serviceCall = new Call("app","commonCallback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
 		CallContext context = new CallContext();
@@ -263,9 +263,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback","myId")
+		Call call = new Call("app","callback","myId")
 		.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new CallContext());
+		Response r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 		.contains(MapEntry.entry("echo", "ping"));
@@ -276,9 +276,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback")
+		Call call = new Call("app","callback")
 									.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new CallContext());
+		Response r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 									.contains(MapEntry.entry("echo", "ping"));
@@ -289,9 +289,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback","NotMyId");
+		Call call = new Call("app","callback","NotMyId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -302,9 +302,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		Call call = new Call("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -315,9 +315,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		Call call = new Call("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new CallContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();

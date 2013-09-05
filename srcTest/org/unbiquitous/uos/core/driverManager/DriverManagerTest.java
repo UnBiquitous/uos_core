@@ -22,8 +22,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 public class DriverManagerTest {
@@ -48,7 +48,7 @@ public class DriverManagerTest {
 	@Test
 	public void shouldCallServiceOnDriverUsingInstanceId() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException {
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		
 		assertTrue(driver.called);
 	}
@@ -61,41 +61,41 @@ public class DriverManagerTest {
 		driver.getParent().add(equivalentDriver);
 		
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		
 		assertTrue(driver.called);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverUsingAnInvalidInstanceId() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverFromOtherDevice() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		dao.insert(new DriverModel("id", new UpDriver("driver"), "otherDevice"));
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 	}
 	
 	@Test
 	public void shouldNotFailCallingServiceHomonymousDriverFromOtherDevice() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		dao.insert(new DriverModel("id", new UpDriver("driver"), "otherDevice"));
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		assertTrue(driver.called);
 	}
 	
 	@Test
 	public void shouldCallServiceOnDriverUsingDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		manager.deployDriver(driver.upDriver, driver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		
 		assertTrue(driver.called);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverUsingAnInvalidDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 	}
 	
 	@Test
@@ -104,7 +104,7 @@ public class DriverManagerTest {
 		DriverSpy equivalentDriver = new DriverSpy("Bumblebee");
 		equivalentDriver.upDriver.addEquivalentDrivers(driver.upDriver.getName());
 		manager.deployDriver(equivalentDriver.upDriver, equivalentDriver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		assertTrue(equivalentDriver.called);
 	}
 	
@@ -120,7 +120,7 @@ public class DriverManagerTest {
 		secondLevelEquivalentDriver.upDriver.addEquivalentDrivers(firstLevelEquivalentDriver.upDriver.getName());
 		
 		manager.deployDriver(secondLevelEquivalentDriver.upDriver, secondLevelEquivalentDriver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		assertTrue(secondLevelEquivalentDriver.called);
 	}
 	
@@ -131,7 +131,7 @@ public class DriverManagerTest {
 		DriverSpy firstLevelEquivalentDriver = new DriverSpy("Ironhide");
 		firstLevelEquivalentDriver.upDriver.addEquivalentDrivers(driver.upDriver.getName());
 		manager.insert(new DriverModel("id2",firstLevelEquivalentDriver.upDriver,"my.SecondPhone"));
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 	}
 	
 	@Test
@@ -719,7 +719,7 @@ public class DriverManagerTest {
 			destroyed = true;
 			destroyCount++;
 		}
-		public void service(ServiceCall s, ServiceResponse r, CallContext c){
+		public void service(Call s, Response r, CallContext c){
 			called = true;
 		}
 		@Override

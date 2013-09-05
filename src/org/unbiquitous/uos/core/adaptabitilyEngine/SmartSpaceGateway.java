@@ -11,8 +11,8 @@ import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.api.StartReasoner;
 
@@ -44,7 +44,7 @@ public class SmartSpaceGateway implements Gateway {
 		this.ontology = ontology;
 	}
 
-	public ServiceResponse callService(UpDevice device, String serviceName,
+	public Response callService(UpDevice device, String serviceName,
 			String driverName, String instanceId, String securityType,
 			Map<String, Object> parameters) throws ServiceCallException {
 
@@ -52,7 +52,7 @@ public class SmartSpaceGateway implements Gateway {
 				instanceId, securityType, parameters);
 	}
 
-	public ServiceResponse callService(UpDevice device, ServiceCall serviceCall)
+	public Response callService(UpDevice device, Call serviceCall)
 			throws ServiceCallException {
 		return adaptabilityEngine.callService(device, serviceCall);
 	}

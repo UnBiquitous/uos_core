@@ -15,11 +15,11 @@ import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
-import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
+import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Message;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
@@ -85,14 +85,14 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	 */
 	private String handleServiceCall(String message, CallContext messageContext) throws MessageEngineException{
 		try {
-			ServiceCall serviceCall = ServiceCall.fromJSON(new JSONObject(message)); 
-			ServiceResponse response = serviceCallHandler.handleServiceCall(serviceCall, messageContext);
+			Call serviceCall = Call.fromJSON(new JSONObject(message)); 
+			Response response = serviceCallHandler.handleServiceCall(serviceCall, messageContext);
 			logger.info("Returning service response");
 			
 			return response.toJSON().toString();
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Internal Failure", e);
-			ServiceResponse errorResponse = new ServiceResponse();
+			Response errorResponse = new Response();
 			errorResponse.setError(e.getMessage() == null ?"Internal Error":e.getMessage());
 			try {
 				return errorResponse.toJSON().toString();
@@ -121,7 +121,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	
 	private String handleEncapsulatedMessage(String message,NetworkDevice clientDevice) throws MessageEngineException{
 		try {
-			EncapsulatedMessage encapsulatedMessage = EncapsulatedMessage.fromJSON(new JSONObject(message)); 
+			Capsule encapsulatedMessage = Capsule.fromJSON(new JSONObject(message)); 
 			
 			String securityType = encapsulatedMessage.getSecurityType();
 			
@@ -146,7 +146,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 			if (innerResponse != null){
 				String encodedMessage= tHandler.encode(innerResponse,deviceName);
 				
-				EncapsulatedMessage encapsulatedResponse = new EncapsulatedMessage(); 
+				Capsule encapsulatedResponse = new Capsule(); 
 				
 				encapsulatedResponse.setInnerMessage(encodedMessage);
 				encapsulatedResponse.setSecurityType(securityType);
@@ -191,7 +191,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	 * @return Service Response for the called service.
 	 * @throws MessageEngineException
 	 */
-	public ServiceResponse callService(UpDevice device,ServiceCall serviceCall) throws MessageEngineException{
+	public Response callService(UpDevice device,Call serviceCall) throws MessageEngineException{
 		return messageHandler.callService(device, serviceCall);
 	}
 

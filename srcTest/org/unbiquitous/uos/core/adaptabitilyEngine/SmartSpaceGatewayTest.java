@@ -19,7 +19,7 @@ import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 
 
 public class SmartSpaceGatewayTest {
@@ -41,7 +41,7 @@ public class SmartSpaceGatewayTest {
 	
 	@Test public void callServiceDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
-		ServiceCall call = new ServiceCall("d", "s");
+		Call call = new Call("d", "s");
 		gateway.callService(target, call);
 		verify(engine).callService(target, call);
 	}

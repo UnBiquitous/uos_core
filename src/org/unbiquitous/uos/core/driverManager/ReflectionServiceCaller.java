@@ -10,9 +10,9 @@ import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -44,7 +44,7 @@ public class ReflectionServiceCaller {
 	 * @return The service Response to return to the caller device.
 	 * @throws DriverManagerException
 	 */
-	public ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
+	public Response callServiceOnDriver(Call serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
 		if (instanceDriver != null){
 			try {
 				Method serviceMethod = findMethod(serviceCall, instanceDriver);
@@ -53,7 +53,7 @@ public class ReflectionServiceCaller {
 								+ ") in instance ("+ serviceCall.getInstanceId() + ")");
 					
 					handleStreamCall(serviceCall, messageContext);
-					ServiceResponse response = new ServiceResponse();
+					Response response = new Response();
 					serviceMethod.invoke(instanceDriver,serviceCall,response,messageContext);
 					
 					logger.info("Finished service call.");
@@ -84,7 +84,7 @@ public class ReflectionServiceCaller {
 		}
 	}
 
-	private void handleStreamCall(ServiceCall serviceCall,
+	private void handleStreamCall(Call serviceCall,
 			CallContext messageContext) throws NetworkException,
 			IOException {
 		if(serviceCall.getServiceType().equals(ServiceType.STREAM)){
@@ -98,7 +98,7 @@ public class ReflectionServiceCaller {
 		}
 	}
 
-	private Method findMethod(ServiceCall serviceCall, Object instanceDriver) {
+	private Method findMethod(Call serviceCall, Object instanceDriver) {
 		String serviceName = serviceCall.getService();;
 		
 		if(instanceDriver instanceof ProxyDriver)	serviceName = "forwardServiceCall";
@@ -116,7 +116,7 @@ public class ReflectionServiceCaller {
 	 * @param e Internal Failure Found
 	 * @throws DriverManagerException Error Encapsulated
 	 */
-	private void logInternalError(ServiceCall serviceCall, Exception e) throws DriverManagerException{
+	private void logInternalError(Call serviceCall, Exception e) throws DriverManagerException{
 		logger.log(Level.SEVERE,"Internal Failure", e);
 		throw new DriverManagerException("Internal Error calling service ("
 				+ serviceCall.getService()
@@ -126,10 +126,10 @@ public class ReflectionServiceCaller {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ServiceResponse callServiceOnApp(UosApplication app,
-											ServiceCall call,
+	public Response callServiceOnApp(UosApplication app,
+											Call call,
 											CallContext context) {
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		try{
 			try {
 				Method method = app.getClass().getMethod(call.getService(), 
@@ -139,9 +139,9 @@ public class ReflectionServiceCaller {
 				return response;
 			} catch (NoSuchMethodException e) {
 				Method method = app.getClass().getMethod(call.getService(), 
-													ServiceCall.class,
+													Call.class,
 													CallContext.class);
-				return (ServiceResponse) method.invoke(app, call, context);
+				return (Response) method.invoke(app, call, context);
 			} 
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Internal Failure", e);

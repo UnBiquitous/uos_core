@@ -21,8 +21,8 @@ import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Default Implementation of the RegisterDriver.
@@ -41,11 +41,11 @@ public class RegisterDriverImpl implements RegisterDriver {
 	private Gateway gateway;
 	
 	/** 
-	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.ServiceCall, org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse, CallContext.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
+	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.Call, org.unbiquitous.uos.core.messageEngine.messages.Response, CallContext.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
 	 */
 	@Override
-	public void listDrivers(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, CallContext messageContext) {
+	public void listDrivers(Call serviceCall,
+			Response serviceResponse, CallContext messageContext) {
 		
 		
 		// Parameters 
