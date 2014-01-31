@@ -21,6 +21,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 	private ConnectionManagerListener connectionListener;
 	
 	private static final CM channelMng = new CM();
+	private ResourceBundle bundle;
 	private static class CM implements ChannelManager {
 		/*    PC (Driver side)              CELL (App side)
 		 * 
@@ -121,6 +122,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 
 	@Override
 	public void setResourceBundle(ResourceBundle bundle) {
+		this.bundle = bundle;
 		String deviceName = bundle.getString("ubiquitos.uos.deviceName");
 		if (deviceName.equals("my.pc")){
 			device = channelMng.pc;
@@ -131,6 +133,10 @@ public class IntegrationConnectionManager implements ConnectionManager {
 		}else{
 			device = null;
 		}
+	}
+	
+	public ResourceBundle getResourceBundle(){
+		return this.bundle;
 	}
 
 	@Override

@@ -94,15 +94,10 @@ public class RadarControlCenter implements RadarListener {
 	}
 	
 	// Stop All radars of the control Center
-	@SuppressWarnings("deprecation")
 	public void stopRadar() {
-		if (radarThreadList != null){
-			for (Thread radar : radarThreadList) {
-				if (radar.isAlive()){
-					//TODO : RadarControlCenter : Stop the radar more elegantly
-					radar.interrupt();
-					radar.stop();
-				}
+		if (radarList != null){
+			for (Radar radar : radarList) {
+				radar.stopRadar();
 			}
 		}
 		

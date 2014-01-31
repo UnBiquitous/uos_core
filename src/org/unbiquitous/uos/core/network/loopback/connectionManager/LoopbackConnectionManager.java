@@ -37,7 +37,6 @@ public class LoopbackConnectionManager implements ConnectionManager {
     private LoopbackChannelManager channelManager;
     
     /** The ResourceBundle to get some properties. */
-	@SuppressWarnings("unused")
 	private ResourceBundle resource;
     
 	/** The device that will be listening to new connections */
@@ -104,9 +103,11 @@ public class LoopbackConnectionManager implements ConnectionManager {
 	 */
 	public void setResourceBundle(ResourceBundle resource) {
 		this.resource = resource;
-		
 	}
 
+	public ResourceBundle getResourceBundle(){
+		return this.resource;
+	}
 	
 	/**
 	 * Tears down the Connection Manager and all of its dependencies.

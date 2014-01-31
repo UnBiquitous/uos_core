@@ -24,6 +24,7 @@ public interface ConnectionManager extends Runnable{
 	 * @param resource
 	 */
 	public void setResourceBundle(ResourceBundle resource);
+	public ResourceBundle getResourceBundle();
 	
 	/**
 	 * Finalize the Connection Manager.

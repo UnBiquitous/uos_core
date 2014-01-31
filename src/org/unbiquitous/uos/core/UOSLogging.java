@@ -20,7 +20,7 @@ public class UOSLogging {
 	
 	private static void initLogger() {
 		logger = Logger.getLogger("ubiquitos");
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.FINE);
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setLevel(logger.getLevel());
 		handler.setFormatter(new Formatter() {
