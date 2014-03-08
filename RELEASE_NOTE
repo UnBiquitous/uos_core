@@ -1,8 +1,10 @@
 * 3.1.0:
-	- Support to Multcast Radar
-	- Applications have callbacks (just like drivers services) #19
+	- New Multicast Radar
+	- Applications have CallBacks (just like drivers services) #19
 	- Improved Class Names
 	- Better JSON handling
+	- Improved init Lifecycle
+	- A UpDevice is avaliable at CallContext
 	
 
 * 3.0.0:
