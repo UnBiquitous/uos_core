@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.UOSLogging;
@@ -51,7 +51,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     private MessageListener messageListener = null;
 	
     /** The resource bundle from where we can get a set of configurations. */
-	private ResourceBundle resource;
+	private InitialProperties properties;
 
 	private RadarControlCenter radarControlCenter;
 	
@@ -219,13 +219,13 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 		
     	try {
 			// Retrieve all defined Connection Managers.
-    		if (!resource.containsKey(CONNECTION_MANAGER_CLASS_KEY)){
+    		if (!properties.containsKey(CONNECTION_MANAGER_CLASS_KEY)){
     			logger.warning("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
     			return;
     		}
 			String connectionPropertie = null; 
-			if (this.resource != null){
-				connectionPropertie = resource.getString(CONNECTION_MANAGER_CLASS_KEY);
+			if (this.properties != null){
+				connectionPropertie = properties.getString(CONNECTION_MANAGER_CLASS_KEY);
 			}
 			String[] connectionsArray = null; //UbiquitosResourceBundleReader.getParamSplitedArray(UbiquitosResourceBundleReader.RADAR_CLASS_KEY);
 			if (connectionPropertie != null){
@@ -241,7 +241,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 				// Sets the this Control Center as the Listener of the new Connection Manager 
 				newConMan.setConnectionManagerListener(this);
 				// Sets the resource bundle
-				newConMan.setResourceBundle(resource);
+				newConMan.setResourceBundle(properties);
 				// Add to the Connection Managers to a List
 				connectionManagersList.add(newConMan);
 				connectionManagersMap.put(radar, newConMan);
@@ -295,14 +295,14 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     }
     
     @Override
-    public void create(ResourceBundle properties) {
-    	this.resource = properties;
+    public void create(InitialProperties properties) {
+    	this.properties = properties;
     }
     
     @Override
     public void init(UOSComponentFactory factory) {
         loadAndStartConnectionManagers();
-        radarControlCenter = new RadarControlCenter(resource, this);
+        radarControlCenter = new RadarControlCenter(properties, this);
     }
     
     @Override

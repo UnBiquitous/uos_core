@@ -1,11 +1,11 @@
 package org.unbiquitous.uos.core.applicationManager;
 
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.ContextException;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 
 
@@ -26,17 +26,11 @@ public class ApplicationDeployer {
     public final static String INSTANCE_ID_INDICATOR_END = ")";
     private static String APPLICATION_PATH;
     private static String DEFAULT_APPLICATION_PATH = "applications/";
-    private ResourceBundle resourceBundle;
+    private InitialProperties properties;
 	private final ApplicationManager manager;
 
-    /**
-     * Default Constructor
-     * 
-     * @param resourceBundle ResourceBundle containing the information about 
-     * the applications to load.
-     */
-    public ApplicationDeployer(ResourceBundle resourceBundle, ApplicationManager manager) {
-        this.resourceBundle = resourceBundle;
+    public ApplicationDeployer(InitialProperties properties, ApplicationManager manager) {
+        this.properties = properties;
 		this.manager = manager;
     }
 
@@ -48,10 +42,10 @@ public class ApplicationDeployer {
      */
     public void deployApplications() throws ContextException {
         logger.info("Iniatialize Application Deploy.");
-        if (resourceBundle != null) {
+        if (properties != null) {
             String applicationList = null;
             try {
-                applicationList = resourceBundle.getString(APPLICATION_LIST);
+                applicationList = properties.getString(APPLICATION_LIST);
             } catch (Exception e) {
                 String erroMessage = "No " + APPLICATION_LIST + " specified.";
                 logger.severe(erroMessage);
@@ -96,7 +90,7 @@ public class ApplicationDeployer {
                 logger.fine("No " + APPLICATION_LIST + " specified.");
             }
         } else {
-            logger.fine("No parameters (ResourceBundle) informed to Deployer.");
+            logger.fine("No parameters informed to Deployer.");
         }
     }
 
@@ -111,9 +105,9 @@ public class ApplicationDeployer {
     //TODO: Untested
     public void deployApplication(String applicationClass, String instanceId)
             throws ContextException {
-        try {
-            APPLICATION_PATH = resourceBundle.getString(APPLICATION_DEFAULT_PATH);
-        } catch (Exception e) {
+        if (properties.containsKey(APPLICATION_DEFAULT_PATH)){
+        	APPLICATION_PATH = properties.getString(APPLICATION_DEFAULT_PATH);
+        }else {
             APPLICATION_PATH = DEFAULT_APPLICATION_PATH;
         }
         try {

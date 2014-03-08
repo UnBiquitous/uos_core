@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 
 public class DriverDao {
@@ -17,7 +17,7 @@ public class DriverDao {
 	private HashMap<Long, DriverModel> modelMap;
 	private HashMap<String, DriverModel> modelByIdMap;
 	
-	public DriverDao(ResourceBundle bundle) {
+	public DriverDao(InitialProperties bundle) {
 		createMaps();
 	}
 

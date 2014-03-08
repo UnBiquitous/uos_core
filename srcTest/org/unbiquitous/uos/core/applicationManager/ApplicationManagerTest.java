@@ -14,8 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
@@ -38,7 +38,7 @@ public class ApplicationManagerTest {
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway,null);
+		manager = new ApplicationManager(new InitialProperties(bundle),gateway,null);
 	}
 	
 	private void createOntologyDisabledManager() {
@@ -49,7 +49,7 @@ public class ApplicationManagerTest {
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway,null);
+		manager = new ApplicationManager(new InitialProperties(bundle),gateway,null);
 	}
 	
 	@After public void tearDown(){

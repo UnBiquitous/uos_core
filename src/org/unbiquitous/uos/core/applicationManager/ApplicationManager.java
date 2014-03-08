@@ -3,9 +3,9 @@ package org.unbiquitous.uos.core.applicationManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
@@ -24,13 +24,13 @@ public class ApplicationManager {
 	
 	private Map<String, UosApplication> toInitialize = new HashMap<String, UosApplication>();
 	private Map<String, UosApplication> deployed = new HashMap<String, UosApplication>();
-	private final ResourceBundle properties;
+	private final InitialProperties properties;
 
 	private final Gateway gateway;
 	private ConnectionManagerControlCenter connectionManagerControlCenter;
 
 
-	public ApplicationManager(ResourceBundle properties, Gateway gateway,
+	public ApplicationManager(InitialProperties properties, Gateway gateway,
 			ConnectionManagerControlCenter connectionManagerControlCenter) {
 		this.properties = properties;
 		this.gateway = gateway;

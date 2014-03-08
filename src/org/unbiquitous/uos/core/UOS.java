@@ -29,7 +29,7 @@ public class UOS {
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
-    private ResourceBundle properties;
+    private InitialProperties properties;
 
 	private UOSComponentFactory factory;
 	private List<UOSComponent> components ;
@@ -75,8 +75,8 @@ public class UOS {
 	public void init(ResourceBundle resourceBundle) throws ContextException {
 		
 		try {
-			this.properties	= resourceBundle;
-			this.factory		= new UOSComponentFactory(resourceBundle);
+			this.properties	= new InitialProperties(resourceBundle);
+			this.factory		= new UOSComponentFactory(properties);
 			this.components = new ArrayList<UOSComponent>(){
 				{
 					add(factory.get(ConnectionManagerControlCenter.class));

@@ -5,7 +5,6 @@
 package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.io.File;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -23,6 +22,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployClass;
 import org.unbiquitous.uos.core.ontologyEngine.api.DeployDataProperty;
@@ -64,11 +64,11 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
     private final Lock lock = new ReentrantLock();
     static int protectArea = 0;
 
-    public Ontology(ResourceBundle resourceBundle) throws ReasonerNotDefinedException {
+    public Ontology(InitialProperties properties) throws ReasonerNotDefinedException {
 
         manager = OWLManager.createOWLOntologyManager();
 
-        if (resourceBundle.containsKey(ONTOLOGY_PATH_RESOURCE_KEY)) {
+        if (properties.containsKey(ONTOLOGY_PATH_RESOURCE_KEY)) {
             do {
                 try {
                     if (lock.tryLock(500, TimeUnit.MILLISECONDS)) {
@@ -81,7 +81,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                             }
                           
                             file = new File(
-                                    resourceBundle.getString(ONTOLOGY_PATH_RESOURCE_KEY));
+                                    properties.getString(ONTOLOGY_PATH_RESOURCE_KEY));
 
                             localContext = manager.loadOntologyFromOntologyDocument(file);
                         } catch (OWLOntologyCreationException ex) {
@@ -98,7 +98,7 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
         }else{
         	return;
         }
-        ontologyReasoner = new OntologyReasoner(manager, localContext, resourceBundle);
+        ontologyReasoner = new OntologyReasoner(manager, localContext, properties);
         changeManager = new OntologyChangeManager(manager, localContext, this);
         ontologyClass = new OntologyClass(manager, localContext, changeManager);
         ontologyDataProperty = new OntologyDataProperty(manager, localContext, changeManager);

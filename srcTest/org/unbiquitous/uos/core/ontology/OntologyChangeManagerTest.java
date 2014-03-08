@@ -15,6 +15,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
@@ -50,7 +51,7 @@ public class OntologyChangeManagerTest implements UosApplication{
     @Before 
     public void setup(){
         try {
-            ontology = new Ontology(resourceBundle);
+            ontology = new Ontology(new InitialProperties(resourceBundle));
             ontology.initializeOntology();
         } catch (ReasonerNotDefinedException ex) {
             Logger.getLogger(OntologyChangeManagerTest.class.getName()).log(Level.SEVERE, null, ex);

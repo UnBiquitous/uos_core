@@ -21,13 +21,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
@@ -52,7 +53,7 @@ public class MessageHandlerTest {
 		        };
 			}
 		};
-		handler = new MessageHandler(bundle,controlCenter, securityManager, connManager);
+		handler = new MessageHandler(new InitialProperties(bundle),controlCenter, securityManager, connManager);
 	}
 	
 	// callService

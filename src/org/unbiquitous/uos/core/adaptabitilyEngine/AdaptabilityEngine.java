@@ -1,9 +1,9 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
@@ -25,9 +25,9 @@ import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
 import org.unbiquitous.uos.core.messageEngine.ServiceCallHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
@@ -53,7 +53,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	protected MessageEngine messageEngine;
 	protected EventManager eventManager;
 	protected ConnectivityManager connectivityManager;
-	protected ResourceBundle properties;
+	protected InitialProperties properties;
 	protected ApplicationManager applicationManager;
 	protected DeviceManager deviceManager;
 
@@ -338,7 +338,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	/************************ USO Compoment ***************************/
 	
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;
 	}
 	@Override
