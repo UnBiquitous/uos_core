@@ -259,7 +259,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 */
 	@Override
 	public void registerListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
-		NetworkDevice networkDevice = messageContext.getCallerDevice();
+		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 
 		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
@@ -284,7 +284,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 */
 	@Override
 	public void unregisterListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
-		NetworkDevice networkDevice = messageContext.getCallerDevice();
+		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
 		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
 
 		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);

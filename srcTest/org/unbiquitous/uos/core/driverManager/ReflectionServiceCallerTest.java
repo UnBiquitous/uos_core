@@ -111,7 +111,7 @@ public class ReflectionServiceCallerTest {
 		//Create Message Context to return a dummy device
 		final LoopbackDevice device = new LoopbackDevice(182);
 		CallContext msgCtx = new CallContext(){
-			public NetworkDevice getCallerDevice() {	return device; }
+			public NetworkDevice getCallerNetworkDevice() {	return device; }
 		};
 		
 		//Create a ConnectionManagerControlCenter that returns connections properly

@@ -197,7 +197,7 @@ public class DeviceDriver implements UosDriver {
 	 * must be removed.
 	 */
 	public void goodbye(Call serviceCall,Response serviceResponse, CallContext messageContext) {
-		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerDevice());
+		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerNetworkDevice());
 	}
 	
 	/**

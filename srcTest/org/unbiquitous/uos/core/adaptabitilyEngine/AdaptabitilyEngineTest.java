@@ -20,12 +20,14 @@ import org.junit.Test;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
+import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
+import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 
 
@@ -92,6 +94,7 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -110,6 +113,7 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.applicationManager = manager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -132,6 +136,7 @@ public class AdaptabitilyEngineTest {
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
 				this.currentDevice = _currentDevice;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -152,6 +157,7 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -270,6 +276,7 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -288,6 +295,7 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.applicationManager = manager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
@@ -300,4 +308,29 @@ public class AdaptabitilyEngineTest {
 		assertThat(app.callbackMap).isSameAs(parameters);
 	}
 	
+	@Test public void handleServiceCall_setUpDeviceOnContext() throws Exception{
+		final DriverManager _driverManager = mock(DriverManager.class);
+		final DeviceManager _deviceManager = mock(DeviceManager.class);
+		
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.driverManager = _driverManager;
+				this.deviceManager = _deviceManager;
+			}
+		};
+		when(_deviceManager.retrieveDevice("addr", "type"))
+			.thenReturn(new UpDevice("MyGuy"));
+		
+		engine.init(null);
+		CallContext ctx = new CallContext();
+		ctx.setCallerNetworkDevice(new NetworkDevice() {
+			public String getNetworkDeviceName() {	return "addr";	}
+			public String getNetworkDeviceType() {	return "type";	}
+		});
+		engine.handleServiceCall(new Call(),ctx);
+		assertThat(ctx.getCallerDevice()).isNotNull();
+		assertThat(ctx.getCallerDevice().getName()).isEqualTo("MyGuy");
+	}
+	
 }
+

@@ -55,8 +55,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	protected ConnectivityManager connectivityManager;
 	protected ResourceBundle properties;
 	protected ApplicationManager applicationManager;
-
-	private DeviceManager deviceManager;
+	protected DeviceManager deviceManager;
 
 
 	/**
@@ -105,7 +104,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
 		CallContext messageContext = new CallContext();
-		messageContext.setCallerDevice(new LoopbackDevice(1)); // FIXME: Tales - 21/07/2012 
+		messageContext.setCallerNetworkDevice(new LoopbackDevice(1)); // FIXME: Tales - 21/07/2012 
 																// Linha de codigo necessária para que o objeto 'messageContext' tenha um 'callerDevice'. 
 																// Caso prossiga sem o mesmo uma 'NullpointerException' é lançada.
 		
@@ -319,6 +318,11 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	@Override
 	public Response handleServiceCall(Call serviceCall, CallContext messageContext)
 			throws DriverManagerException {
+		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
+		if (networkDevice != null){
+			UpDevice callerDevice = deviceManager.retrieveDevice(messageContext.getCallerNetworkDevice().getNetworkDeviceName(), networkDevice.getNetworkDeviceType());
+			messageContext.setCallerDevice(callerDevice);
+		}
 		if (isApplicationCall(serviceCall)){
 			return applicationManager.handleServiceCall(serviceCall, messageContext);
 		}else{

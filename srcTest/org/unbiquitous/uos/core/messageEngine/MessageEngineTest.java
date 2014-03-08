@@ -104,7 +104,7 @@ public class MessageEngineTest {
 		
 		assertEquals("my.driver",callCatcher.getValue().getDriver());
 		assertEquals("my.service",callCatcher.getValue().getService());
-		assertEquals(caller,ctxCatcher.getValue().getCallerDevice());
+		assertEquals(caller,ctxCatcher.getValue().getCallerNetworkDevice());
 	}
 	
 	@Test public void handleIncomingMessage_returnErrorWhenServiceCallHandlerFails() throws Exception{

@@ -59,7 +59,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 				if (messageType == Message.Type.SERVICE_CALL_REQUEST){
 					logger.info("Incoming Service Call");
 					CallContext messageContext = new CallContext();
-					messageContext.setCallerDevice(clientDevice);
+					messageContext.setCallerNetworkDevice(clientDevice);
 					return handleServiceCall(message, messageContext);
 				}else if (messageType == Message.Type.NOTIFY){
 					logger.info("Incoming Notify");

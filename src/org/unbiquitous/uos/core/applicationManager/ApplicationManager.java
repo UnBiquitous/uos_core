@@ -165,7 +165,7 @@ public class ApplicationManager {
 		if(serviceCall.getServiceType().equals(ServiceType.STREAM)){
 			logger.fine(String.format("Stream call requires to establish passive channels"));
 			try {
-				NetworkDevice networkDevice = messageContext.getCallerDevice();
+				NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
 				
 				String host = connectionManagerControlCenter.getHost(networkDevice.getNetworkDeviceName());
 				for(int i = 0; i < serviceCall.getChannels(); i++){
