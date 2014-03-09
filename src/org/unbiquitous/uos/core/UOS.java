@@ -79,6 +79,7 @@ public class UOS {
 	public void init(InitialProperties properties) throws ContextException {
 		try {
 			this.properties	= properties;
+			this.properties.markReadOnly();
 			this.factory		= new UOSComponentFactory(properties);
 			this.components = new ArrayList<UOSComponent>(){
 				{

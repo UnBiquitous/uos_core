@@ -97,7 +97,7 @@ public class ApplicationManager {
 	
 	private void initApp(final UosApplication app, String id) {
 		Ontology initOntology = createInitOntology(app);
-		app.init(initOntology,id);
+		app.init(initOntology,properties,id);
 		if (initOntology != null){
 			initOntology.saveChanges();
 		}
