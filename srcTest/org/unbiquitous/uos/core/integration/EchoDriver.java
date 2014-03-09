@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
@@ -39,7 +40,7 @@ public class EchoDriver implements UosEventDriver {
 		return driver;
 	}
 
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		EchoDriver.instance = this;
 		this.gateway = gateway;
 		this.id = instanceId;

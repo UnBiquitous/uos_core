@@ -56,7 +56,7 @@ public class DeviceDriverTest_handShake {
 		
 		driverManager = ctx.getFactory().get(AdaptabilityEngine.class).driverManager();
 		driverManager.deployDriver(driver.getDriver(), driver);
-		driverManager.initDrivers(ctx.getGateway());
+		driverManager.initDrivers(ctx.getGateway(), null);
 		
 		deviceManager = ctx.getFactory().get(AdaptabilityEngine.class).deviceManager();
 	}
@@ -100,7 +100,7 @@ public class DeviceDriverTest_handShake {
 		
 		SmartSpaceGateway gateway = mockGateway(currentDevice);
 		
-		driver.init(gateway, "id");
+		driver.init(gateway, null, "id");
 		when(gateway.callService((UpDevice)any(), (Call)any()))
 				.thenReturn(new Response());
 		
@@ -160,7 +160,7 @@ public class DeviceDriverTest_handShake {
 		when(gateway.callService((UpDevice)any(), (Call)any()))
 		.thenReturn(new Response().addParameter("driverList", driversList ));
 		
-		driver.init(gateway, "id");
+		driver.init(gateway, null, "id");
 		UpDevice toRegister = new UpDevice("Dummy")
 				.addNetworkInterface("HERE", "LOCAL");
 		
@@ -191,7 +191,7 @@ public class DeviceDriverTest_handShake {
 		when(gateway.callService((UpDevice)any(), (Call)any()))
 			.thenReturn(new Response().addParameter("driverList", driversList ));
 		
-		driver.init(gateway, "id");
+		driver.init(gateway, null, "id");
 		UpDevice toRegister = new UpDevice("Dummy")
 										.addNetworkInterface("HERE", "LOCAL");
 

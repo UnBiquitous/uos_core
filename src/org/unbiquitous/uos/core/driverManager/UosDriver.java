@@ -2,6 +2,7 @@ package org.unbiquitous.uos.core.driverManager;
 
 import java.util.List;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 
@@ -39,7 +40,7 @@ public interface UosDriver {
 	/**
 	 * Method responsible for executing initialization tasks for the Driver
 	 */
-	public void init(Gateway gateway, String instanceId);
+	public void init(Gateway gateway, InitialProperties properties, String instanceId);
 	
 	/**
 	 * Method responsible for executing clean-up tasks for the Driver

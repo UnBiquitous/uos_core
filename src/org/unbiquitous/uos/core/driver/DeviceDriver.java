@@ -11,6 +11,7 @@ import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
@@ -69,7 +70,7 @@ public class DeviceDriver implements UosDriver {
 	}
 
 	@Override
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		this.gateway = gateway;
 	}
 
