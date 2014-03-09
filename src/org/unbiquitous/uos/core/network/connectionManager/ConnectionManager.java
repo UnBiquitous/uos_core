@@ -20,10 +20,10 @@ public interface ConnectionManager extends Runnable{
 	
 	/**
 	 * A method for setting properties for the connection Manager
-	 * @param resource
+	 * @param properties
 	 */
-	public void setResourceBundle(InitialProperties resource);
-	public InitialProperties getResourceBundle();
+	public void setProperties(InitialProperties properties);
+	public InitialProperties getProperties();
 	
 	/**
 	 * Finalize the Connection Manager.

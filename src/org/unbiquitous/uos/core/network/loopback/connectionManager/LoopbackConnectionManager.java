@@ -100,11 +100,11 @@ public class LoopbackConnectionManager implements ConnectionManager {
 	 * Setter of the resource bundle
 	 * @param resource Reference to the resource bundle
 	 */
-	public void setResourceBundle(InitialProperties resource) {
+	public void setProperties(InitialProperties resource) {
 		this.properties = resource;
 	}
 
-	public InitialProperties getResourceBundle(){
+	public InitialProperties getProperties(){
 		return this.properties;
 	}
 	

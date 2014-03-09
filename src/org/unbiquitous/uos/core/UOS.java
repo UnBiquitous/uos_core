@@ -71,11 +71,14 @@ public class UOS {
 	 *            the properties of the uOS middleware.
 	 * @throws ContextException
 	 */
-	@SuppressWarnings("serial")
 	public void init(ResourceBundle resourceBundle) throws ContextException {
+		init(new InitialProperties(resourceBundle));
+	}
 		
+	@SuppressWarnings("serial")
+	public void init(InitialProperties properties) throws ContextException {
 		try {
-			this.properties	= new InitialProperties(resourceBundle);
+			this.properties	= properties;
 			this.factory		= new UOSComponentFactory(properties);
 			this.components = new ArrayList<UOSComponent>(){
 				{

@@ -241,7 +241,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 				// Sets the this Control Center as the Listener of the new Connection Manager 
 				newConMan.setConnectionManagerListener(this);
 				// Sets the resource bundle
-				newConMan.setResourceBundle(properties);
+				newConMan.setProperties(properties);
 				// Add to the Connection Managers to a List
 				connectionManagersList.add(newConMan);
 				connectionManagersMap.put(radar, newConMan);
