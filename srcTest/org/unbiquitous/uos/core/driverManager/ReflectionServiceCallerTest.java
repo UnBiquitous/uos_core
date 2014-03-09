@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
@@ -165,7 +166,7 @@ public class ReflectionServiceCallerTest {
 	public static class ProxyDriverSpy extends DriverSpy implements ProxyDriver {
 		boolean forwardCalled = false;
 		public UpDriver getDriver() {return null;}
-		public void init(Gateway gateway, String instanceId) {}
+		public void init(Gateway gateway, InitialProperties properties, String instanceId) {}
 		public void destroy() {}
 		public void forwardServiceCall(Call serviceCall,
 				Response serviceResponse,

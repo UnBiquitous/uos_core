@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
@@ -91,7 +92,7 @@ public class PingApp implements UosApplication, UosEventListener {
 
 	public void stop() throws Exception {	run = false;	}
 
-	public void init(OntologyDeploy ontology, String appId) {}
+	public void init(OntologyDeploy ontology, InitialProperties props, String appId) {}
 
 	public void tearDown(OntologyUndeploy ontology) throws Exception {}
 

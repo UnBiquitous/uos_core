@@ -16,6 +16,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
@@ -49,7 +50,7 @@ public class OntologyInstanceTest {
     @Before 
     public void setup(){
         try {
-            ontology = new Ontology(resourceBundle);
+            ontology = new Ontology(new InitialProperties(resourceBundle));
             
         } catch (ReasonerNotDefinedException ex) {
             Logger.getLogger(OntologyInstanceTest.class.getName()).log(Level.SEVERE, null, ex);

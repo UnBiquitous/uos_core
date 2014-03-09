@@ -2,7 +2,6 @@ package org.unbiquitous.uos.core;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,11 +32,11 @@ public class SecurityManager {
 	 */
 	private Map<String, TranslationHandler> translationHandlers = new HashMap<String, TranslationHandler>();
 	
-	private ResourceBundle resourceBundle;
+	private InitialProperties properties;
 	
 	
-	public SecurityManager(ResourceBundle resourceBundle) throws SecurityException {
-		this.resourceBundle = resourceBundle;
+	public SecurityManager(InitialProperties properties) throws SecurityException {
+		this.properties = properties;
 		
 		loadAuthenticationHandlers();
 		loadTranslationHandlers();
@@ -51,13 +50,13 @@ public class SecurityManager {
 	 */
 	private void loadAuthenticationHandlers() throws SecurityException{
 		
-		if (resourceBundle != null){
+		if (properties != null){
 			String authenticationHandlerProperty = null;
-			try {
-				authenticationHandlerProperty = resourceBundle.getString(AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY);
-			} catch (Exception e) {
+			if(properties.containsKey(AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY)) {
+				authenticationHandlerProperty = properties.getString(AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY);
+			} else {
 				String erroMessage = "No "+AUTHENTICATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.severe(erroMessage);
+				logger.fine(erroMessage);
 				return;
 			}
 			
@@ -104,13 +103,13 @@ public class SecurityManager {
 	 */
 	private void loadTranslationHandlers() throws SecurityException{
 		
-		if (resourceBundle != null){
+		if (properties != null){
 			String translationHandlerProperty = null;
-			try {
-				translationHandlerProperty = resourceBundle.getString(TRANSLATION_HANDLER_LIST_RESOURCE_KEY);
-			} catch (Exception e) {
+			if(properties.containsKey(TRANSLATION_HANDLER_LIST_RESOURCE_KEY)) {
+				translationHandlerProperty = properties.getString(TRANSLATION_HANDLER_LIST_RESOURCE_KEY);
+			} else {
 				String erroMessage = "No "+TRANSLATION_HANDLER_LIST_RESOURCE_KEY+" specified.";
-				logger.severe(erroMessage);
+				logger.fine(erroMessage);
 				return;
 			}
 			

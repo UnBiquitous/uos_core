@@ -17,15 +17,16 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
-import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
+import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
-import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
@@ -106,7 +107,7 @@ public class AdaptabitilyEngineTest {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null,null);
+		final ApplicationManager manager = new ApplicationManager(new InitialProperties(properties), null,null);
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
@@ -288,7 +289,7 @@ public class AdaptabitilyEngineTest {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void handleServiceCall_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null,null);
+		final ApplicationManager manager = new ApplicationManager(new InitialProperties(properties), null,null);
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		

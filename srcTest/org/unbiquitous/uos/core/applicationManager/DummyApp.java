@@ -2,6 +2,7 @@ package org.unbiquitous.uos.core.applicationManager;
 
 import java.util.Map;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
@@ -28,6 +29,7 @@ public class DummyApp implements UosApplication{
 	public Map<String,Object> callbackMap;
 	public Call serviceCall;
 	public CallContext context;
+	public InitialProperties properties;
 	
 	public static DummyApp lastInstance;
 	
@@ -36,9 +38,10 @@ public class DummyApp implements UosApplication{
 	}
 	
 	@Override
-	public void init(OntologyDeploy ontology, String appId) {
+	public void init(OntologyDeploy ontology, InitialProperties properties, String appId) {
 		this.initOntology = ontology;
 		this.appId = appId;
+		this.properties = properties;
 		inited = true;
 		initedCount ++;
 	}

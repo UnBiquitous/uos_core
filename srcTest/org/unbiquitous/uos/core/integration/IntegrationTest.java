@@ -37,7 +37,7 @@ public class IntegrationTest {
 		UOS pc = startContext(pcName);
 		EchoDriver echo = new EchoDriver();
 		pc.getFactory().get(AdaptabilityEngine.class).driverManager().deployDriver(echo.getDriver(), echo);
-		pc.getFactory().get(AdaptabilityEngine.class).driverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
+		pc.getFactory().get(AdaptabilityEngine.class).driverManager().initDrivers(pc.getGateway(), null);//TODO: What an ugly thing to do, should be initialized automaticali
 
 		//App side
 		String cellName = "my.cell";

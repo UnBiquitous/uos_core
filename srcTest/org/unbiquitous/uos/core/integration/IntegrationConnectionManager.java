@@ -5,8 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.ResourceBundle;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
@@ -21,7 +21,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 	private ConnectionManagerListener connectionListener;
 	
 	private static final CM channelMng = new CM();
-	private ResourceBundle bundle;
+	private InitialProperties bundle;
 	private static class CM implements ChannelManager {
 		/*    PC (Driver side)              CELL (App side)
 		 * 
@@ -121,7 +121,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 	}
 
 	@Override
-	public void setResourceBundle(ResourceBundle bundle) {
+	public void setProperties(InitialProperties bundle) {
 		this.bundle = bundle;
 		String deviceName = bundle.getString("ubiquitos.uos.deviceName");
 		if (deviceName.equals("my.pc")){
@@ -135,7 +135,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 		}
 	}
 	
-	public ResourceBundle getResourceBundle(){
+	public InitialProperties getProperties(){
 		return this.bundle;
 	}
 

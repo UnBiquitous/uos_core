@@ -14,8 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
@@ -26,19 +26,17 @@ public class ApplicationManagerTest {
 
 	private ApplicationManager manager;
 	private Gateway gateway;
+	private InitialProperties props;
 
+	@SuppressWarnings("serial")
 	@Before public void setUp() throws Exception{
 		gateway = mock(Gateway.class);
 		new File("resources/owl/uoscontext.owl").createNewFile();
-		ResourceBundle bundle = new ListResourceBundle() {
-			protected Object[][] getContents() {
-				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
-						{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
-				};
-			}
-		};
-		manager = new ApplicationManager(bundle,gateway,null);
+		props= new InitialProperties() {{
+			put("ubiquitos.ontology.path","resources/owl/uoscontext.owl");
+			put("ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName());
+		}};
+		manager = new ApplicationManager(props,gateway,null);
 	}
 	
 	private void createOntologyDisabledManager() {
@@ -49,7 +47,7 @@ public class ApplicationManagerTest {
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway,null);
+		manager = new ApplicationManager(new InitialProperties(bundle),gateway,null);
 	}
 	
 	@After public void tearDown(){
@@ -109,13 +107,14 @@ public class ApplicationManagerTest {
 		assertThat(app.initOntology).isNull();
 	}
 
-	@Test public void startsTheAppWithTheProperOntologyAndGateway() throws InterruptedException{
+	@Test public void startsTheAppWithTheProperOntologyAndGatewayAndProperties() throws InterruptedException{
 		final DummyApp app = new DummyApp();
 		manager.add(app);
 		manager.startApplications();
 		waitToStart(app);
 		assertThat(app.startOntology).isNotNull();
 		assertThat(app.gateway).isSameAs(gateway);
+		assertThat(app.properties).isSameAs(props);
 	}
 	
 	@Test public void startsTheAppWithNoOntologyWhenDisableButStillWithGateway() throws InterruptedException{

@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -17,10 +16,10 @@ public class CurrentDeviceInitializer implements UOSComponent{
 	private static final Logger logger = UOSLogging.getLogger();
 	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
 	
-	private ResourceBundle properties;
+	private InitialProperties properties;
 	
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;}
 
 	@Override

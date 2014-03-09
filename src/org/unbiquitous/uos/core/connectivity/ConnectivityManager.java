@@ -365,7 +365,7 @@ public class ConnectivityManager {
 		ProxyDriver proxyDriver = new ProxyDriverImpl(driver, device);
 		try{
 			this.driverManager.deployDriver(driver, proxyDriver, id);
-			driverManager.initDrivers(gateway);
+			driverManager.initDrivers(gateway, null);
 		}catch(DriverManagerException e){
 			logger.severe(e.getMessage());
 		}

@@ -4,9 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
@@ -45,7 +45,7 @@ public class RadarControlCenter implements RadarListener {
 	// The Radar Listener Above
 	private RadarListener radarListener;
 	// The resource bundle from where we can get a set of configurations
-	private ResourceBundle resource;
+	private InitialProperties properties;
 
 	// ConnectionManagerControlCenter for resolving the connectionManager dependency
 	ConnectionManagerControlCenter connectionManagerControlCenter;
@@ -59,9 +59,9 @@ public class RadarControlCenter implements RadarListener {
 	 * @param deviceManager
 	 * @throws UbiquitOSException
 	 */
-	public RadarControlCenter(ResourceBundle resourceBundle,
+	public RadarControlCenter(InitialProperties properties,
 			ConnectionManagerControlCenter connectionManagerControlCenter) throws NetworkException {
-		this.resource = resourceBundle;
+		this.properties = properties;
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		// Instantiates all the Radars("Externals Servers" of this component)
 		loadRadars();
@@ -129,8 +129,8 @@ public class RadarControlCenter implements RadarListener {
 		try {
 			// Retrieve all defined radars.
 			String radarsPropertie = null; 
-			if (this.resource != null && resource.containsKey(RADAR_CLASS_KEY)){
-				radarsPropertie = resource.getString(RADAR_CLASS_KEY);
+			if (this.properties != null && properties.containsKey(RADAR_CLASS_KEY)){
+				radarsPropertie = properties.getString(RADAR_CLASS_KEY);
 				
 				String[] radarsArray = null; 
 				if (radarsPropertie != null){
