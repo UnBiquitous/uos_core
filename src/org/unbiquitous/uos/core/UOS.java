@@ -29,7 +29,7 @@ public class UOS {
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
-    private ResourceBundle properties;
+    private InitialProperties properties;
 
 	private UOSComponentFactory factory;
 	private List<UOSComponent> components ;
@@ -71,12 +71,16 @@ public class UOS {
 	 *            the properties of the uOS middleware.
 	 * @throws ContextException
 	 */
-	@SuppressWarnings("serial")
 	public void init(ResourceBundle resourceBundle) throws ContextException {
+		init(new InitialProperties(resourceBundle));
+	}
 		
+	@SuppressWarnings("serial")
+	public void init(InitialProperties properties) throws ContextException {
 		try {
-			this.properties	= resourceBundle;
-			this.factory		= new UOSComponentFactory(resourceBundle);
+			this.properties	= properties;
+			this.properties.markReadOnly();
+			this.factory		= new UOSComponentFactory(properties);
 			this.components = new ArrayList<UOSComponent>(){
 				{
 					add(factory.get(ConnectionManagerControlCenter.class));

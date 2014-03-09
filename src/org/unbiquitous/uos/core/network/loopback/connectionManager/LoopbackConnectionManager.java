@@ -1,10 +1,10 @@
 package org.unbiquitous.uos.core.network.loopback.connectionManager;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
@@ -36,8 +36,7 @@ public class LoopbackConnectionManager implements ConnectionManager {
     /** The ChannelManager for new data channels */
     private LoopbackChannelManager channelManager;
     
-    /** The ResourceBundle to get some properties. */
-	private ResourceBundle resource;
+	private InitialProperties properties;
     
 	/** The device that will be listening to new connections */
     private LoopbackDevice listeningDevice;
@@ -101,12 +100,12 @@ public class LoopbackConnectionManager implements ConnectionManager {
 	 * Setter of the resource bundle
 	 * @param resource Reference to the resource bundle
 	 */
-	public void setResourceBundle(ResourceBundle resource) {
-		this.resource = resource;
+	public void setProperties(InitialProperties resource) {
+		this.properties = resource;
 	}
 
-	public ResourceBundle getResourceBundle(){
-		return this.resource;
+	public InitialProperties getProperties(){
+		return this.properties;
 	}
 	
 	/**

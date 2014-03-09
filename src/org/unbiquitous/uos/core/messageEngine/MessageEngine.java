@@ -1,11 +1,11 @@
 package org.unbiquitous.uos.core.messageEngine;
 
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
@@ -15,10 +15,10 @@ import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Message;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.connectionManager.MessageListener;
@@ -43,7 +43,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	private ConnectionManagerControlCenter connectionManagerControlCenter;
 	private MessageHandler messageHandler;
 
-	private ResourceBundle properties;
+	private InitialProperties properties;
 	
 	@Override
 	public String handleIncomingMessage(String message,NetworkDevice clientDevice) throws NetworkException{
@@ -198,7 +198,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	/************************ USO COmpoment ***************************/
 	
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;
 	}
 	

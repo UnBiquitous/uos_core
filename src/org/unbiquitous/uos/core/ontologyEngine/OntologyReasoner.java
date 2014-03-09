@@ -2,7 +2,6 @@ package org.unbiquitous.uos.core.ontologyEngine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -26,6 +25,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.ontologyEngine.api.StartReasoner;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
@@ -50,11 +50,11 @@ public class OntologyReasoner implements StartReasoner {
     private static String REASONER_FACTORY = "ubiquitos.ontology.reasonerFactory";
 
     @SuppressWarnings(value = { "unchecked", "rawtypes" })
-    private OWLReasonerFactory createReasonerFactory(ResourceBundle resourceBundle) {
+    private OWLReasonerFactory createReasonerFactory(InitialProperties properties) {
         try {
             
-            if (resourceBundle.containsKey(REASONER_FACTORY)) {
-                Class clazz = Class.forName(resourceBundle.getString(REASONER_FACTORY));
+            if (properties.containsKey(REASONER_FACTORY)) {
+                Class clazz = Class.forName(properties.getString(REASONER_FACTORY));
                 return (OWLReasonerFactory) clazz.getMethod("ReasonerFactory").invoke(null, (Object[]) null);
             }
            
@@ -66,7 +66,7 @@ public class OntologyReasoner implements StartReasoner {
         return null;
     }
 
-    public OntologyReasoner(OWLOntologyManager manager, OWLOntology localContext, ResourceBundle resourceBundle) throws ReasonerNotDefinedException {
+    public OntologyReasoner(OWLOntologyManager manager, OWLOntology localContext, InitialProperties properties) throws ReasonerNotDefinedException {
         
         try {
         write.lock();
@@ -74,7 +74,7 @@ public class OntologyReasoner implements StartReasoner {
         prefix = localContext.getOntologyID().getOntologyIRI() + "#";
         this.manager = manager;
         this.localContext = localContext;
-        if ((reasonerFactory = createReasonerFactory(resourceBundle)) == null) {
+        if ((reasonerFactory = createReasonerFactory(properties)) == null) {
             throw new ReasonerNotDefinedException("Property file does not contain ontology reasoner defined.");
         }
         config = new SimpleConfiguration();

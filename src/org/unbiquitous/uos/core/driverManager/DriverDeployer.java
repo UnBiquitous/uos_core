@@ -1,10 +1,10 @@
 package org.unbiquitous.uos.core.driverManager;
 
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
@@ -38,17 +38,11 @@ public class DriverDeployer {
 
 	private DriverManager driverManager;
 	
-	private ResourceBundle resourceBundle;
+	private InitialProperties properties;
 	
-	/**
-	 * Default Constructor
-	 * 
-	 * @param driverManager DriverManager which to load the drivers
-	 * @param resourceBundle ResourceBundle containing the information about the drivers to load 
-	 */
-	public DriverDeployer(DriverManager driverManager, ResourceBundle resourceBundle) {
+	public DriverDeployer(DriverManager driverManager, InitialProperties properties) {
 		this.driverManager = driverManager;
-		this.resourceBundle = resourceBundle;
+		this.properties = properties;
 	}
 	
 	/**
@@ -59,14 +53,14 @@ public class DriverDeployer {
 	 */
 	public void deployDrivers() throws DriverManagerException {
 		logger.info("Deploying Drivers.");
-		if (driverManager != null  && resourceBundle != null){
+		if (driverManager != null  && properties != null){
 			String deployList = null;
 			try {
-				if (!resourceBundle.containsKey(DRIVER_LIST_RESOURCE_KEY)){
+				if (!properties.containsKey(DRIVER_LIST_RESOURCE_KEY)){
 					logger.warning("No '"+DRIVER_LIST_RESOURCE_KEY+"' property defined. This implies on no drivers for this instance.");
 	    			return;
 				}
-				deployList = resourceBundle.getString(DRIVER_LIST_RESOURCE_KEY);
+				deployList = properties.getString(DRIVER_LIST_RESOURCE_KEY);
 			} catch (Exception e) {
 				String errorMessage = "No "+DRIVER_LIST_RESOURCE_KEY+" specified.";
 				logger.log(Level.SEVERE,errorMessage,e);
@@ -93,7 +87,7 @@ public class DriverDeployer {
 				logger.fine("No "+DRIVER_LIST_RESOURCE_KEY+" specified.");
 			}
 		}else{
-			logger.fine("No parameters (DriverManager or ResourceBundle) informed to Deployer.");
+			logger.fine("No parameters informed to Deployer.");
 		}
 	}
 
@@ -149,9 +143,9 @@ public class DriverDeployer {
 	 */
 	private void deployDriver(String driverClass, String instanceId)
 			throws DriverManagerException, InterfaceValidationException {
-		try {
-			DRIVER_PATH = resourceBundle.getString(DRIVER_PATH_RESOURCE_KEY);
-		} catch (Exception e) {
+		if(properties.containsKey(DRIVER_PATH_RESOURCE_KEY)) {
+			DRIVER_PATH = properties.getString(DRIVER_PATH_RESOURCE_KEY);
+		} else {
 			DRIVER_PATH = DEFAULT_DRIVER_PATH;
 		}
 		

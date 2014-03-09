@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
@@ -374,7 +375,7 @@ public class DriverManager {
 	/**
 	 * Initializes the driver that are not initialized yet.
 	 */
-	public void initDrivers(Gateway gateway){
+	public void initDrivers(Gateway gateway, InitialProperties properties){
 		try {
 			if (driverDao.list("uos.DeviceDriver").isEmpty()){
 				
@@ -390,7 +391,7 @@ public class DriverManager {
 			String id = it.next();
 			DriverModel model = driverDao.retrieve(id,currentDevice.getName());
 			UosDriver driver = instances.get(model.rowid());
-			driver.init(gateway, id);
+			driver.init(gateway, properties, id);
 			it.remove();
 			logger.fine(String.format("Initialized Driver %s with id '%s'", 
 							model.driver().getName(),id));

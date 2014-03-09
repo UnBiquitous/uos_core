@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
@@ -64,7 +65,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * Constructor
 	 */
 	@Override
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		this.gateway = gateway;
 		this.instanceId = instanceId;
 		this.newUserListenerDevices = new ArrayList<UpNetworkInterface>();
