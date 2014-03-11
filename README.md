@@ -39,4 +39,4 @@ Don't forget to include our repository on your list.
 Documentation
 -----------
 
-Further information can be found [here]() but it's only related to the current ongoing branch 3.1.0. So, if you want to give it a try just go fork, clone and checkout =]
+Further information can be found [here](https://github.com/UnBiquitous/uos_core/wiki) but it's only related to the current ongoing branch 3.1.0. So, if you want to give it a try just go fork, clone and checkout =]
