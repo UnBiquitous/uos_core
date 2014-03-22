@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -215,8 +216,8 @@ public class AdaptabitilyEngineTest {
 		
 		Notify notify = new Notify();
 		UpDevice device = new UpDevice();
-		engine.sendEventNotify(notify, device);
-		verify(_eventManager).sendEventNotify(notify, device);
+		engine.notify(notify, device);
+		verify(_eventManager).notify(notify, device);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManager() throws Exception{
@@ -229,8 +230,8 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", null, "eventKey");
+		engine.register(listener, device, "driver", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", null, "eventKey", null);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManagerWithId() throws Exception{
@@ -243,8 +244,24 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "id", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", "id", "eventKey");
+		engine.register(listener, device, "driver", "id", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", "id", "eventKey", null);
+	}
+	
+	@Test public void registerForEvent_shouldDelagateToEventManagerWithParameters() throws Exception{
+		final EventManager _eventManager = mock(EventManager.class);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.eventManager = _eventManager;
+			}
+		};
+		engine.init(null);
+		UosEventListener listener = mock(UosEventListener.class);
+		UpDevice device = new UpDevice();
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		engine.register(listener, device, "driver", "id", "eventKey",params);
+		verify(_eventManager).register(listener, device, "driver", "id", 
+				"eventKey", params);
 	}
 	
 	@Test public void unregisterForEvent_shouldDelagateToEventManager() throws Exception{

@@ -418,7 +418,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 			device.addNetworkInterface(networkInterface.getNetworkAddress(), networkInterface.getNetType());
 
 			try {
-				this.gateway.sendEventNotify(notify, device);
+				this.gateway.notify(notify, device);
 			} catch (NotifyException e) {
 				e.printStackTrace();
 			}

@@ -40,7 +40,7 @@ public class PingApp implements UosApplication, UosEventListener {
 					testEcho(gateway, echoDriver);
 					
 					DriverData data = echoDriver.get(0);
-					gateway.registerForEvent(this, data.getDevice(), data.getDriver().getName(), "reminder");
+					gateway.register(this, data.getDevice(), data.getDriver().getName(), "reminder");
 					
 					run = false;
 				}

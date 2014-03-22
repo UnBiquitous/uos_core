@@ -58,22 +58,30 @@ public class SmartSpaceGatewayTest {
 	@Test public void registerForEventDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		UosEventListener listener = new EventListener();
-		gateway.registerForEvent(listener,target, "d", "e");
-		verify(engine).registerForEvent(listener, target, "d", null, "e");
+		gateway.register(listener,target, "d", "e");
+		verify(engine).register(listener, target, "d", null, "e",null);
 	}
 	
 	@Test public void registerForEventWithMultipleParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		UosEventListener listener = new EventListener();
-		gateway.registerForEvent(listener,target, "d", "i", "e");
-		verify(engine).registerForEvent(listener, target, "d", "i", "e");
+		gateway.register(listener,target, "d", "i", "e");
+		verify(engine).register(listener, target, "d", "i", "e",null);
+	}
+	
+	@Test public void registerForEventWithParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
+		UpDevice target = new UpDevice("a");
+		UosEventListener listener = new EventListener();
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		gateway.register(listener,target, "d", "i", "e",params);
+		verify(engine).register(listener, target, "d", "i", "e",params);
 	}
 	
 	@Test public void sendEventNotifyDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		Notify event = new Notify("d", "s");
-		gateway.sendEventNotify(event, target);
-		verify(engine).sendEventNotify(event, target);
+		gateway.notify(event, target);
+		verify(engine).notify(event, target);
 	}
 	
 	@Test public void unregisterForEventDelegatesToAdaptabilityEngine() throws Exception{

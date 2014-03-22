@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +20,6 @@ import org.mockito.ArgumentCaptor;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;

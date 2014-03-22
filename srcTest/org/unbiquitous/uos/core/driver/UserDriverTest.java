@@ -85,7 +85,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException, JSONException {
 
 		DummyEventListener dummyNewEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
+		gateway.register(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
 
 		createUser(LABEL);
 
@@ -114,7 +114,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException, JSONException {
 
 		DummyEventListener dummyEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
+		gateway.register(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
 
 		updateUser(LABEL, 0.99f, 1f, 2f, 3f);
 
@@ -147,7 +147,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException {
 
 		DummyEventListener dummyLostEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
+		gateway.register(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
 
 		removeUser(LABEL);
 
