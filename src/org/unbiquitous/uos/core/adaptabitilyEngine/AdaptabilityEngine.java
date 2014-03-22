@@ -3,7 +3,6 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.unbiquitous.json.JSONException;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
@@ -325,7 +324,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 			throws DriverManagerException {
 		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
 		if (networkDevice != null){
-			UpDevice callerDevice = deviceManager.retrieveDevice(messageContext.getCallerNetworkDevice().getNetworkDeviceName(), networkDevice.getNetworkDeviceType());
+			NetworkDevice netDevice = messageContext.getCallerNetworkDevice();
+			String addr = netDevice.getNetworkDeviceName();
+			//TODO: This ligic (spliting ports) is wide spread through the code, I think the port can be ignored for NetworkDevices since we only use the default port.
+			if (addr.contains(":")){
+				addr = addr.split(":")[0];
+			}
+			String type = networkDevice.getNetworkDeviceType();
+			UpDevice callerDevice = deviceManager.retrieveDevice(addr, type);
 			messageContext.setCallerDevice(callerDevice);
 		}
 		if (isApplicationCall(serviceCall)){

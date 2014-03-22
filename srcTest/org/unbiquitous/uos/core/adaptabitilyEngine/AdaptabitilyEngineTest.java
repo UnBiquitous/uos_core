@@ -341,7 +341,7 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		CallContext ctx = new CallContext();
 		ctx.setCallerNetworkDevice(new NetworkDevice() {
-			public String getNetworkDeviceName() {	return "addr";	}
+			public String getNetworkDeviceName() {	return "addr:port";	}
 			public String getNetworkDeviceType() {	return "type";	}
 		});
 		engine.handleServiceCall(new Call(),ctx);
