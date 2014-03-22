@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -169,7 +170,7 @@ public class AdaptabitilyEngineTest {
 	}
 	
 
-	@Test public void callService_shouldRedirectRemoteCallToMessageEngibeForOtherDevice() throws Exception {
+	@Test public void callService_shouldRedirectRemoteCallToMessageEngineForOtherDevice() throws Exception {
 		final MessageEngine _messageEngine = mock(MessageEngine.class);
 		Response response = new Response();
 		UpDevice callee = new UpDevice("other");
@@ -183,6 +184,22 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		assertEquals(response,engine.callService(callee, call));
+	}
+	
+	@Test(expected=ServiceCallException.class) 
+	public void callService_RemoteCallMustHandleNullResponseAsAnError() throws Exception {
+		final MessageEngine _messageEngine = mock(MessageEngine.class);
+		UpDevice callee = new UpDevice("other");
+		Call call = new Call("my.driver","myService");
+		when(_messageEngine.callService(callee, call)).thenReturn(null);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.currentDevice = new UpDevice("me");
+				this.messageEngine = _messageEngine;
+			}
+		};
+		engine.init(null);
+		engine.callService(callee, call);
 	}
 	
 	//TODO : AdaptabilityEngine : callService : Test Stream Service (Local and Remote)
@@ -199,8 +216,8 @@ public class AdaptabitilyEngineTest {
 		
 		Notify notify = new Notify();
 		UpDevice device = new UpDevice();
-		engine.sendEventNotify(notify, device);
-		verify(_eventManager).sendEventNotify(notify, device);
+		engine.notify(notify, device);
+		verify(_eventManager).notify(notify, device);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManager() throws Exception{
@@ -213,8 +230,8 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", null, "eventKey");
+		engine.register(listener, device, "driver", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", null, "eventKey", null);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManagerWithId() throws Exception{
@@ -227,8 +244,24 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "id", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", "id", "eventKey");
+		engine.register(listener, device, "driver", "id", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", "id", "eventKey", null);
+	}
+	
+	@Test public void registerForEvent_shouldDelagateToEventManagerWithParameters() throws Exception{
+		final EventManager _eventManager = mock(EventManager.class);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.eventManager = _eventManager;
+			}
+		};
+		engine.init(null);
+		UosEventListener listener = mock(UosEventListener.class);
+		UpDevice device = new UpDevice();
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		engine.register(listener, device, "driver", "id", "eventKey",params);
+		verify(_eventManager).register(listener, device, "driver", "id", 
+				"eventKey", params);
 	}
 	
 	@Test public void unregisterForEvent_shouldDelagateToEventManager() throws Exception{
@@ -325,7 +358,7 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		CallContext ctx = new CallContext();
 		ctx.setCallerNetworkDevice(new NetworkDevice() {
-			public String getNetworkDeviceName() {	return "addr";	}
+			public String getNetworkDeviceName() {	return "addr:port";	}
 			public String getNetworkDeviceType() {	return "type";	}
 		});
 		engine.handleServiceCall(new Call(),ctx);

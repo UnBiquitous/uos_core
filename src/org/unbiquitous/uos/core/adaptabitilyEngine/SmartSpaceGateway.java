@@ -57,17 +57,23 @@ public class SmartSpaceGateway implements Gateway {
 		return adaptabilityEngine.callService(device, serviceCall);
 	}
 
-	public void registerForEvent(UosEventListener listener, UpDevice device,
+	public void register(UosEventListener listener, UpDevice device,
 			String driver, String eventKey) throws NotifyException {
-		adaptabilityEngine.registerForEvent(listener, device, driver, null,
-				eventKey);
+		register(listener, device, driver, null,eventKey);
 	}
 
-	public void registerForEvent(UosEventListener listener, UpDevice device,
+	public void register(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
-		adaptabilityEngine.registerForEvent(listener, device, driver,
-				instanceId, eventKey);
+		register(listener, device, driver, instanceId, eventKey, null);
+	}
+	
+	public void register(UosEventListener listener, UpDevice device,
+			String driver, String instanceId, String eventKey,
+			Map<String, Object> parameters)
+			throws NotifyException {
+		adaptabilityEngine.register(listener, device, driver,
+				instanceId, eventKey,parameters);
 	}
 
 	public List<DriverData> listDrivers(String driverName) {
@@ -82,9 +88,9 @@ public class SmartSpaceGateway implements Gateway {
 		return currentDevice;
 	}
 
-	public void sendEventNotify(Notify notify, UpDevice device)
+	public void notify(Notify notify, UpDevice device)
 			throws NotifyException {
-		adaptabilityEngine.sendEventNotify(notify, device);
+		adaptabilityEngine.notify(notify, device);
 	}
 
 	public void unregisterForEvent(UosEventListener listener)

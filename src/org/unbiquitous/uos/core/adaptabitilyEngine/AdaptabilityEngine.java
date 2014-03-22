@@ -135,6 +135,10 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		// If not a local service call, delegate to the serviceHandler
 		try{
 			Response response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			if(response == null){
+				closeStreamChannels(streamConnectionThreadeds);
+				throw new ServiceCallException("No response received from call.");
+			}
 			response.setMessageContext(messageContext);
 			return response;
 		}catch (MessageEngineException e){
@@ -251,21 +255,22 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param device Device which is going to receive the notofy event
 	 * @throws MessageEngineException
 	 */
-	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException{
-		eventManager.sendEventNotify(notify,device);
+	public void notify(Notify notify, UpDevice device) throws NotifyException{
+		eventManager.notify(notify,device);
 	}
 	
 	/**
-	 * Register a Listener for a event, driver and device specified.
-	 * 
-	 * @param listener UosEventListener responsible for dealing with the event.
-	 * @param device Device which event must be listened
-	 * @param driver Driver responsible for the event.
-	 * @param eventKey EventKey that identifies the wanted event to be listened.
-	 * @throws NotifyException In case of an error.
+	 * @see AdaptabilityEngine#register(UosEventListener, UpDevice, String, String, String)
 	 */
-	public void registerForEvent(UosEventListener listener, UpDevice device, String driver, String eventKey) throws NotifyException{
-		eventManager.registerForEvent(listener, device, driver, null, eventKey);
+	public void register(UosEventListener listener, UpDevice device, String driver, String eventKey) throws NotifyException{
+		register(listener, device, driver, null, eventKey);
+	}
+	
+	/**
+	 * @see AdaptabilityEngine#register(UosEventListener, UpDevice, String, String, String, Map)
+	 */
+	public void register(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+		register(listener, device, driver, instanceId, eventKey, null);
 	}
 	
 	/**
@@ -276,10 +281,13 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param driver Driver responsible for the event.
 	 * @param instanceId Instance Identifier of the driver to be registered upon.
 	 * @param eventKey EventKey that identifies the wanted event to be listened.
+	 * @param parameters Extra parameters for the call.
 	 * @throws NotifyException In case of an error.
 	 */
-	public void registerForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
-		eventManager.registerForEvent(listener, device, driver, instanceId, eventKey);
+	public void register(UosEventListener listener, UpDevice device, String driver, 
+			String instanceId, String eventKey, Map<String, Object> parameters) 
+					throws NotifyException{
+		eventManager.register(listener, device, driver, instanceId, eventKey, parameters);
 	}
 	
 	/**
@@ -320,7 +328,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 			throws DriverManagerException {
 		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
 		if (networkDevice != null){
-			UpDevice callerDevice = deviceManager.retrieveDevice(messageContext.getCallerNetworkDevice().getNetworkDeviceName(), networkDevice.getNetworkDeviceType());
+			NetworkDevice netDevice = messageContext.getCallerNetworkDevice();
+			String addr = netDevice.getNetworkDeviceName();
+			//TODO: This logic (splitting ports) is wide spread through the code, I think the port can be ignored for NetworkDevices since we only use the default port.
+			if (addr.contains(":")){
+				addr = addr.split(":")[0];
+			}
+			String type = networkDevice.getNetworkDeviceType();
+			UpDevice callerDevice = deviceManager.retrieveDevice(addr, type);
 			messageContext.setCallerDevice(callerDevice);
 		}
 		if (isApplicationCall(serviceCall)){

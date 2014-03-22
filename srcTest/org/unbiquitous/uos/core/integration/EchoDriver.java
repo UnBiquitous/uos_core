@@ -63,7 +63,7 @@ public class EchoDriver implements UosEventDriver {
 				try {
 					Thread.sleep(100);// Wait a little bit
 					Notify reminder = new Notify("reminder","br.unbiquitous.Echo", id);
-					gateway.sendEventNotify(reminder, new UpDevice("dummy").addNetworkInterface(ctx.getCallerNetworkDevice().getNetworkDeviceName(), ctx.getCallerNetworkDevice().getNetworkDeviceType()));
+					gateway.notify(reminder, new UpDevice("dummy").addNetworkInterface(ctx.getCallerNetworkDevice().getNetworkDeviceName(), ctx.getCallerNetworkDevice().getNetworkDeviceType()));
 					Thread.sleep(100);// Wait a little bit
 				} catch (Exception e) {
 					logger.log(Level.SEVERE,"Problems registering listener",e);

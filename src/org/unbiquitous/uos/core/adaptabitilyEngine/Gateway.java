@@ -45,18 +45,20 @@ public interface Gateway {
 	public Response callService(UpDevice device,Call serviceCall) throws ServiceCallException;
 
 	/**
-	 * Register a Listener for a event, driver and device specified.
-	 * 
-	 * @param listener UosEventListener responsible for dealing with the event.
-	 * @param device Device which event must be listened
-	 * @param driver Driver responsible for the event.
-	 * @param eventKey EventKey that identifies the wanted event to be listened.
-	 * @throws NotifyException In case of an error.
+	 * @see Gateway#register(UosEventListener, UpDevice, String, String, String, Map)
 	 */
-	public void registerForEvent(UosEventListener listener,
+	public void register(UosEventListener listener,
 			UpDevice device, String driver, String eventKey)
 			throws NotifyException;
 
+	
+	/**
+	 * @see Gateway#register(UosEventListener, UpDevice, String, String, String, Map)
+	 */
+	public void register(UosEventListener listener,
+			UpDevice device, String driver, String instanceId, String eventKey)
+			throws NotifyException;
+	
 	/**
 	 * Register a Listener for a event, driver and device specified.
 	 * 
@@ -67,8 +69,9 @@ public interface Gateway {
 	 * @param eventKey EventKey that identifies the wanted event to be listened.
 	 * @throws NotifyException In case of an error.
 	 */
-	public void registerForEvent(UosEventListener listener,
-			UpDevice device, String driver, String instanceId, String eventKey)
+	public void register(UosEventListener listener,UpDevice device, 
+			String driver, String instanceId, String eventKey,
+			Map<String, Object> parameters)
 			throws NotifyException;
 
 	/**
@@ -97,7 +100,7 @@ public interface Gateway {
 	 * @param device Device which is going to receive the notofy event
 	 * @throws MessageEngineException
 	 */
-	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException;
+	public void notify(Notify notify, UpDevice device) throws NotifyException;
 	
 	/**
 	 * @return Data about the Current Device uOS is running on.

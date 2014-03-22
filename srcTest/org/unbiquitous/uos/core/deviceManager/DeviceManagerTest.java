@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -255,6 +256,8 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallAHandshakeWithIt() throws Exception {
+		when(gateway.callService((UpDevice)anyObject(), (Call)anyObject()))
+					.thenReturn(new Response().addParameter("device", new UpDevice("The Guy").toJSON()));
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
 		ArgumentCaptor<Call> scCacther = ArgumentCaptor

@@ -149,7 +149,9 @@ public class DeviceManager implements RadarListener {
 
 		if (upDevice == null){
 			upDevice = doHandshake(device, upDevice);
-			doDriversRegistry(device, upDevice); 
+			if (upDevice != null){
+				doDriversRegistry(device, upDevice); 
+			}
 		}else{
 			logger.fine("Already known device "+device.getNetworkDeviceName());
 		}
@@ -283,9 +285,14 @@ public class DeviceManager implements RadarListener {
 			Response response = gateway.callService(dummyDevice, call);
 			if (response != null && ( response.getError() == null || response.getError().isEmpty())){
 				// in case of a success greeting process, register the device in the neighborhood database
-				String responseDevice = response.getResponseString("device");
+				Object responseDevice = response.getResponseData("device");
 				if (responseDevice != null){
-					UpDevice remoteDevice = UpDevice.fromJSON(new JSONObject(responseDevice));
+					UpDevice remoteDevice;
+					if(responseDevice instanceof String){
+						remoteDevice = UpDevice.fromJSON(new JSONObject((String)responseDevice));
+					}else{
+						remoteDevice = UpDevice.fromJSON((JSONObject)responseDevice);
+					}
 					registerDevice(remoteDevice);
 					logger.info("Registered device "+remoteDevice.getName());
 					return remoteDevice;
@@ -294,7 +301,7 @@ public class DeviceManager implements RadarListener {
 				}
 			}else{
 				logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+
-						(response == null?": null": "': Cause : "+response.getError()));
+						(response == null?": No Response received.": "': Cause : "+response.getError()));
 			}
 		} catch (Exception e) {
 			logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+"'. "+e.getMessage());

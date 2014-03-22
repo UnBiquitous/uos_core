@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.OWLOntologyInputSourceException;
 import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -86,6 +87,10 @@ public class Ontology implements OntologyDeploy, OntologyUndeploy, OntologyStart
                             localContext = manager.loadOntologyFromOntologyDocument(file);
                         } catch (OWLOntologyCreationException ex) {
                             logger.log(Level.SEVERE,"Not possible to start ontology",ex);
+                            return;
+                        } catch (OWLOntologyInputSourceException ex) {
+                            logger.log(Level.SEVERE,"Not possible to start ontology",ex);
+                            return;
                         } finally {
                             protectArea--;
                             lock.unlock();

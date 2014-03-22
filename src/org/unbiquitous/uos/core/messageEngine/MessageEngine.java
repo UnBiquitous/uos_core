@@ -180,7 +180,7 @@ public class MessageEngine implements MessageListener , UOSComponent{
 	 * @param device Device which is going to receive the notofy event
 	 * @throws MessageEngineException
 	 */
-	public void notifyEvent(Notify notify, UpDevice device) throws MessageEngineException{
+	public void notify(Notify notify, UpDevice device) throws MessageEngineException{
 		messageHandler.notifyEvent(notify, device);
 	}
 	/**
