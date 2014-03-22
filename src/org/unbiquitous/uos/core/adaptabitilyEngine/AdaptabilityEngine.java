@@ -3,6 +3,7 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.unbiquitous.json.JSONException;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
@@ -135,6 +136,10 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		// If not a local service call, delegate to the serviceHandler
 		try{
 			Response response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			if(response == null){
+				closeStreamChannels(streamConnectionThreadeds);
+				throw new ServiceCallException("No response received from call.");
+			}
 			response.setMessageContext(messageContext);
 			return response;
 		}catch (MessageEngineException e){

@@ -8,15 +8,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +24,7 @@ import org.mockito.stubbing.Answer;
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
@@ -255,6 +253,8 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallAHandshakeWithIt() throws Exception {
+		when(gateway.callService((UpDevice)anyObject(), (Call)anyObject()))
+					.thenReturn(new Response().addParameter("device", new UpDevice("The Guy").toJSON()));
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
 		ArgumentCaptor<Call> scCacther = ArgumentCaptor

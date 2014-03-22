@@ -169,7 +169,7 @@ public class AdaptabitilyEngineTest {
 	}
 	
 
-	@Test public void callService_shouldRedirectRemoteCallToMessageEngibeForOtherDevice() throws Exception {
+	@Test public void callService_shouldRedirectRemoteCallToMessageEngineForOtherDevice() throws Exception {
 		final MessageEngine _messageEngine = mock(MessageEngine.class);
 		Response response = new Response();
 		UpDevice callee = new UpDevice("other");
@@ -183,6 +183,22 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		assertEquals(response,engine.callService(callee, call));
+	}
+	
+	@Test(expected=ServiceCallException.class) 
+	public void callService_RemoteCallMustHandleNullResponseAsAnError() throws Exception {
+		final MessageEngine _messageEngine = mock(MessageEngine.class);
+		UpDevice callee = new UpDevice("other");
+		Call call = new Call("my.driver","myService");
+		when(_messageEngine.callService(callee, call)).thenReturn(null);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.currentDevice = new UpDevice("me");
+				this.messageEngine = _messageEngine;
+			}
+		};
+		engine.init(null);
+		engine.callService(callee, call);
 	}
 	
 	//TODO : AdaptabilityEngine : callService : Test Stream Service (Local and Remote)

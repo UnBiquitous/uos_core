@@ -151,6 +151,7 @@ public class MessageHandler {
 	private String send(String message, UpDevice target, boolean waitForResponse) throws Exception{
 		UpNetworkInterface netInt = connectivityManager.getAppropriateInterface(target);
 		ClientConnection connection = connectionManagerControlCenter.openActiveConnection(netInt.getNetworkAddress(), netInt.getNetType());
+		
 		if (connection == null){
 			return null;
 		}

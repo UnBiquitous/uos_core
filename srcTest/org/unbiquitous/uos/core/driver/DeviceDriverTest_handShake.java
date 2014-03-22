@@ -12,13 +12,16 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
@@ -51,6 +54,7 @@ public class DeviceDriverTest_handShake {
 		UOS ctx = new UOS();
 		ctx.init(bundle);
 		currentDevice = ctx.getGateway().getCurrentDevice();
+		currentDevice = UpDevice.fromJSON(currentDevice.toJSON());
 		
 		driver = new DeviceDriver();
 		
@@ -66,7 +70,7 @@ public class DeviceDriverTest_handShake {
 	}
 	
 	
-	@Test public void registerDeviceOnSystem() throws Exception{
+	@Test public void registerDeviceOnSystem() throws JSONException{
 		UpDevice toRegister = new UpDevice("Dummy")
 									.addNetworkInterface("HERE", "LOCAL");
 		
