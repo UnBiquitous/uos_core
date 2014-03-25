@@ -80,6 +80,25 @@ public class EventManagerTest {
 		manager.register(listener, device, "driver", "id", "key",parameters);
 	}
 	
+	@Test(expected=NotifyException.class)
+	public void registeringHandlesErrors() throws Exception{
+		Response r = new Response();
+		r.setError("Something");
+		when(engine.callService((UpDevice)any(), (Call)any())).thenReturn(r);
+		manager.register(listener, new UpDevice("the_device"), 
+						"driver", "id", "key", null);
+		
+	}
+	
+	@Test(expected=NotifyException.class)
+	public void registeringHandlesNullResponse() throws Exception{
+		when(engine.callService((UpDevice)any(), (Call)any())).thenReturn(null);
+		manager.register(listener, new UpDevice("the_device"), 
+						"driver", "id", "key", null);
+		
+	}
+	
+	
 	@Test
 	public void registeringDontDelegatesForNullDevice() throws Exception{
 		manager.register(listener, null, "driver", "id", "key", null);

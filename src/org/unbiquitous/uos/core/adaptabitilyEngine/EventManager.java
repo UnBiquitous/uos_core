@@ -143,7 +143,13 @@ public class EventManager implements NotifyHandler {
 		// Send the event register request to the called device
 		Call serviceCall = buildRegisterCall(parameters, info);
 		Response response = messageEngine.callService(device, serviceCall);
-		if (response == null || (response.getError() != null && !response.getError().isEmpty())){
+		handleErrors(response);
+	}
+
+	private void handleErrors(Response response) throws NotifyException {
+		if (response == null){
+			throw new NotifyException("No response received during register process.");
+		}else if(response.getError() != null && !response.getError().isEmpty()){
 			throw new NotifyException(response.getError());
 		}
 	}
