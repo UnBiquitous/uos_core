@@ -296,8 +296,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param listener Listener to be removed.
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener) throws NotifyException{
-		eventManager.unregisterForEvent(listener, null, null, null, null);
+	public void unregister(UosEventListener listener) throws NotifyException{
+		eventManager.unregister(listener, null, null, null, null);
 	}
 	
 	/**
@@ -309,8 +309,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param eventKey EventKey from which the listener must be removed (If not informed all events will be considered).
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
-		eventManager.unregisterForEvent(listener, device, driver, instanceId, eventKey);
+	public void unregister(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+		eventManager.unregister(listener, device, driver, instanceId, eventKey);
 	}
 	
 	/**

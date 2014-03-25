@@ -86,15 +86,15 @@ public class SmartSpaceGatewayTest {
 	
 	@Test public void unregisterForEventDelegatesToAdaptabilityEngine() throws Exception{
 		UosEventListener listener = new EventListener();
-		gateway.unregisterForEvent(listener);
-		verify(engine).unregisterForEvent(listener);
+		gateway.unregister(listener);
+		verify(engine).unregister(listener);
 	}
 	
 	@Test public void unregisterForEventWithMultipleParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
 		UosEventListener listener = new EventListener();
 		UpDevice target = new UpDevice("a");
-		gateway.unregisterForEvent(listener,target,"d","i","e");
-		verify(engine).unregisterForEvent(listener,target,"d","i","e");
+		gateway.unregister(listener,target,"d","i","e");
+		verify(engine).unregister(listener,target,"d","i","e");
 	}
 	
 	@Test public void listDriversDelegatesToDriverManagerConsideringAllDevices(){

@@ -189,7 +189,7 @@ public class EventManager implements NotifyHandler {
 	 * @param eventKey EventKey from which the listener must be removed (If not informed all events will be considered).
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+	public void unregister(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
 		
 		List<ListenerInfo> listeners = findListeners(	device, driver,
 														instanceId, eventKey);

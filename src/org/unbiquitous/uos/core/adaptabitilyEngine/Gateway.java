@@ -80,7 +80,7 @@ public interface Gateway {
 	 * @param listener Listener to be removed.
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener) throws NotifyException;
+	public void unregister(UosEventListener listener) throws NotifyException;
 	
 	/**
 	 * Removes a listener for receiving Notify events and notifies the event driver of its removal.
@@ -91,7 +91,7 @@ public interface Gateway {
 	 * @param eventKey EventKey from which the listener must be removed (If not informed all events will be considered).
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException;
+	public void unregister(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException;
 	
 	/**
 	 * Sends a notify message to the device informed.

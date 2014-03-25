@@ -93,15 +93,15 @@ public class SmartSpaceGateway implements Gateway {
 		adaptabilityEngine.notify(notify, device);
 	}
 
-	public void unregisterForEvent(UosEventListener listener)
+	public void unregister(UosEventListener listener)
 			throws NotifyException {
-		adaptabilityEngine.unregisterForEvent(listener);
+		adaptabilityEngine.unregister(listener);
 	}
 
-	public void unregisterForEvent(UosEventListener listener, UpDevice device,
+	public void unregister(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
-		adaptabilityEngine.unregisterForEvent(listener, device, driver,
+		adaptabilityEngine.unregister(listener, device, driver,
 				instanceId, eventKey);
 	}
 

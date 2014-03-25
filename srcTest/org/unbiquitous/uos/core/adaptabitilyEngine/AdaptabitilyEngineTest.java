@@ -273,8 +273,8 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
-		engine.unregisterForEvent(listener);
-		verify(_eventManager).unregisterForEvent(listener, null, null, null, null);
+		engine.unregister(listener);
+		verify(_eventManager).unregister(listener, null, null, null, null);
 	}
 	
 	@Test public void unregisterForEvent_shouldDelagateToEventManagerWithId() throws Exception{
@@ -287,8 +287,8 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.unregisterForEvent(listener, device, "driver", "id", "eventKey");
-		verify(_eventManager).unregisterForEvent(listener, device, "driver", "id", "eventKey");
+		engine.unregister(listener, device, "driver", "id", "eventKey");
+		verify(_eventManager).unregister(listener, device, "driver", "id", "eventKey");
 	}
 	
 	@Test public void handleNofify_shouldDelagateToEventManager() throws Exception{

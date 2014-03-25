@@ -114,7 +114,7 @@ public class EventManagerTest {
 		UpDevice device = new UpDevice("the_device");
 		
 		manager.register(listener, device, "driver", "id", "key", null);
-		manager.unregisterForEvent(listener, device, "driver", "id", "key");
+		manager.unregister(listener, device, "driver", "id", "key");
 		
 		verify(engine,times(2)).callService(eq(device), call.capture());
 		assertThat(call.getAllValues()).hasSize(2);
@@ -124,7 +124,7 @@ public class EventManagerTest {
 	@Test
 	public void stopNotifyingToThelistenerWhenDeviceIsNull() throws Exception{
 		manager.register(listener, null, "driver", "id", "key", null);
-		manager.unregisterForEvent(listener, null, "driver", "id", "key");
+		manager.unregister(listener, null, "driver", "id", "key");
 		
 		Notify notify = new Notify("key","driver","id");
 		manager.notify(notify, null);
@@ -134,7 +134,7 @@ public class EventManagerTest {
 	
 	@Test
 	public void dontFailWehnUnregisteringWithoutRegistering() throws Exception{
-		manager.unregisterForEvent(	listener, new UpDevice("the_device"), 
+		manager.unregister(	listener, new UpDevice("the_device"), 
 									"driver", "id", "key");
 	}
 	
