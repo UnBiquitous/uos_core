@@ -54,12 +54,22 @@ public class UpService {
 	}
 	
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+	{
 		if (obj == null || ! (obj instanceof UpService))
 			return false;
 		
 		UpService d = (UpService) obj;
-		return this.name.equals(d.name);
+		return this.name == null ? d.name == null : this.name.equals(d.name);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
 	}
 
 	public JSONObject toJSON() throws JSONException {
