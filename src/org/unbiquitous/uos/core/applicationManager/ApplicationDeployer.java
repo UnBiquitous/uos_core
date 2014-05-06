@@ -70,7 +70,7 @@ public class ApplicationDeployer {
                                     applicationData.indexOf(INSTANCE_ID_INDICATOR_BEGIN));
                         } else {
                             if (applicationData.contains(INSTANCE_ID_INDICATOR_BEGIN)
-                                    || applicationData.contains(INSTANCE_ID_INDICATOR_BEGIN)) {
+                                    || applicationData.contains(INSTANCE_ID_INDICATOR_END)) {
                                 // Application data with malformed specified instanceID
                                 String erroMessage = "ApplicationData '" + applicationData + "' in " + APPLICATION_LIST + " is malformed.";
                                 logger.severe(erroMessage);
