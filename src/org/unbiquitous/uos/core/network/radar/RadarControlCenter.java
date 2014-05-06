@@ -142,9 +142,7 @@ public class RadarControlCenter implements RadarListener {
 				}
 			}
 		} catch (Exception e) {
-			String message = "Error reading UbiquitOS Resource Bundle Propertie File. " +
-														   "Check if the files exists or there is no errors in his definitions." +
-														   " The found error is: "+e.getMessage();
+			String message = "Error loading radars. The error found was: "+e.getMessage();
 			logger.severe(message);
 		}
 		
