@@ -162,9 +162,9 @@ public class DriverManager {
 	public void deployDriver(UpDriver driver, Object instance, String instanceId) throws DriverManagerException, DriverNotFoundException {
 		if (instance instanceof UosDriver){      
 			
-			if(instanceId == null)
+			if(instanceId == null){
 				instanceId = driver.getName()+incDeployedDriversCount();
-			
+			}
 			UosDriver uDriver = (UosDriver) instance;
 			DriverModel model = new DriverModel(instanceId, uDriver.getDriver(), this.currentDevice.getName());
 			
