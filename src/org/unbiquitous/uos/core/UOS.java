@@ -128,9 +128,12 @@ public class UOS {
 	 * Shutdown the middleware infrastructure.
 	 */
 	public void tearDown() {
+		logger.info("Stopping UOS");
 		for(UOSComponent component:components){
+			logger.finer("Stopping "+component.getClass().getSimpleName());
 			component.stop();
 		}
+		logger.fine("Stopped UOS");
 	}
 
 	/**

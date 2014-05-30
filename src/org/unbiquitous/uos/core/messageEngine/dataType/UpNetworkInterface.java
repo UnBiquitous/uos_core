@@ -19,8 +19,6 @@ public class UpNetworkInterface {
 		this.networkAddress = networkAddress;
 	}
 
-
-
 	public String getNetType() {
 		return netType;
 	}
@@ -64,5 +62,13 @@ public class UpNetworkInterface {
 		ni.setNetworkAddress(json.getString("networkAddress"));
 		ni.setNetType(json.getString("netType"));
 		return ni;
+	}
+	
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
 	}
 }

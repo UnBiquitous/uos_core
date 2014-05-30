@@ -148,18 +148,31 @@ public class UpDevice {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Map<String, String> fromMeta(JSONObject json)
 			throws JSONException {
-		JSONObject j_meta = json.optJSONObject("meta");
 		Map<String,String> meta = null;
-		if(j_meta != null){
-			meta = (Map)j_meta.toMap();
+		if (json.opt("meta") instanceof Map){
+			return (Map<String, String>) json.get("meta");
+		}else{
+			JSONObject j_meta = json.optJSONObject("meta");
+			if(j_meta != null){
+				meta = (Map)j_meta.toMap();
+			}
 		}
 		return meta;
 	}
 
 	private static List<UpNetworkInterface> fromNetworks(JSONObject json, String propName)
 			throws JSONException {
-		JSONArray j_networks = json.optJSONArray(propName);
-		if(j_networks != null){
+		
+		if(json.has(propName)){
+			if (json.get(propName) instanceof List){
+				List<UpNetworkInterface> networks = new ArrayList<UpNetworkInterface>();
+				for(Map o : (List<Map>)json.get(propName)){
+					networks.add(UpNetworkInterface.fromJSON(new JSONObject(o)));
+				}
+				return networks;
+			}
+		
+			JSONArray j_networks = json.optJSONArray(propName);
 			List<UpNetworkInterface> networks = new ArrayList<UpNetworkInterface>(); 
 			for(int i = 0; i < j_networks.length(); i++){
 				networks.add(

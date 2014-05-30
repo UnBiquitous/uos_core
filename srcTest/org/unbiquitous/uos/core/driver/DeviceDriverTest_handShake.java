@@ -94,7 +94,7 @@ public class DeviceDriverTest_handShake {
 		
 		Response response = new Response();
 		driver.handshake(call, response, null);
-		assertThat(response.getResponseData("device"))
+		assertThat(response.getResponseData("device").toString())
 			.isEqualTo(currentDevice.toJSON().toString());
 	}
 	
@@ -120,7 +120,7 @@ public class DeviceDriverTest_handShake {
 		driver.handshake(call, response, null);
 		
 		assertThat(deviceManager.listDevices()).contains(toRegister);
-		assertThat(response.getResponseData("device"))
+		assertThat(response.getResponseData("device").toString())
 					.isEqualTo(currentDevice.toJSON().toString());
 		assertThat(response.getError()).isNullOrEmpty(); 
 		// FIXME: error when the driver is already registered

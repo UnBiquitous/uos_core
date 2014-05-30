@@ -173,7 +173,6 @@ public class DeviceDriver implements UosDriver {
 			deviceManager.registerDevice(device);
 			serviceResponse.addParameter(DEVICE_KEY, 
 								gateway.getCurrentDevice().toJSON()
-									.toString()
 									);
 			Response driversResponse = 
 					gateway.callService(device, new Call("uos.DeviceDriver","listDrivers"));

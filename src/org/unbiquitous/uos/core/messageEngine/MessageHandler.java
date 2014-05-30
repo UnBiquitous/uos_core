@@ -1,7 +1,6 @@
 package org.unbiquitous.uos.core.messageEngine;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -153,6 +152,7 @@ public class MessageHandler {
 		ClientConnection connection = connectionManagerControlCenter.openActiveConnection(netInt.getNetworkAddress(), netInt.getNetType());
 		
 		if (connection == null){
+			logger.warning(String.format("Not possible to stablish a connection with %s.", netInt));
 			return null;
 		}
 		OutputStream outputStream = connection.getDataOutputStream();
@@ -185,7 +185,7 @@ public class MessageHandler {
 	//FIXME: This is NetworkLayer work
 	private String sendReceive(String call,OutputStream outputStream, InputStream inputStream, boolean waitForResponse)
 			throws IOException, InterruptedException {
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+		OutputStreamWriter writer = new OutputStreamWriter(outputStream);
 		
 		writer.write(call);
 		writer.write('\n');
@@ -205,7 +205,7 @@ public class MessageHandler {
 				Thread.sleep(waitTime);
 			}
 			
-			logger.fine("Received message : " + builder);
+			logger.fine("Received message '" + builder+"'.");
 			return builder.toString();
 		}
 		return null;

@@ -121,7 +121,7 @@ public class IntegrationConnectionManager implements ConnectionManager {
 	}
 
 	@Override
-	public void setProperties(InitialProperties bundle) {
+	public void init(InitialProperties bundle) {
 		this.bundle = bundle;
 		String deviceName = bundle.getString("ubiquitos.uos.deviceName");
 		if (deviceName.equals("my.pc")){
