@@ -241,7 +241,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 				// Sets the this Control Center as the Listener of the new Connection Manager 
 				newConMan.setConnectionManagerListener(this);
 				// Sets the resource bundle
-				newConMan.setProperties(properties);
+				newConMan.init(properties);
 				// Add to the Connection Managers to a List
 				connectionManagersList.add(newConMan);
 				connectionManagersMap.put(radar, newConMan);
@@ -318,6 +318,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     public void tearDown() {
 		radarControlCenter.stopRadar();
     	for(ConnectionManager cm : connectionManagersList){
+    		logger.finest("Stoppping "+cm.getClass().getSimpleName());
     		cm.tearDown();
     		try {
 				connectionManagersThreadMap.get(cm).join();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -290,6 +291,8 @@ public class DeviceManager implements RadarListener {
 					UpDevice remoteDevice;
 					if(responseDevice instanceof String){
 						remoteDevice = UpDevice.fromJSON(new JSONObject((String)responseDevice));
+					}else if(responseDevice instanceof Map){
+						remoteDevice = UpDevice.fromJSON(new JSONObject((Map)responseDevice));
 					}else{
 						remoteDevice = UpDevice.fromJSON((JSONObject)responseDevice);
 					}

@@ -51,7 +51,7 @@ public class UOSLogging {
 	}
 	
 	public static void setLevel(Level level){
-		logger.setLevel(level);
+		getLogger().setLevel(level);
 		for (Handler handler :logger.getHandlers()){
 			handler.setLevel(level);
 		}

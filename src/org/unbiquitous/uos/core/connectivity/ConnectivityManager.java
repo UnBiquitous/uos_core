@@ -74,9 +74,7 @@ public class ConnectivityManager {
 		
 		//Solves the different network link problem:
 		for(UpNetworkInterface thisNetInterface : this.device.getNetworks()){
-			
 			for(UpNetworkInterface providerNetInterface : deviceProvider.getNetworks()){
-				
 				if(thisNetInterface.getNetType().equals(providerNetInterface.getNetType())){
 					compatibleNetworks.add(providerNetInterface);
 					break;

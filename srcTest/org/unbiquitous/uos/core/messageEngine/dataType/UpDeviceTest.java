@@ -96,6 +96,13 @@ public class UpDeviceTest {
 			.isEqualTo(dummyDevice());
 	}
 	
+	@Test public void fromJSONString() throws JSONException{
+		JSONObject dummyJSONDevice = dummyJSONDevice();
+		JSONObject temp = new JSONObject(dummyJSONDevice.toMap());
+		assertThat(UpDevice.fromJSON(temp))
+			.isEqualTo(dummyDevice());
+	}
+	
 	@Test public void fromJSONForEmpty() throws JSONException{
 		assertThat(UpDevice.fromJSON(new JSONObject()))
 			.isEqualTo(new UpDevice());

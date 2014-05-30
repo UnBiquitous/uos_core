@@ -22,7 +22,7 @@ public interface ConnectionManager extends Runnable{
 	 * A method for setting properties for the connection Manager
 	 * @param properties
 	 */
-	public void setProperties(InitialProperties properties);
+	public void init(InitialProperties properties);
 	public InitialProperties getProperties();
 	
 	/**

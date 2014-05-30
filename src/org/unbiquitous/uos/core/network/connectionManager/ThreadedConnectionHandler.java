@@ -20,7 +20,7 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 public class ThreadedConnectionHandler extends Thread {
     
 	private static char MESSAGE_SEPARATOR = '\n';
-	private static int MAX_NOT_READY_TRIES = 30;
+	private static int MAX_NOT_READY_TRIES = 300;
 	private static int NOT_READY_SLEEP_TIME = 100;
 	
 	/* *****************************
@@ -85,33 +85,32 @@ public class ThreadedConnectionHandler extends Thread {
              */
             int notReadyCount = 0;
             while(con.isConnected()){
-            	if (reader.ready()){
+            	if (reader.ready() && notReadyCount < MAX_NOT_READY_TRIES){
 	            	logger.info("Receiving Message ...");
 	            	
 	            	StringBuilder builder = new StringBuilder();
 	            	for(Character c = (char)reader.read();c != MESSAGE_SEPARATOR;c = (char)reader.read()){
 	            		builder.append(c);
 	            	}
-	            	logger.info("Received Message: "+builder.toString());
 	            	
-	            	String returnedMessage;
-					try {
-						returnedMessage = messageListener.handleIncomingMessage(builder.toString(),con.getClientDevice());
-						writer.write(returnedMessage+MESSAGE_SEPARATOR);
-						writer.flush();
-						logger.fine("Message Handled");
-					} catch (Exception e) {
-						logger.log(Level.SEVERE,"Failed to handle ubiquitos-smartspace connection.", e);
-					}
-
+	            	if (builder.length() > 0){
+	            		String receivedMessage = builder.toString();
+	            		logger.info("Received Message: "+receivedMessage);
+	            		try {
+	            			String returnedMessage = messageListener.handleIncomingMessage(receivedMessage,con.getClientDevice());
+	            			writer.write(returnedMessage+MESSAGE_SEPARATOR);
+	            			writer.flush();
+	            			logger.fine("Message Handled");
+	            		} catch (Exception e) {
+	            			logger.log(Level.SEVERE,"Failed to handle ubiquitos-smartspace connection.", e);
+	            		}
+	            	}
 
             	}else{
             		notReadyCount++;
             	}
             	
-            	if (notReadyCount < MAX_NOT_READY_TRIES){
-            		Thread.sleep(NOT_READY_SLEEP_TIME);
-            	}
+            	Thread.sleep(NOT_READY_SLEEP_TIME);
             }
             
         } catch (Exception e) {
