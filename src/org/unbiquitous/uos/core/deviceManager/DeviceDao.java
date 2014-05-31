@@ -1,6 +1,7 @@
 package org.unbiquitous.uos.core.deviceManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,7 +69,11 @@ public class DeviceDao {
 	}
 	
 	public List<UpDevice> list() {
-		return new ArrayList<UpDevice>(deviceMap.values());
+		synchronized (deviceMap) {
+			List<UpDevice> devices = Collections.synchronizedList(new ArrayList<UpDevice>());
+			devices.addAll(deviceMap.values());
+			return devices;
+		}
 	}
 	
 	public List<UpDevice> list(String address, String networktype) {
