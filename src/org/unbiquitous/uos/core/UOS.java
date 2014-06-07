@@ -1,8 +1,12 @@
 package org.unbiquitous.uos.core;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +39,26 @@ public class UOS {
 	private List<UOSComponent> components ;
 	
 	public static void main(String[] args) throws Exception{
-		new UOS().start();
+		UOS uos = new UOS();
+		if (hasSpecificPropertiesFile(args)){
+			uos.start(args[1]);
+		}else if(hasDefaultFile(args)){
+			uos.start(DEFAULT_UBIQUIT_BUNDLE_FILE+".properties");
+		}else{
+			String helpMessage = String.format(
+				"Create a %s.properties file on the root folder or use '-f' "
+			  + "to point to another path.", DEFAULT_UBIQUIT_BUNDLE_FILE);
+			System.out.println(helpMessage);
+			
+		}
+	}
+
+	private static boolean hasDefaultFile(String[] args) {
+		return args.length == 0 && new File(DEFAULT_UBIQUIT_BUNDLE_FILE+".properties").exists();
+	}
+
+	private static boolean hasSpecificPropertiesFile(String[] args) {
+		return args.length == 2 && args[0].equals("-f");
 	}
 	
 	/**
@@ -59,7 +82,17 @@ public class UOS {
 	 */
 	public void start(String resourceBundleName) throws ContextException {
 		logger.fine("Retrieving Resource Bundle Information");
-		start(ResourceBundle.getBundle(resourceBundleName));
+		File possibleResourceFile = new File(resourceBundleName);
+		if(possibleResourceFile.exists()){
+			try {
+				start(new PropertyResourceBundle(new FileInputStream(possibleResourceFile)));
+			} catch (IOException e) {
+				throw new ContextException(e);
+			}
+		}else{
+			start(ResourceBundle.getBundle(resourceBundleName));
+		}
+		
 	}
 	
 	public void start(ResourceBundle resourceBundle) throws ContextException {
