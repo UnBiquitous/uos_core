@@ -82,8 +82,8 @@ public class IntegrationTest {
 		assertThat(pc.getGateway().listDevices()).hasSize(1);
 		
 		//finish instances
-		pc.tearDown();
-		cell.tearDown();
+		pc.stop();
+		cell.stop();
 	}
 
 	private UOS startContext(final String deviceName) throws ContextException{
@@ -100,7 +100,7 @@ public class IntegrationTest {
 		};
 		
 		UOS instance = new UOS();
-		instance.init(pcBundle);
+		instance.start(pcBundle);
 		return instance;
 	}
 	

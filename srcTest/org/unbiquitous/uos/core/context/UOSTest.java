@@ -27,7 +27,7 @@ public class UOSTest {
 	}
 	
 	@After public void tearDown(){
-		ctx.tearDown();
+		ctx.stop();
 		new File("resources/owl/uoscontext.owl").delete();
 	}
 	
@@ -38,7 +38,7 @@ public class UOSTest {
 				return new Object[][] {};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertEquals("When no deviceName is specified use hostname",
 				InetAddress.getLocalHost().getHostName(),
@@ -55,7 +55,7 @@ public class UOSTest {
 				return new Object[][] {{"ubiquitos.uos.deviceName","localhost"}};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertThat(ctx.getGateway().getCurrentDevice().getName()).isNotEqualTo("localhost");
 	}
@@ -67,7 +67,7 @@ public class UOSTest {
 				return new Object[][] {{"ubiquitos.uos.deviceName","MyName"}};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertEquals("When deviceName is specified use it","MyName",
 								ctx.getGateway().getCurrentDevice().getName()); 
@@ -85,7 +85,7 @@ public class UOSTest {
 				};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertThat(DummyApp.lastInstance.inited).isTrue();
 	}

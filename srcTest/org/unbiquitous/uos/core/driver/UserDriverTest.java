@@ -52,7 +52,7 @@ public class UserDriverTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		uosApplicationContext = new UOS();
-		uosApplicationContext.init("ubiquitos_test");
+		uosApplicationContext.start("ubiquitos_test");
 		// uosApplicationContext.init();
 		gateway = uosApplicationContext.getGateway();
 	}
@@ -248,7 +248,7 @@ public class UserDriverTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		 uosApplicationContext.tearDown();
+		 uosApplicationContext.stop();
 	}
 
 	/**

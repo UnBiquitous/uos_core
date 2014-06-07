@@ -50,7 +50,7 @@ public class DeviceDriverTest_handShake {
 			}
 		};
 		UOS ctx = new UOS();
-		ctx.init(bundle);
+		ctx.start(bundle);
 		currentDevice = ctx.getGateway().getCurrentDevice();
 		currentDevice = UpDevice.fromJSON(currentDevice.toJSON());
 		
