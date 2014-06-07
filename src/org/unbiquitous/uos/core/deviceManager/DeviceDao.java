@@ -19,7 +19,8 @@ public class DeviceDao {
 	private Map<String,List<UpDevice>> addressMap;
 	
 	public DeviceDao(InitialProperties bundle) {
-		deviceMap		= new HashMap<String, UpDevice>();
+		
+		deviceMap		= Collections.synchronizedMap(new HashMap<String, UpDevice>());
 		interfaceMap	= new HashMap<String, UpDevice>();
 		networkTypeMap	= new HashMap<String, List<UpDevice>>();
 		addressMap	= new HashMap<String, List<UpDevice>>();
