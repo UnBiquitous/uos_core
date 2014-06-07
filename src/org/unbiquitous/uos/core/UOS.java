@@ -34,9 +34,10 @@ public class UOS {
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
     private InitialProperties properties;
-
 	private UOSComponentFactory factory;
 	private List<UOSComponent> components ;
+	
+	private Boolean running = false;
 	
 	public static void main(String[] args) throws Exception{
 		UOS uos = new UOS();
@@ -61,15 +62,6 @@ public class UOS {
 		return args.length == 2 && args[0].equals("-f");
 	}
 	
-	/**
-	 * Initializes the components of the uOS middleware using 'ubiquitos' as the
-	 * name of the resouce bundle to be used.
-	 * 
-	 * @throws ContextException
-	 */
-	public void start() throws ContextException {
-		start(DEFAULT_UBIQUIT_BUNDLE_FILE);
-	}
 
 	/**
 	 * Initializes the components of the uOS middleware acording to the
@@ -102,6 +94,12 @@ public class UOS {
 	@SuppressWarnings("serial")
 	public void start(InitialProperties properties) throws ContextException {
 		try {
+			synchronized (running) {
+				if(running){
+					throw new ContextException("This UOS instance is already running");
+				}
+				running = true;
+			}
 			this.properties	= properties;
 			this.properties.markReadOnly();
 			this.factory		= new UOSComponentFactory(properties);
@@ -156,6 +154,9 @@ public class UOS {
 		for(UOSComponent component:components){
 			logger.finer("Stopping "+component.getClass().getSimpleName());
 			component.stop();
+		}
+		synchronized (running) {
+			running = false;
 		}
 		logger.fine("Stopped UOS");
 	}

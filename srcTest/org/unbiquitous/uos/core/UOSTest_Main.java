@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UOSTest {
+public class UOSTest_Main {
 	private ByteArrayOutputStream out;
 	File testProperties = new File("resourcesTest/simple_ubiquitos.properties");
 	File defaultProperties = new File("ubiquitos.properties");
