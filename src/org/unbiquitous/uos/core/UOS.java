@@ -35,7 +35,7 @@ public class UOS {
 	private List<UOSComponent> components ;
 	
 	public static void main(String[] args) throws Exception{
-		new UOS().init();
+		new UOS().start();
 	}
 	
 	/**
@@ -44,8 +44,8 @@ public class UOS {
 	 * 
 	 * @throws ContextException
 	 */
-	public void init() throws ContextException {
-		init(DEFAULT_UBIQUIT_BUNDLE_FILE);
+	public void start() throws ContextException {
+		start(DEFAULT_UBIQUIT_BUNDLE_FILE);
 	}
 
 	/**
@@ -57,26 +57,17 @@ public class UOS {
 	 *            the properties of the uOS middleware.
 	 * @throws ContextException
 	 */
-	public void init(String resourceBundleName) throws ContextException {
+	public void start(String resourceBundleName) throws ContextException {
 		logger.fine("Retrieving Resource Bundle Information");
-		init(ResourceBundle.getBundle(resourceBundleName));
+		start(ResourceBundle.getBundle(resourceBundleName));
 	}
 	
-	/**
-	 * Initializes the components of the uOS middleware acording to the
-	 * resourceBundle informed.
-	 * 
-	 * @param resourceBundleName
-	 *            Name of the <code>ResourceBundle</code> to be used for finding
-	 *            the properties of the uOS middleware.
-	 * @throws ContextException
-	 */
-	public void init(ResourceBundle resourceBundle) throws ContextException {
-		init(new InitialProperties(resourceBundle));
+	public void start(ResourceBundle resourceBundle) throws ContextException {
+		start(new InitialProperties(resourceBundle));
 	}
 		
 	@SuppressWarnings("serial")
-	public void init(InitialProperties properties) throws ContextException {
+	public void start(InitialProperties properties) throws ContextException {
 		try {
 			this.properties	= properties;
 			this.properties.markReadOnly();
@@ -127,7 +118,7 @@ public class UOS {
 	/**
 	 * Shutdown the middleware infrastructure.
 	 */
-	public void tearDown() {
+	public void stop() {
 		logger.info("Stopping UOS");
 		for(UOSComponent component:components){
 			logger.finer("Stopping "+component.getClass().getSimpleName());

@@ -110,7 +110,7 @@ public class RegisterDriverImpl implements RegisterDriver {
 	}
 
 	/** 
-	 * @see org.unbiquitous.uos.core.driverManager.UosDriver#init(br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext)
+	 * @see org.unbiquitous.uos.core.driverManager.UosDriver#start(br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext)
 	 */
 	@Override
 	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
