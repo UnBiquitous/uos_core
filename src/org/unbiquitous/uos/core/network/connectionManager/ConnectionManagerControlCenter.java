@@ -31,12 +31,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
    
 	private static Logger logger = UOSLogging.getLogger(); 
 	
-	// Separator token for resource parameters
-	private static final String PARAM_SEPARATOR = ",";
-	
-	// Public constant for resource keys
-	private static final String CONNECTION_MANAGER_CLASS_KEY = "ubiquitos.connectionManager";
-	
 	/* *****************************
 	 *   	ATRUBUTES
 	 * *****************************/
@@ -215,38 +209,19 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     	connectionManagersMap = new HashMap<String, ConnectionManager>();
     	connectionManagersThreadMap = new HashMap<ConnectionManager, Thread>();
 		
-    	// 1. LOAD ALL CONNECTIONS MANAGERS FROM THE RESOURCE FILE
-		
     	try {
-			// Retrieve all defined Connection Managers.
-    		if (!properties.containsKey(CONNECTION_MANAGER_CLASS_KEY)){
-    			logger.warning("No '"+CONNECTION_MANAGER_CLASS_KEY+"' property defined. This implies on no network communication for this instance.");
+    		List<Class<ConnectionManager>> managers = properties.getConnectionManagers();
+    		if (managers == null){
+    			logger.warning("No Connection Managerdefined. This implies on no network communication for this instance.");
     			return;
     		}
-			String connectionPropertie = null; 
-			if (this.properties != null){
-				connectionPropertie = properties.getString(CONNECTION_MANAGER_CLASS_KEY);
-			}
-			String[] connectionsArray = null; //UbiquitosResourceBundleReader.getParamSplitedArray(UbiquitosResourceBundleReader.RADAR_CLASS_KEY);
-			if (connectionPropertie != null){
-				connectionsArray = connectionPropertie.split(PARAM_SEPARATOR);
-			}
-			// Iterate the array getting each Connection Manager class name
-			for (String radar : connectionsArray) {
-				// Loads dynamically the class
-				@SuppressWarnings("rawtypes")
-				Class c = Class.forName(radar);
-				// Create a new instance of the Connection Manager
-				ConnectionManager newConMan = (ConnectionManager) c.newInstance(); 
-				// Sets the this Control Center as the Listener of the new Connection Manager 
+    		for(Class<ConnectionManager> manager : managers){
+    			ConnectionManager newConMan = (ConnectionManager) manager.newInstance(); 
 				newConMan.setConnectionManagerListener(this);
-				// Sets the resource bundle
 				newConMan.init(properties);
-				// Add to the Connection Managers to a List
 				connectionManagersList.add(newConMan);
-				connectionManagersMap.put(radar, newConMan);
-				
-			}
+				connectionManagersMap.put(manager.getCanonicalName(), newConMan);
+    		}
 		} catch (Exception e) {
 			NetworkException ex = new NetworkException("Error reading UbiquitOS Resource Bundle Propertie File. " +
 														   "Check if the files exists or there is no errors in his definitions." +
