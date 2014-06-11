@@ -116,9 +116,7 @@ public class RadarControlCenter implements RadarListener {
 	 * Loads dynamically the radars defined in the UbiquitOS properties file
 	 */
 	private void loadRadars() throws NetworkException {
-		// A list of created Radars
 		radarList = new ArrayList<Radar>();
-		
 		try {
 			Map<Class<Radar>, Class<ConnectionManager>> radarMap = properties.getRadars();
 			if(radarMap != null){

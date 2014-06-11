@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.radar.Radar;
 
@@ -103,6 +104,8 @@ public class InitialProperties extends HashMap<String, Object> {
 		return list;
 	}
 	
+	
+	
 	public void addRadar(Class<Radar> clazz){
 		addRadar(clazz, null);
 	}
@@ -147,4 +150,62 @@ public class InitialProperties extends HashMap<String, Object> {
 		}
 		return map;
 	}
+	
+	
+	public void addDriver(Class<UosDriver> clazz){
+		addDriver(clazz, null);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void addDriver(Class<UosDriver> clazz, String id){
+		String key = "ubiquitos.driver.deploylist";
+		if(!containsKey(key)){
+			put(key, new ArrayList<Tuple<Class<UosDriver>,String>>());
+		}
+		List list = (List) get(key);
+		list.add(new Tuple(clazz,id));
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<Tuple<Class<UosDriver>,String>>getDrivers() throws ClassNotFoundException {
+		String key = "ubiquitos.driver.deploylist";
+		if (!this.containsKey(key)) return null;
+		Object value = get(key);
+		if (value instanceof List) return (List) value;
+		else if (value instanceof String){
+			return translateToDriverMap(key);
+		}
+		return null;
+	}
+
+	
+	
+	public static class Tuple<X, Y> { 
+		  public final X x; 
+		  public final Y y; 
+		  public Tuple(X x, Y y) { 
+		    this.x = x; 
+		    this.y = y; 
+		  } 
+		} 
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private List<Tuple<Class<UosDriver>,String>> translateToDriverMap(
+			String key) throws ClassNotFoundException {
+		String[] drivers = getString(key).split(";");
+		List list = new ArrayList();
+		for(String driverClass: drivers){
+			String id = null;
+			if(driverClass.contains("(") || driverClass.contains(")")){
+				int beginIndex = driverClass.indexOf('(');
+				int endIndex = driverClass.indexOf(')');
+				id = driverClass.substring(beginIndex+1,endIndex);
+				driverClass = driverClass.substring(0,beginIndex);
+			}
+			list.add(new Tuple(Class.forName(driverClass),id));
+		}
+		return list;
+	}
 }
+
+
