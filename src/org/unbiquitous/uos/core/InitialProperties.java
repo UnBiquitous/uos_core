@@ -36,6 +36,13 @@ public class InitialProperties extends HashMap<String, Object> {
 		else return Integer.parseInt(value.toString());
 	}
 	
+	public Boolean getInt(String key) {
+		if (!this.containsKey(key)) return null;
+		Object value = get(key);
+		if (value instanceof Boolean) return (Boolean) value;
+		else return Boolean.parseBoolean(value.toString());
+	}
+	
 	@Override
 	public Object put(String key, Object value) {
 		if (readOnly){
