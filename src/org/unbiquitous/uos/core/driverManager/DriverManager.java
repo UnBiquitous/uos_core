@@ -78,7 +78,7 @@ public class DriverManager {
 			return findEquivalentDriver(treeNode.getChildren());
 		}
 		
-		return null;
+		return new ArrayList<DriverModel>();
 	}
 	
 	/**
@@ -310,7 +310,7 @@ public class DriverManager {
 	public List<UosDriver> listDrivers(){
 		List<DriverModel> list = driverDao.list(null,currentDevice.getName());
 		if (list.isEmpty())
-			return null;
+			return new ArrayList<UosDriver>();
 		
 		List<UosDriver> ret = new ArrayList<UosDriver>();
 		for (DriverModel m : list){
@@ -362,7 +362,7 @@ public class DriverManager {
 			baseSet.addAll(findAllEquivalentDrivers(equivalentDrivers));
 		}
 		if (baseSet == null || baseSet.isEmpty()){
-			return null;
+			return new ArrayList<DriverData>();
 		}
 		List<DriverData> ret = new ArrayList<DriverData>();
 		for (DriverModel dm : baseSet) {
