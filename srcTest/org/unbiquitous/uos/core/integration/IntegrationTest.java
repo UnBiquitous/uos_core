@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ListResourceBundle;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.ResourceBundle;
 
 import org.junit.After;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;

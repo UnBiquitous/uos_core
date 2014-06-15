@@ -41,9 +41,11 @@ public class MessageHandlerTest {
 	private ConnectionManagerControlCenter controlCenter;
 	private SecurityManager securityManager;
 	
-	@Before public void setUp(){
+	@Before public void setUp() throws Exception{
 		connManager =  mock(ConnectivityManager.class);
 		controlCenter = mock(ConnectionManagerControlCenter.class);
+		System.out.println(controlCenter);
+		when(controlCenter.sendControlMessage(any(String.class), any(Boolean.class), any(String.class), any(String.class))).thenCallRealMethod();
 		securityManager = mock(SecurityManager.class);
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
