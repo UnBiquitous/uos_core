@@ -388,9 +388,6 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 	// FIXME: This is NetworkLayer work
 	private String sendReceive(String call, ClientConnection connection, boolean waitForResponse)
 			throws IOException, InterruptedException {
-		System.out.println("<< in "+connection.getDataInputStream());
-		System.out.println("<< out "+connection.getDataOutputStream());
-		
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 				connection.getDataOutputStream()));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(

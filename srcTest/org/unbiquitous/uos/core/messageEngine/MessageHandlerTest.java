@@ -116,8 +116,6 @@ public class MessageHandlerTest {
 			
 			DataInputStream in = new DataInputStream(new PipedInputStream(wifiInterfaceIn));
 			DataOutputStream out = new DataOutputStream(new PipedOutputStream(wifiInterfaceOut));
-			System.out.println(">> in "+in);
-			System.out.println(">> out "+out);
 			ClientConnection conn = mock(ClientConnection.class);
 			when(conn.getDataInputStream()).thenReturn(in);
 			when(conn.getDataOutputStream()).thenReturn(out);
