@@ -9,9 +9,7 @@ package org.unbiquitous.uos.core.network.connectionManager;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -307,10 +305,10 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     public void create(InitialProperties properties) {
     	this.properties = properties;
 		if (properties.containsKey("ubiquitos.message.response.timeout")) {
-			maxRetries = properties.getInt("ubiquitos.message.response.timeout");
+			waitTime = properties.getInt("ubiquitos.message.response.timeout");
 		}
 		if (properties.containsKey("ubiquitos.message.response.retry")) {
-			waitTime = properties.getInt("ubiquitos.message.response.retry");
+			maxRetries = properties.getInt("ubiquitos.message.response.retry");
 		}
     }
     
@@ -390,6 +388,9 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 	// FIXME: This is NetworkLayer work
 	private String sendReceive(String call, ClientConnection connection, boolean waitForResponse)
 			throws IOException, InterruptedException {
+		System.out.println("<< in "+connection.getDataInputStream());
+		System.out.println("<< out "+connection.getDataOutputStream());
+		
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 				connection.getDataOutputStream()));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -400,26 +401,18 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 		writer.flush();
 
 		if (waitForResponse) {
-
-			boolean success = false;
 			StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < maxRetries; i++) {
-				
 				if (reader.ready()) {
 					for (Character c = (char) reader.read(); c != '\n'; c = (char) reader
 							.read()) {
 						builder.append(c);
 					}
-					success = true;
 					break;
 				}
 				Thread.sleep(waitTime);
 			}
 
-			if(! success){
-				System.out.println(connection.toString());
-			}
-			
 			logger.fine("Received message '" + builder + "'.");
 			return builder.toString();
 		}
