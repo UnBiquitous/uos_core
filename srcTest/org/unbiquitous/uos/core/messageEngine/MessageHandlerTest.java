@@ -3,8 +3,14 @@ package org.unbiquitous.uos.core.messageEngine;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +19,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +28,6 @@ import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
-import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
@@ -44,7 +47,6 @@ public class MessageHandlerTest {
 	private SecurityManager securityManager;
 	
 	@Before public void setUp() throws Exception{
-		UOSLogging.setLevel(Level.FINEST);
 		connManager =  mock(ConnectivityManager.class);
 		controlCenter = mock(ConnectionManagerControlCenter.class);
 		when(controlCenter.sendControlMessage(anyString(), anyBoolean(), anyString(), anyString())).thenCallRealMethod();

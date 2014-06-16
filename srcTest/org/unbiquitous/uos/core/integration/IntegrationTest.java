@@ -24,11 +24,11 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerContr
 public class IntegrationTest {
 	
     @Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	//TODO: Better explain the purpose of this test
