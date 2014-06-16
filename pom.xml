@@ -45,6 +45,7 @@
 				<version>2.9</version>
 				<configuration>
 					<skipTests>false</skipTests>
+					<forkMode>never</forkMode>
 					<excludes>
 						<!-- Suites desabilitadas -->
 						<exclude>**/UosCoreTestSuite.java</exclude>
