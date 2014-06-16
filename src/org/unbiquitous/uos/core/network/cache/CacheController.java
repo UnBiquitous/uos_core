@@ -169,6 +169,10 @@ public class CacheController {
 	private boolean isConnectionExpired(ClientConnection c){
 		CachedConnectionData connectionData = connectionCache.get(c);
 		
+		if (! connectionData.getConnection().isConnected()){
+			return false;
+		}
+		
 		if(connectionData != null) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(connectionData.getLastAccess());

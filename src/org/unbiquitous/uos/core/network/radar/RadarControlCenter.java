@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.InitialProperties;
@@ -142,8 +143,7 @@ public class RadarControlCenter implements RadarListener {
 				}
 			}
 		} catch (Exception e) {
-			String message = "Error loading radars. The error found was: "+e.getMessage();
-			logger.severe(message);
+			logger.log(Level.SEVERE,"Error loading radars.",e);
 		}
 		
 		// Check if there is any radar in the Control Center

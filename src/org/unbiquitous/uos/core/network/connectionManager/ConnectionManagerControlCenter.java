@@ -6,6 +6,11 @@
 
 package org.unbiquitous.uos.core.network.connectionManager;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +59,8 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 	private InitialProperties properties;
 
 	private RadarControlCenter radarControlCenter;
+	private int maxRetries = 30;
+	private int waitTime = 100;
 	
     /* *****************************
 	 *   	PUBLIC METHODS
@@ -297,6 +304,12 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     @Override
     public void create(InitialProperties properties) {
     	this.properties = properties;
+		if (properties.containsKey("ubiquitos.message.response.timeout")) {
+			waitTime = properties.getInt("ubiquitos.message.response.timeout");
+		}
+		if (properties.containsKey("ubiquitos.message.response.retry")) {
+			maxRetries = properties.getInt("ubiquitos.message.response.retry");
+		}
     }
     
     @Override
@@ -326,6 +339,81 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 				logger.log(Level.SEVERE,"Problems tearing down.",e);
 			}
     	}
+	}
+    
+    /**
+     * Sends the message using the control channel to the specified device.
+     * @param waitForResponse Specifies if method should wait for a synchronous response.
+     * @return Response from that device
+     */
+    public String sendControlMessage(String message, boolean waitForResponse,
+			String networkAddress, String networkType) throws IOException,
+			InterruptedException {
+		ClientConnection connection = openActiveConnection(networkAddress, networkType);
+
+		if (connection == null) {
+			logger.warning(String
+					.format("Not possible to stablish a connection with %s of type %s.",
+							networkAddress, networkType));
+			return null;
+		}
+		if (connection.getDataInputStream() == null || connection.getDataOutputStream() == null) {
+			return null;
+		}
+
+		String response = sendReceive(message, connection, waitForResponse);
+
+		connection.closeConnection();
+
+		if (!waitForResponse || response.isEmpty()) {
+			return null;
+		}
+		return response;
+	}
+
+	/**
+	 * Method responsible for handling the sending of a request and the
+	 * receiving of its response
+	 * 
+	 * @param jsonCall
+	 *            JSON Object of the service call to be sent
+	 * @param outputStream
+	 *            OutputStream Object to write into
+	 * @param inputStream
+	 *            InputStream Object to read from
+	 * @return String of the response read
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	// FIXME: This is NetworkLayer work
+	private String sendReceive(String call, ClientConnection connection, boolean waitForResponse)
+			throws IOException, InterruptedException {
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+				connection.getDataOutputStream()));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				connection.getDataInputStream()));
+
+		writer.write(call);
+		writer.write('\n');
+		writer.flush();
+
+		if (waitForResponse) {
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < maxRetries; i++) {
+				if (reader.ready()) {
+					for (Character c = (char) reader.read(); c != '\n'; c = (char) reader
+							.read()) {
+						builder.append(c);
+					}
+					break;
+				}
+				Thread.sleep(waitTime);
+			}
+
+			logger.fine("Received message '" + builder + "'.");
+			return builder.toString();
+		}
+		return null;
 	}
     
 }

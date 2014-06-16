@@ -3,11 +3,8 @@ package org.unbiquitous.uos.core.messageEngine;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,13 +13,18 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
+import org.unbiquitous.uos.core.UOS;
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
@@ -41,9 +43,17 @@ public class MessageHandlerTest {
 	private ConnectionManagerControlCenter controlCenter;
 	private SecurityManager securityManager;
 	
-	@Before public void setUp(){
+	@Before public void setUp() throws Exception{
+		UOSLogging.setLevel(Level.FINEST);
 		connManager =  mock(ConnectivityManager.class);
 		controlCenter = mock(ConnectionManagerControlCenter.class);
+		when(controlCenter.sendControlMessage(anyString(), anyBoolean(), anyString(), anyString())).thenCallRealMethod();
+		doAnswer(new Answer<Void>() {
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				invocation.callRealMethod();
+				return null;
+			}
+		}).when(controlCenter).create(any(InitialProperties.class));
 		securityManager = mock(SecurityManager.class);
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
@@ -53,7 +63,9 @@ public class MessageHandlerTest {
 		        };
 			}
 		};
-		handler = new MessageHandler(new InitialProperties(bundle),controlCenter, securityManager, connManager);
+		InitialProperties props = new InitialProperties(bundle);
+		controlCenter.create(props);
+		handler = new MessageHandler(props,controlCenter, securityManager, connManager);
 	}
 	
 	// callService

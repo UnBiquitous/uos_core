@@ -83,9 +83,8 @@ public class ThreadedConnectionHandler extends Thread {
              * separator come.
              * 
              */
-            int notReadyCount = 0;
             while(con.isConnected()){
-            	if (reader.ready() && notReadyCount < MAX_NOT_READY_TRIES){
+            	if (reader.ready()){
 	            	logger.info("Receiving Message ...");
 	            	
 	            	StringBuilder builder = new StringBuilder();
@@ -106,10 +105,7 @@ public class ThreadedConnectionHandler extends Thread {
 	            		}
 	            	}
 
-            	}else{
-            		notReadyCount++;
             	}
-            	
             	Thread.sleep(NOT_READY_SLEEP_TIME);
             }
             
