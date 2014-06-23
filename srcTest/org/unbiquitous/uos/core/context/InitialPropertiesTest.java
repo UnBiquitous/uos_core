@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.context;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.ListResourceBundle;

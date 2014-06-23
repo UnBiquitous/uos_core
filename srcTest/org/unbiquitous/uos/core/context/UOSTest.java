@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 

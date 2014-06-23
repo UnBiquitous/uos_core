@@ -1,9 +1,9 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.fest.assertions.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,15 +11,12 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
-import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 
 
 public class SmartSpaceGatewayTest {

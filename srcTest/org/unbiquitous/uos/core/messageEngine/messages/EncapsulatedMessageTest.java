@@ -1,6 +1,6 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
