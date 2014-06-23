@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 import org.unbiquitous.uos.core.ContextException;
 import org.unbiquitous.uos.core.InitialProperties;
+import org.unbiquitous.uos.core.InitialProperties.Tuple;
 import org.unbiquitous.uos.core.UOSLogging;
 
 
@@ -19,11 +20,7 @@ import org.unbiquitous.uos.core.UOSLogging;
 public class ApplicationDeployer {
 
     private static Logger logger = UOSLogging.getLogger();
-    public final static String APPLICATION_LIST = "ubiquitos.application.deploylist";
     public final static String APPLICATION_DEFAULT_PATH = "ubiquitos.application.path";
-    public final static String APPLICATION_SEPARATOR = ";";
-    public final static String INSTANCE_ID_INDICATOR_BEGIN = "(";
-    public final static String INSTANCE_ID_INDICATOR_END = ")";
     private static String APPLICATION_PATH;
     private static String DEFAULT_APPLICATION_PATH = "applications/";
     private InitialProperties properties;
@@ -43,52 +40,14 @@ public class ApplicationDeployer {
     public void deployApplications() throws ContextException {
         logger.info("Iniatialize Application Deploy.");
         if (properties != null) {
-            String applicationList = null;
-            try {
-                applicationList = properties.getString(APPLICATION_LIST);
-            } catch (Exception e) {
-                String erroMessage = "No " + APPLICATION_LIST + " specified.";
-                logger.severe(erroMessage);
-                return;
-            }
-
-            if (applicationList != null && !applicationList.isEmpty()) {
-                String[] applicationsList = applicationList.split(APPLICATION_SEPARATOR);
-
-                if (applicationsList != null && applicationsList.length != 0) {
-                    for (String applicationData : applicationsList) {
-                        String applicationClass;
-                        String instanceId = null;
-                        if (applicationData.contains(INSTANCE_ID_INDICATOR_BEGIN)
-                                && applicationData.contains(INSTANCE_ID_INDICATOR_END)) {
-                            // Application data with specified instanceID
-                            instanceId = applicationData.substring(
-                                    applicationData.indexOf(INSTANCE_ID_INDICATOR_BEGIN) + 1,
-                                    applicationData.indexOf(INSTANCE_ID_INDICATOR_END));
-                            applicationClass = applicationData.substring(
-                                    0,
-                                    applicationData.indexOf(INSTANCE_ID_INDICATOR_BEGIN));
-                        } else {
-                            if (applicationData.contains(INSTANCE_ID_INDICATOR_BEGIN)
-                                    || applicationData.contains(INSTANCE_ID_INDICATOR_END)) {
-                                // Application data with malformed specified instanceID
-                                String erroMessage = "ApplicationData '" + applicationData + "' in " + APPLICATION_LIST + " is malformed.";
-                                logger.severe(erroMessage);
-                                throw new ContextException(erroMessage);
-                            } else {
-                                // Application data without instanceId
-                                applicationClass = applicationData;
-                            }
-                        }
-
-                        deployApplication(applicationClass, instanceId);
-                    }
-                } else {
-                    logger.fine("Data specified for " + APPLICATION_LIST + " is empty.");
-                }
-            } else {
-                logger.fine("No " + APPLICATION_LIST + " specified.");
-            }
+        	try {
+				for(Tuple<String,String> t : properties.getApplications()){
+					deployApplication(t.x, t.y);
+				}
+			} catch (ClassNotFoundException e) {
+				logger.log(Level.SEVERE, "Problems deploying applications.",e);
+			}
+        	
         } else {
             logger.fine("No parameters informed to Deployer.");
         }

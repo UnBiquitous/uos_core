@@ -145,7 +145,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListADeployedDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
 		assertEquals(1,manager.listDrivers().size());
 		assertEquals(driver,manager.listDrivers().get(0));
@@ -153,7 +153,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListAllDeployedDrivers() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
 		manager.deployDriver(driver.upDriver, new DriverSpy());
 		manager.deployDriver(driver.upDriver, new DriverSpy());
@@ -242,7 +242,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldAssignAnIdWhenNotInformed() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
 		manager.initDrivers(null, null);
 		assertNotNull(driver.id);
@@ -250,7 +250,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldKeepIdWhenInformed() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver, "id");
 		manager.initDrivers(null, null);
 		assertEquals("id",driver.id);
@@ -258,32 +258,32 @@ public class DriverManagerTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void shouldNotAcceptAnDriverThatIsNotAUosDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, new Object(),"myId");
 	}
 	
 	@Test
 	public void shouldRemoveUndeployedDriver() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("id");
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
 	public void shouldRemoveUndeployedDriverEvenWithAnHomonymousOnAnotherDevice() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		dao.insert(new DriverModel("id", driver.getDriver(), "otherDevice"));
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("id");
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
 	public void shouldDoNothingUndeploingAnNonExistingDriver() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("notMyId");
@@ -319,7 +319,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListNullWhenNothingWasDeployed() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
@@ -672,7 +672,7 @@ public class DriverManagerTest {
 	public void shouldNotRetrieveALocalDriverByWrongDriverName() throws DriverManagerException, DriverNotFoundException{
 		UpDriver driver = new UpDriver("d1");
 		manager.insert(new DriverModel("id1",driver,currentDevice.getName()));
-		assertNull(manager.listDrivers("d2", currentDevice.getName()));
+		assertThat(manager.listDrivers("d2", currentDevice.getName())).isEmpty();
 	}
 	
 	@Test 
@@ -734,4 +734,8 @@ public class DriverManagerTest {
 			return parent;
 		}
 	}
+	
+	//TODO: Multiple drivers of same type
+	//TODO: Multiple drivers with same id
+	//TODO: Multiple drivers with space trail (linefeeds)
 }

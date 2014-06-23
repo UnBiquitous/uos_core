@@ -10,8 +10,8 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.DriverData;
-import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
@@ -30,6 +30,9 @@ public class PingApp implements UosApplication, UosEventListener {
 		PingApp.instance = this;
 		try {
 			boolean started = false;
+			synchronized(PingApp.instance){
+				PingApp.instance.wait(5000);
+			}
 			while(run){
 				if (!gateway.getCurrentDevice().getName().equals("my.cell")){
 					throw new AssertionError("PingApp should run on 'my.cell' .");
@@ -74,7 +77,9 @@ public class PingApp implements UosApplication, UosEventListener {
 	
 	public void testEcho(Gateway gateway, List<DriverData> echoDriver)
 			throws AssertionError, ServiceCallException {
-		if (echoDriver.size() != 1){
+		if (echoDriver.size() < 1){
+			throw new AssertionError("No EchoDriver found. Should be have 1.");
+		}else if (echoDriver.size() > 1){
 			throw new AssertionError("More than one EchoDriver found. Should be only 1.");
 		}else if (!echoDriver.get(0).getDevice().getName().equals("my.pc")){
 			throw new AssertionError("The driver must be on 'my.pc'");

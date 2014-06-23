@@ -51,7 +51,7 @@ public class OntologyReasonerTest {
 	}
 	
 	@After public void tearDown(){
-		new File("resources/oscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
     
     @Before 

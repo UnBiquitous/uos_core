@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
@@ -23,12 +22,12 @@ public class UOSTest {
 	private UOS ctx;
 	
 	@Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@After public void tearDown(){
 		ctx.stop();
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
@@ -79,7 +78,7 @@ public class UOSTest {
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
+					{"ubiquitos.application.deploylist",DummyApp.class.getName()},
 					{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 					{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};
@@ -88,7 +87,6 @@ public class UOSTest {
 		ctx.start(prop);
 		
 		assertThat(DummyApp.lastInstance.inited).isTrue();
-		new File("resources/uoscontext.owl").delete();
 	}
 	
 }
