@@ -1,6 +1,7 @@
 package org.unbiquitous.uos.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +67,8 @@ public class InitialProperties extends HashMap<String, Object> {
 	public void addConnectionManager(Class<? extends ConnectionManager> clazz){
 		String key = "ubiquitos.connectionManager";
 		if(!containsKey(key)){
-			put(key, new ArrayList<Class<ConnectionManager>>());
+			List<Class<ConnectionManager>> list = (List<Class<ConnectionManager>>) Collections.synchronizedList(new ArrayList());
+			put(key, list);
 		}
 		List list = (List) get(key);
 		list.add(clazz);
@@ -102,7 +104,7 @@ public class InitialProperties extends HashMap<String, Object> {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void addRadar(Class<Radar> clazz, Class<ConnectionManager> manager){
+	public void addRadar(Class<? extends Radar> clazz, Class<? extends ConnectionManager> manager){
 		String key = "ubiquitos.radar";
 		if(!containsKey(key)){
 			put(key, new HashMap<Class<Radar>,Class<ConnectionManager>>());

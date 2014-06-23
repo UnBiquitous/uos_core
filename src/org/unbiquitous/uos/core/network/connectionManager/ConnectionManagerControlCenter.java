@@ -224,8 +224,8 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
     		}
 		} catch (Exception e) {
 			NetworkException ex = new NetworkException("Error reading UbiquitOS Resource Bundle Propertie File. " +
-														   "Check if the files exists or there is no errors in his definitions." +
-														   " The found error is: "+e.getMessage());
+														   "Check if the files exists or there is no errors in his definitions.",
+														   e);
 			throw ex;
 		}
 		
