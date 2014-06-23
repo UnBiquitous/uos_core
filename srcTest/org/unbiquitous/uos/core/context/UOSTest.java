@@ -79,7 +79,7 @@ public class UOSTest {
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
+					{"ubiquitos.application.deploylist",DummyApp.class.getName()},
 					{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 					{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.radar.Radar;
@@ -150,7 +151,15 @@ public class InitialProperties extends HashMap<String, Object> {
 		}
 		return map;
 	}
-	
+
+	public static class Tuple<X, Y> { 
+		  public final X x; 
+		  public final Y y; 
+		  public Tuple(X x, Y y) { 
+		    this.x = x; 
+		    this.y = y; 
+		  } 
+		} 
 	
 	public void addDriver(Class<UosDriver> clazz){
 		addDriver(clazz, null);
@@ -167,31 +176,20 @@ public class InitialProperties extends HashMap<String, Object> {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Tuple<Class<UosDriver>,String>>getDrivers() throws ClassNotFoundException {
+	public List<Tuple<Class<UosDriver>,String>> getDrivers() throws ClassNotFoundException {
 		String key = "ubiquitos.driver.deploylist";
-		if (!this.containsKey(key)) return null;
+		if (!this.containsKey(key)) return new ArrayList();
 		Object value = get(key);
 		if (value instanceof List) return (List) value;
 		else if (value instanceof String){
-			return translateToDriverMap(key);
+			return translateToTupleList(key, UosDriver.class);
 		}
-		return null;
+		return new ArrayList();
 	}
-
-	
-	
-	public static class Tuple<X, Y> { 
-		  public final X x; 
-		  public final Y y; 
-		  public Tuple(X x, Y y) { 
-		    this.x = x; 
-		    this.y = y; 
-		  } 
-		} 
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List<Tuple<Class<UosDriver>,String>> translateToDriverMap(
-			String key) throws ClassNotFoundException {
+	private <T> List<Tuple<Class<T>,String>> translateToTupleList(
+			String key, Class<T> clazz) throws ClassNotFoundException {
 		String[] drivers = getString(key).split(";");
 		List list = new ArrayList();
 		for(String driverClass: drivers){
@@ -205,6 +203,32 @@ public class InitialProperties extends HashMap<String, Object> {
 			list.add(new Tuple(Class.forName(driverClass),id));
 		}
 		return list;
+	}
+	
+	public void addApplication(Class<UosApplication> clazz){
+		addApplication(clazz, null);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void addApplication(Class<UosApplication> clazz, String id){
+		String key = "ubiquitos.application.deploylist";
+		if(!containsKey(key)){
+			put(key, new ArrayList<Tuple<Class<UosApplication>,String>>());
+		}
+		List list = (List) get(key);
+		list.add(new Tuple(clazz,id));
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<Tuple<Class<UosApplication>,String>>getApplications() throws ClassNotFoundException {
+		String key = "ubiquitos.application.deploylist";
+		if (!this.containsKey(key)) return new ArrayList();
+		Object value = get(key);
+		if (value instanceof List) return (List) value;
+		else if (value instanceof String){
+			return translateToTupleList(key, UosApplication.class);
+		}
+		return new ArrayList();
 	}
 }
 
