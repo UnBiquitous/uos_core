@@ -77,13 +77,13 @@ public class InitialProperties extends HashMap<String, Object> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<Class<ConnectionManager>> getConnectionManagers() throws ClassNotFoundException {
 		String key = "ubiquitos.connectionManager";
-		if (!this.containsKey(key)) return null;
+		if (!this.containsKey(key)) return new ArrayList();
 		Object value = get(key);
 		if (value instanceof List) return (List) value;
 		else if (value instanceof String){
 			return translateToConnectionManagerList(key);
 		}
-		return null;
+		return new ArrayList();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -153,11 +153,11 @@ public class InitialProperties extends HashMap<String, Object> {
 		  } 
 		} 
 	
-	public void addDriver(Class<UosDriver> clazz){
+	public void addDriver(Class<? extends UosDriver> clazz){
 		addDriver(clazz, null);
 	}
 	
-	public void addDriver(Class<UosDriver> clazz, String id){
+	public void addDriver(Class<? extends UosDriver> clazz, String id){
 		addToTupleList(clazz.getCanonicalName(), id, "ubiquitos.driver.deploylist");
 	}
 
@@ -210,11 +210,11 @@ public class InitialProperties extends HashMap<String, Object> {
 		return new Tuple<String,String>(classStr,id);
 	}
 	
-	public void addApplication(Class<UosApplication> clazz){
+	public void addApplication(Class<? extends UosApplication> clazz){
 		addApplication(clazz, null);
 	}
 	
-	public void addApplication(Class<UosApplication> clazz, String id){
+	public void addApplication(Class<? extends UosApplication> clazz, String id){
 		addToTupleList(clazz.getCanonicalName(), id, "ubiquitos.application.deploylist");
 	}
 	
