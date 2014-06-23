@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
@@ -87,20 +88,11 @@ public class IntegrationTest {
 	}
 
 	private UOS startContext(final String deviceName) throws ContextException{
-		ResourceBundle pcBundle = new ListResourceBundle() {
-			protected Object[][] getContents() {
-				return new Object[][] {
-					{"ubiquitos.message.response.timeout", "100"}, //Optional
-					{"ubiquitos.message.response.retry", "30"},//Optional
-					{"ubiquitos.connectionManager", IntegrationConnectionManager.class.getName()},
-					{"ubiquitos.uos.deviceName", deviceName}, //TODO: Should not be mandatory, and could be automatic
-					{"ubiquitos.driver.deploylist", DeviceDriver.class.getName()}, //TODO: Should not be mandatory
-		        };
-			}
-		};
-		
+		InitialProperties props = new InitialProperties();
+		props.setDeviceName(deviceName);
+		props.addConnectionManager(IntegrationConnectionManager.class);
 		UOS instance = new UOS();
-		instance.start(pcBundle);
+		instance.start(props);
 		return instance;
 	}
 	

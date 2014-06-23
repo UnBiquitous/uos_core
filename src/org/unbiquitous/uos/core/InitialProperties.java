@@ -63,7 +63,7 @@ public class InitialProperties extends HashMap<String, Object> {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void addConnectionManager(Class<ConnectionManager> clazz){
+	public void addConnectionManager(Class<? extends ConnectionManager> clazz){
 		String key = "ubiquitos.connectionManager";
 		if(!containsKey(key)){
 			put(key, new ArrayList<Class<ConnectionManager>>());
