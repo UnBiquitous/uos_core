@@ -165,70 +165,69 @@ public class InitialProperties extends HashMap<String, Object> {
 		addDriver(clazz, null);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addDriver(Class<UosDriver> clazz, String id){
-		String key = "ubiquitos.driver.deploylist";
+		addToTupleList(clazz.getCanonicalName(), id, "ubiquitos.driver.deploylist");
+	}
+
+	public List<Tuple<String,String>> getDrivers() throws ClassNotFoundException {
+		return getTupleList("ubiquitos.driver.deploylist");
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void addToTupleList(String x, String y, String key) {
 		if(!containsKey(key)){
-			put(key, new ArrayList<Tuple<Class<UosDriver>,String>>());
+			put(key, new ArrayList<Tuple<String,String>>());
 		}
 		List list = (List) get(key);
-		list.add(new Tuple(clazz,id));
+		list.add(new Tuple(x,y));
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Tuple<Class<UosDriver>,String>> getDrivers() throws ClassNotFoundException {
-		String key = "ubiquitos.driver.deploylist";
+	private List<Tuple<String, String>> getTupleList(String key)
+			throws ClassNotFoundException {
 		if (!this.containsKey(key)) return new ArrayList();
 		Object value = get(key);
 		if (value instanceof List) return (List) value;
 		else if (value instanceof String){
-			return translateToTupleList(key, UosDriver.class);
+			return translateToTupleList(key);
 		}
 		return new ArrayList();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T> List<Tuple<Class<T>,String>> translateToTupleList(
-			String key, Class<T> clazz) throws ClassNotFoundException {
+	private List<Tuple<String,String>> translateToTupleList(
+			String key) throws ClassNotFoundException {
 		String[] drivers = getString(key).split(";");
 		List list = new ArrayList();
-		for(String driverClass: drivers){
-			String id = null;
-			if(driverClass.contains("(") || driverClass.contains(")")){
-				int beginIndex = driverClass.indexOf('(');
-				int endIndex = driverClass.indexOf(')');
-				id = driverClass.substring(beginIndex+1,endIndex);
-				driverClass = driverClass.substring(0,beginIndex);
-			}
-			list.add(new Tuple(Class.forName(driverClass),id));
+		for(String clazzProp: drivers){
+			list.add(translateTuple(clazzProp));
 		}
 		return list;
+	}
+
+	private Tuple<String,String> translateTuple(String clazzProp)
+			throws ClassNotFoundException {
+		String id = null;
+		String classStr = clazzProp;
+		if(clazzProp.contains("(") || clazzProp.contains(")")){
+			int beginIndex = clazzProp.indexOf('(');
+			int endIndex = clazzProp.indexOf(')');
+			id = clazzProp.substring(beginIndex+1,endIndex);
+			classStr = clazzProp.substring(0,beginIndex);
+		}
+		return new Tuple<String,String>(classStr,id);
 	}
 	
 	public void addApplication(Class<UosApplication> clazz){
 		addApplication(clazz, null);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addApplication(Class<UosApplication> clazz, String id){
-		String key = "ubiquitos.application.deploylist";
-		if(!containsKey(key)){
-			put(key, new ArrayList<Tuple<Class<UosApplication>,String>>());
-		}
-		List list = (List) get(key);
-		list.add(new Tuple(clazz,id));
+		addToTupleList(clazz.getCanonicalName(), id, "ubiquitos.application.deploylist");
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Tuple<Class<UosApplication>,String>>getApplications() throws ClassNotFoundException {
-		String key = "ubiquitos.application.deploylist";
-		if (!this.containsKey(key)) return new ArrayList();
-		Object value = get(key);
-		if (value instanceof List) return (List) value;
-		else if (value instanceof String){
-			return translateToTupleList(key, UosApplication.class);
-		}
-		return new ArrayList();
+	public List<Tuple<String,String>>getApplications() throws ClassNotFoundException {
+		return getTupleList("ubiquitos.application.deploylist");
 	}
 }
 

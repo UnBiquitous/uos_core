@@ -41,8 +41,8 @@ public class ApplicationDeployer {
         logger.info("Iniatialize Application Deploy.");
         if (properties != null) {
         	try {
-				for(Tuple<Class<UosApplication>,String> t : properties.getApplications()){
-					deployApplication(t.x.getCanonicalName(), t.y);
+				for(Tuple<String,String> t : properties.getApplications()){
+					deployApplication(t.x, t.y);
 				}
 			} catch (ClassNotFoundException e) {
 				logger.log(Level.SEVERE, "Problems deploying applications.",e);

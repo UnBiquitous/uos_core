@@ -47,13 +47,13 @@ public class DriverDeployer {
 		logger.info("Deploying Drivers.");
 		if (driverManager != null  && properties != null){
 			try {
-				List<InitialProperties.Tuple<Class<UosDriver>, String>> driverList = properties.getDrivers();
+				List<InitialProperties.Tuple<String, String>> driverList = properties.getDrivers();
 				if (driverList == null){
 					logger.warning("No Driver defined. This implies on no drivers for this instance.");
 					return;
 				}
-				for(InitialProperties.Tuple<Class<UosDriver>, String> t : driverList){
-					deployDriver(t.x.getCanonicalName(), t.y);
+				for(InitialProperties.Tuple<String, String> t : driverList){
+					deployDriver(t.x, t.y);
 				}
 			} catch (Exception e) {
 				throw new DriverManagerException(e);
