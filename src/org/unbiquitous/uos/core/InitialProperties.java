@@ -62,16 +62,6 @@ public class InitialProperties extends HashMap<String, Object> {
 		this.readOnly = true;
 	}
 	
-	/*
-	 * ubiquitos.connectionManager
-	 * ubiquitos.radar
-	 * ubiquitos.driver.deploylist
-	 * ubiquitos.application.deploylist
-	 * ubiquitos.uos.deviceName
-	 * ubiquitos.message.response.timeout
-	 * ubiquitos.message.response.retry
-	 */
-	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addConnectionManager(Class<ConnectionManager> clazz){
 		String key = "ubiquitos.connectionManager";
@@ -228,6 +218,22 @@ public class InitialProperties extends HashMap<String, Object> {
 	
 	public List<Tuple<String,String>>getApplications() throws ClassNotFoundException {
 		return getTupleList("ubiquitos.application.deploylist");
+	}
+	
+	public void setDeviceName(String deviceName){
+		put("ubiquitos.uos.deviceName", deviceName);
+	}
+	
+	public String getDeviceName(){
+		return getString("ubiquitos.uos.deviceName");
+	}
+	
+	public void setResponseTimeout(Integer timeout){
+		put("ubiquitos.message.response.timeout", timeout);
+	}
+	
+	public Integer getResponseTimeout(){
+		return getInt("ubiquitos.message.response.timeout");
 	}
 }
 

@@ -14,7 +14,6 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 public class CurrentDeviceInitializer implements UOSComponent{
 	private static final Logger logger = UOSLogging.getLogger();
-	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
 	
 	private InitialProperties properties;
 	
@@ -25,8 +24,8 @@ public class CurrentDeviceInitializer implements UOSComponent{
 	@Override
 	public void init(UOSComponentFactory factory) {
 		UpDevice currentDevice = factory.currentDevice(new UpDevice());
-		if (properties.containsKey(DEVICE_NAME_KEY)){
-			currentDevice.setName(properties.getString(DEVICE_NAME_KEY));
+		if (properties.getDeviceName() != null){
+			currentDevice.setName(properties.getDeviceName());
 		}else{
 			try {
 				currentDevice.setName(InetAddress.getLocalHost().getHostName());

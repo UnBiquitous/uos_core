@@ -60,16 +60,10 @@ public class MessageHandler {
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		this.securityManager = securityManager;
 		this.connectivityManager = connectivityManager;
-		if (bundle != null && bundle.containsKey("ubiquitos.message.response.timeout")){
-			maxRetries = Integer.parseInt(bundle.getString("ubiquitos.message.response.timeout"));
-		}else{
-			maxRetries = 30;
+		if (bundle != null && bundle.getResponseTimeout() != null){
+			waitTime = (int)(((float)bundle.getResponseTimeout() )/ maxRetries);
 		}
-		if (bundle != null && bundle.containsKey("ubiquitos.message.response.retry")){
-			waitTime = Integer.parseInt(bundle.getString("ubiquitos.message.response.retry"));
-		}else{
-			waitTime = 100;
-		}
+		
 	}
 	
 	/**
