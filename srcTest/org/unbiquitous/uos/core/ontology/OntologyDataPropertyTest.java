@@ -39,11 +39,11 @@ public class OntologyDataPropertyTest {
     Ontology ontology;
     
     @Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
     
     @Before 

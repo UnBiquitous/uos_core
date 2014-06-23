@@ -39,12 +39,12 @@ public class DeviceDriverTest_handShake {
 
 
 	@Before public void setUp() throws Exception{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 		
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+						{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 						{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};
 			}
@@ -64,7 +64,7 @@ public class DeviceDriverTest_handShake {
 	}
 	
 	@After public void tearDown() throws Exception{
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	

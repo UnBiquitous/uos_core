@@ -31,9 +31,9 @@ public class ApplicationManagerTest {
 	@SuppressWarnings("serial")
 	@Before public void setUp() throws Exception{
 		gateway = mock(Gateway.class);
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 		props= new InitialProperties() {{
-			put("ubiquitos.ontology.path","resources/owl/uoscontext.owl");
+			put("ubiquitos.ontology.path","resources/uoscontext.owl");
 			put("ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName());
 		}};
 		manager = new ApplicationManager(props,gateway,null);
@@ -43,7 +43,7 @@ public class ApplicationManagerTest {
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+						{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 				};
 			}
 		};
@@ -51,7 +51,7 @@ public class ApplicationManagerTest {
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@Test public void addingAnApplicationDoesNothingToIt(){

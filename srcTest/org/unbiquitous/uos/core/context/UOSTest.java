@@ -23,12 +23,12 @@ public class UOSTest {
 	private UOS ctx;
 	
 	@Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@After public void tearDown(){
 		ctx.stop();
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
@@ -75,12 +75,12 @@ public class UOSTest {
 	
 	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
 		ctx = new UOS();
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
 					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
-					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+					{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 					{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};
 			}
