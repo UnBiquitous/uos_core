@@ -69,13 +69,15 @@ public class InitialProperties extends HashMap<String, Object> {
 		if(!containsKey(key)){
 			List<Class<ConnectionManager>> list = (List<Class<ConnectionManager>>) Collections.synchronizedList(new ArrayList());
 			put(key, list);
+		}else if(get(key) instanceof String){
+			put(key, getConnectionManagers());
 		}
 		List list = (List) get(key);
 		list.add(clazz);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Class<ConnectionManager>> getConnectionManagers() throws ClassNotFoundException {
+	public List<Class<ConnectionManager>> getConnectionManagers(){
 		String key = "ubiquitos.connectionManager";
 		if (!this.containsKey(key)) return new ArrayList();
 		Object value = get(key);
@@ -88,11 +90,15 @@ public class InitialProperties extends HashMap<String, Object> {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private List<Class<ConnectionManager>> translateToConnectionManagerList(
-			String key) throws ClassNotFoundException {
+			String key){
 		String[] managers = getString(key).split(",");
 		List list = new ArrayList();
 		for(String mng: managers){
-			list.add(Class.forName(mng));
+			try {
+				list.add(Class.forName(mng));
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return list;
 	}
@@ -108,13 +114,15 @@ public class InitialProperties extends HashMap<String, Object> {
 		String key = "ubiquitos.radar";
 		if(!containsKey(key)){
 			put(key, new HashMap<Class<Radar>,Class<ConnectionManager>>());
+		}else if(get(key) instanceof String){
+			put(key, getRadars());
 		}
 		Map map = (Map) get(key);
 		map.put(clazz,manager);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Map<Class<Radar>,Class<ConnectionManager>> getRadars() throws ClassNotFoundException {
+	public Map<Class<Radar>,Class<ConnectionManager>> getRadars(){
 		String key = "ubiquitos.radar";
 		if (!this.containsKey(key)) return null;
 		Object value = get(key);
@@ -127,19 +135,23 @@ public class InitialProperties extends HashMap<String, Object> {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Map<Class<Radar>,Class<ConnectionManager>> translateToRadarMap(
-			String key) throws ClassNotFoundException {
+			String key){
 		String[] radars = getString(key).split(",");
 		Map map = new HashMap();
 		for(String radar: radars){
-			Class manager = null;
-			if(radar.contains("(") || radar.contains(")")){
-				int beginIndex = radar.indexOf('(');
-				int endIndex = radar.indexOf(')');
-				String mng = radar.substring(beginIndex+1,endIndex);
-				manager = Class.forName(mng);
-				radar = radar.substring(0,beginIndex);
+			try {
+				Class manager = null;
+				if(radar.contains("(") || radar.contains(")")){
+					int beginIndex = radar.indexOf('(');
+					int endIndex = radar.indexOf(')');
+					String mng = radar.substring(beginIndex+1,endIndex);
+					manager = Class.forName(mng);
+					radar = radar.substring(0,beginIndex);
+				}
+				map.put(Class.forName(radar),manager);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
 			}
-			map.put(Class.forName(radar),manager);
 		}
 		return map;
 	}
