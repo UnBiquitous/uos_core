@@ -76,6 +76,7 @@ public class RadarControlCenter implements RadarListener {
 			for (Radar radar : radarList) {
 				radar.startRadar();
 				Thread thread = new Thread(radar);
+				thread.setName(radar.getClass().getName());
 				thread.start();
 				if (radarThreadList == null){
 					radarThreadList = new ArrayList<Thread>();

@@ -249,6 +249,7 @@ public class ConnectionManagerControlCenter implements ConnectionManagerListener
 		for (ConnectionManager connectionManager : connectionManagersList) {
 			// Create a thread for each one and starts it.
 			Thread t = new Thread(connectionManager);
+			t.setName(connectionManager.getClass().getName());
 			t.start();
 			connectionManagersThreadMap.put(connectionManager, t);
 		}
