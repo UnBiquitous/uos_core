@@ -155,7 +155,10 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		try {
 			// in the case of a local service call, must inform that the current device is the same.
 			//FIXME : AdaptabilityEngine : Must set the local device  
-			//messageContext.setCallerDevice(callerDevice)
+			messageContext.setCallerDevice(currentDevice);
+			String netType = currentDevice.getNetworks().get(0).getNetType();
+			NetworkDevice netDev = connectionManagerControlCenter.getNetworkDevice(netType);
+			messageContext.setCallerNetworkDevice(netDev);
 			Response response = handleServiceCall(serviceCall, messageContext);
 			response.setMessageContext(messageContext);
 			

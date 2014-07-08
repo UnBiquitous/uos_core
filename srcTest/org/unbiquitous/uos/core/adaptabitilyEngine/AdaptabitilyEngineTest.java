@@ -1,15 +1,19 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
@@ -18,6 +22,7 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
@@ -29,6 +34,7 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
+import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 
@@ -91,18 +97,33 @@ public class AdaptabitilyEngineTest {
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForNullDevice() throws Exception {
 		final DriverManager _driverManager = mock(DriverManager.class);
 		Response response = new Response();
-		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
-		
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
+		ArgumentCaptor<CallContext> ctx = ArgumentCaptor.forClass(CallContext.class);
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.currentDevice = _currentDevice;
 				this.deviceManager = mock(DeviceManager.class);
+				when(this.deviceManager.retrieveDevice("addr", "type")).thenReturn(_currentDevice);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
+				NetworkDevice networkDevice = new NetworkDevice(){
+					public String getNetworkDeviceName() {
+						return "addr";
+					}
+					public String getNetworkDeviceType() {
+						return "type";
+					}};
+				when(this.connectionManagerControlCenter.getNetworkDevices()).thenReturn(Arrays.asList(networkDevice));
 			}
 		};
 		engine.init(null);
 		
+		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
 		Call call = new Call("my.driver","myService");
-		assertEquals(response,engine.callService(null, call));
+		engine.callService(null, call);
+		verify(_driverManager).handleServiceCall(eq(call), ctx.capture());
+		assertThat(ctx.getValue().getCallerDevice()).isEqualTo(_currentDevice);
 	}
 	
 
