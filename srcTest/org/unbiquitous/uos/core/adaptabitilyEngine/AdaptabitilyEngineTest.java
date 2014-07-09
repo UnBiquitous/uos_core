@@ -131,12 +131,16 @@ public class AdaptabitilyEngineTest {
 	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
 		final ApplicationManager manager = new ApplicationManager(new InitialProperties(properties), null,null);
 		DummyApp app = new DummyApp();
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
 		manager.deploy(app, "myId");
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.applicationManager = manager;
+				this.currentDevice = _currentDevice;
 				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
@@ -153,6 +157,7 @@ public class AdaptabitilyEngineTest {
 		final DriverManager _driverManager = mock(DriverManager.class);
 		Response response = new Response();
 		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
 		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
 		
 		engine = new AdaptabilityEngine(){
@@ -160,6 +165,7 @@ public class AdaptabitilyEngineTest {
 				this.driverManager = _driverManager;
 				this.currentDevice = _currentDevice;
 				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
@@ -177,10 +183,14 @@ public class AdaptabitilyEngineTest {
 				return new Response();
 			}
 		};
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.currentDevice = _currentDevice;
 				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
