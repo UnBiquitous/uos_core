@@ -20,7 +20,7 @@ To use the middleware just add it to your `pom.xml` as follows.
 		<dependency>
 			<groupId>org.unbiquitous</groupId>
 			<artifactId>uos-core</artifactId>
-			<version>3.0.0</version>
+			<version>3.1.0</version>
 		</dependency>
 </dependencies>
 ```
@@ -35,6 +35,8 @@ Don't forget to include our repository on your list.
 		</repository>
 </repositories>
 ```
+
+You are probably going to want to use some kind of networking with it. [Socket](https://github.com/UnBiquitous/uos_socket_plugin) is our main flavor. Take a look at it.
 
 Documentation
 -----------
