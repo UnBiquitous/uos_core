@@ -5,28 +5,26 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ListResourceBundle;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.ContextException;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 
 
 public class IntegrationTest {
 	
     @Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	//TODO: Better explain the purpose of this test
@@ -37,7 +35,7 @@ public class IntegrationTest {
 		UOS pc = startContext(pcName);
 		EchoDriver echo = new EchoDriver();
 		pc.getFactory().get(AdaptabilityEngine.class).driverManager().deployDriver(echo.getDriver(), echo);
-		pc.getFactory().get(AdaptabilityEngine.class).driverManager().initDrivers(pc.getGateway());//TODO: What an ugly thing to do, should be initialized automaticali
+		pc.getFactory().get(AdaptabilityEngine.class).driverManager().initDrivers(pc.getGateway(), null);//TODO: What an ugly thing to do, should be initialized automaticali
 
 		//App side
 		String cellName = "my.cell";
@@ -47,6 +45,11 @@ public class IntegrationTest {
 		
 		//promote radar handshake		
 		cell.getFactory().get(ConnectionManagerControlCenter.class).radarControlCenter().deviceEntered(new IntegrationDevice(pcName));
+		
+		//Start the test
+		synchronized (PingApp.instance) {
+			PingApp.instance.notifyAll(); 
+		}
 		
 		//Test if handshake was successfull
 		assertThat(cell.getGateway().listDrivers(echo.getDriver().getName())).
@@ -82,25 +85,16 @@ public class IntegrationTest {
 		assertThat(pc.getGateway().listDevices()).hasSize(1);
 		
 		//finish instances
-		pc.tearDown();
-		cell.tearDown();
+		pc.stop();
+		cell.stop();
 	}
 
 	private UOS startContext(final String deviceName) throws ContextException{
-		ResourceBundle pcBundle = new ListResourceBundle() {
-			protected Object[][] getContents() {
-				return new Object[][] {
-					{"ubiquitos.message.response.timeout", "100"}, //Optional
-					{"ubiquitos.message.response.retry", "30"},//Optional
-					{"ubiquitos.connectionManager", IntegrationConnectionManager.class.getName()},
-					{"ubiquitos.uos.deviceName", deviceName}, //TODO: Should not be mandatory, and could be automatic
-					{"ubiquitos.driver.deploylist", DeviceDriver.class.getName()}, //TODO: Should not be mandatory
-		        };
-			}
-		};
-		
+		InitialProperties props = new InitialProperties();
+		props.setDeviceName(deviceName);
+		props.addConnectionManager(IntegrationConnectionManager.class);
 		UOS instance = new UOS();
-		instance.init(pcBundle);
+		instance.start(props);
 		return instance;
 	}
 	

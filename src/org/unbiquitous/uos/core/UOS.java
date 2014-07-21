@@ -1,8 +1,12 @@
 package org.unbiquitous.uos.core;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,24 +33,35 @@ public class UOS {
 
 	private static String DEFAULT_UBIQUIT_BUNDLE_FILE = "ubiquitos";
 
-    private ResourceBundle properties;
-
+    private InitialProperties properties;
 	private UOSComponentFactory factory;
 	private List<UOSComponent> components ;
 	
+	private Boolean running = false;
+	
 	public static void main(String[] args) throws Exception{
-		new UOS().init();
+		UOS uos = new UOS();
+		if (hasSpecificPropertiesFile(args)){
+			uos.start(args[1]);
+		}else if(hasDefaultFile(args)){
+			uos.start(DEFAULT_UBIQUIT_BUNDLE_FILE+".properties");
+		}else{
+			String helpMessage = String.format(
+				"Create a %s.properties file on the root folder or use '-f' "
+			  + "to point to another path.", DEFAULT_UBIQUIT_BUNDLE_FILE);
+			System.out.println(helpMessage);
+			
+		}
+	}
+
+	private static boolean hasDefaultFile(String[] args) {
+		return args.length == 0 && new File(DEFAULT_UBIQUIT_BUNDLE_FILE+".properties").exists();
+	}
+
+	private static boolean hasSpecificPropertiesFile(String[] args) {
+		return args.length == 2 && args[0].equals("-f");
 	}
 	
-	/**
-	 * Initializes the components of the uOS middleware using 'ubiquitos' as the
-	 * name of the resouce bundle to be used.
-	 * 
-	 * @throws ContextException
-	 */
-	public void init() throws ContextException {
-		init(DEFAULT_UBIQUIT_BUNDLE_FILE);
-	}
 
 	/**
 	 * Initializes the components of the uOS middleware acording to the
@@ -57,26 +72,37 @@ public class UOS {
 	 *            the properties of the uOS middleware.
 	 * @throws ContextException
 	 */
-	public void init(String resourceBundleName) throws ContextException {
+	public void start(String resourceBundleName) throws ContextException {
 		logger.fine("Retrieving Resource Bundle Information");
-		init(ResourceBundle.getBundle(resourceBundleName));
+		File possibleResourceFile = new File(resourceBundleName);
+		if(possibleResourceFile.exists()){
+			try {
+				start(new PropertyResourceBundle(new FileInputStream(possibleResourceFile)));
+			} catch (IOException e) {
+				throw new ContextException(e);
+			}
+		}else{
+			start(ResourceBundle.getBundle(resourceBundleName));
+		}
+		
 	}
 	
-	/**
-	 * Initializes the components of the uOS middleware acording to the
-	 * resourceBundle informed.
-	 * 
-	 * @param resourceBundleName
-	 *            Name of the <code>ResourceBundle</code> to be used for finding
-	 *            the properties of the uOS middleware.
-	 * @throws ContextException
-	 */
-	@SuppressWarnings("serial")
-	public void init(ResourceBundle resourceBundle) throws ContextException {
+	public void start(ResourceBundle resourceBundle) throws ContextException {
+		start(new InitialProperties(resourceBundle));
+	}
 		
+	@SuppressWarnings("serial")
+	public void start(InitialProperties properties) throws ContextException {
 		try {
-			this.properties	= resourceBundle;
-			this.factory		= new UOSComponentFactory(resourceBundle);
+			synchronized (running) {
+				if(running){
+					throw new ContextException("This UOS instance is already running");
+				}
+				running = true;
+			}
+			this.properties	= properties;
+			this.properties.markReadOnly();
+			this.factory		= new UOSComponentFactory(properties);
 			this.components = new ArrayList<UOSComponent>(){
 				{
 					add(factory.get(ConnectionManagerControlCenter.class));
@@ -123,10 +149,16 @@ public class UOS {
 	/**
 	 * Shutdown the middleware infrastructure.
 	 */
-	public void tearDown() {
+	public void stop() {
+		logger.info("Stopping UOS");
 		for(UOSComponent component:components){
+			logger.finer("Stopping "+component.getClass().getSimpleName());
 			component.stop();
 		}
+		synchronized (running) {
+			running = false;
+		}
+		logger.fine("Stopped UOS");
 	}
 
 	/**

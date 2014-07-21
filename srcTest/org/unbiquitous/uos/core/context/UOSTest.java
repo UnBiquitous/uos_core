@@ -1,7 +1,7 @@
 package org.unbiquitous.uos.core.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 
@@ -23,12 +22,12 @@ public class UOSTest {
 	private UOS ctx;
 	
 	@Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@After public void tearDown(){
-		ctx.tearDown();
-		new File("resources/owl/uoscontext.owl").delete();
+		ctx.stop();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@Test public void shouldInitCurrentDeviceWithDefaultValues() throws Exception{
@@ -38,7 +37,7 @@ public class UOSTest {
 				return new Object[][] {};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertEquals("When no deviceName is specified use hostname",
 				InetAddress.getLocalHost().getHostName(),
@@ -55,7 +54,7 @@ public class UOSTest {
 				return new Object[][] {{"ubiquitos.uos.deviceName","localhost"}};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertThat(ctx.getGateway().getCurrentDevice().getName()).isNotEqualTo("localhost");
 	}
@@ -67,7 +66,7 @@ public class UOSTest {
 				return new Object[][] {{"ubiquitos.uos.deviceName","MyName"}};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertEquals("When deviceName is specified use it","MyName",
 								ctx.getGateway().getCurrentDevice().getName()); 
@@ -75,17 +74,17 @@ public class UOSTest {
 	
 	@Test public void startApplicationsInSpecifiedInTheProperties() throws Exception{
 		ctx = new UOS();
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 		ResourceBundle prop = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-					{ApplicationDeployer.APPLICATION_LIST,DummyApp.class.getName()},
-					{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+					{"ubiquitos.application.deploylist",DummyApp.class.getName()},
+					{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 					{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
 				};
 			}
 		};
-		ctx.init(prop);
+		ctx.start(prop);
 		
 		assertThat(DummyApp.lastInstance.inited).isTrue();
 	}

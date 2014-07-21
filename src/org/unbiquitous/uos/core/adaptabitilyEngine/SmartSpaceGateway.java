@@ -10,9 +10,9 @@ import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
 import org.unbiquitous.uos.core.ontologyEngine.api.StartReasoner;
 
@@ -44,7 +44,7 @@ public class SmartSpaceGateway implements Gateway {
 		this.ontology = ontology;
 	}
 
-	public ServiceResponse callService(UpDevice device, String serviceName,
+	public Response callService(UpDevice device, String serviceName,
 			String driverName, String instanceId, String securityType,
 			Map<String, Object> parameters) throws ServiceCallException {
 
@@ -52,22 +52,28 @@ public class SmartSpaceGateway implements Gateway {
 				instanceId, securityType, parameters);
 	}
 
-	public ServiceResponse callService(UpDevice device, ServiceCall serviceCall)
+	public Response callService(UpDevice device, Call serviceCall)
 			throws ServiceCallException {
 		return adaptabilityEngine.callService(device, serviceCall);
 	}
 
-	public void registerForEvent(UosEventListener listener, UpDevice device,
+	public void register(UosEventListener listener, UpDevice device,
 			String driver, String eventKey) throws NotifyException {
-		adaptabilityEngine.registerForEvent(listener, device, driver, null,
-				eventKey);
+		register(listener, device, driver, null,eventKey);
 	}
 
-	public void registerForEvent(UosEventListener listener, UpDevice device,
+	public void register(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
-		adaptabilityEngine.registerForEvent(listener, device, driver,
-				instanceId, eventKey);
+		register(listener, device, driver, instanceId, eventKey, null);
+	}
+	
+	public void register(UosEventListener listener, UpDevice device,
+			String driver, String instanceId, String eventKey,
+			Map<String, Object> parameters)
+			throws NotifyException {
+		adaptabilityEngine.register(listener, device, driver,
+				instanceId, eventKey,parameters);
 	}
 
 	public List<DriverData> listDrivers(String driverName) {
@@ -82,20 +88,20 @@ public class SmartSpaceGateway implements Gateway {
 		return currentDevice;
 	}
 
-	public void sendEventNotify(Notify notify, UpDevice device)
+	public void notify(Notify notify, UpDevice device)
 			throws NotifyException {
-		adaptabilityEngine.sendEventNotify(notify, device);
+		adaptabilityEngine.notify(notify, device);
 	}
 
-	public void unregisterForEvent(UosEventListener listener)
+	public void unregister(UosEventListener listener)
 			throws NotifyException {
-		adaptabilityEngine.unregisterForEvent(listener);
+		adaptabilityEngine.unregister(listener);
 	}
 
-	public void unregisterForEvent(UosEventListener listener, UpDevice device,
+	public void unregister(UosEventListener listener, UpDevice device,
 			String driver, String instanceId, String eventKey)
 			throws NotifyException {
-		adaptabilityEngine.unregisterForEvent(listener, device, driver,
+		adaptabilityEngine.unregister(listener, device, driver,
 				instanceId, eventKey);
 	}
 

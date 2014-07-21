@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
 /**
@@ -129,6 +130,24 @@ public class CacheController {
 		}
 	}
 	
+	public void removeDevice(NetworkDevice d){
+		String deviceName = d.getNetworkDeviceName();
+		List<ClientConnection> clientConnectionList = clientCache.get(deviceName);
+		
+		if (clientConnectionList != null){
+			for(ClientConnection c : clientConnectionList){
+				try {
+					connectionCache.remove(c);
+					tearDownConnection(c);
+				} catch (IOException e) {
+					logger.log(Level.WARNING, "Failed to remove connection.",e);
+				}
+			}
+		}
+		
+		clientCache.remove(deviceName);
+	}
+	
 	/**
 	 * Method responsible for closing a connection (if it has expired).
 	 * 
@@ -169,17 +188,18 @@ public class CacheController {
 	private boolean isConnectionExpired(ClientConnection c){
 		CachedConnectionData connectionData = connectionCache.get(c);
 		
-		if(connectionData != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(connectionData.getLastAccess());
-			cal.add(Calendar.MILLISECOND, connectionTimeout);
-			Date timeout = cal.getTime();
-			
-			logger.log(Level.FINE,"LastAccess: '"+connectionData.getLastAccess()+"' timeout: '"+timeout+"' result: "+timeout.before(connectionData.getLastAccess()));
-			
-			return timeout.before(new Date());
+		if (! connectionData.getConnection().isConnected()){
+			return false;
 		}
-		return true;
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(connectionData.getLastAccess());
+		cal.add(Calendar.MILLISECOND, connectionTimeout);
+		Date timeout = cal.getTime();
+		
+		logger.log(Level.FINE,"LastAccess: '"+connectionData.getLastAccess()+"' timeout: '"+timeout+"' result: "+timeout.before(connectionData.getLastAccess()));
+		
+		return timeout.before(new Date());
 	}
 	
 	/**

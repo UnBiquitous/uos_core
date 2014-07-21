@@ -1,15 +1,16 @@
 package org.unbiquitous.uos.core.driverManager;
 
-import java.util.ResourceBundle;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.uos.core.ClassLoaderUtils;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Class responsible for loading the specified driver in the Driver Manager.
@@ -17,38 +18,23 @@ import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
  * @author Fabricio Nogueira Buzeto
  *
  */
-//TODO: Untested class
 public class DriverDeployer {
 	
 	private static Logger logger = UOSLogging.getLogger();
 	
-	private static final String DRIVER_LIST_RESOURCE_KEY = "ubiquitos.driver.deploylist";
-        
     private static final String DRIVER_PATH_RESOURCE_KEY = "ubiquitos.driver.path";
 
     private static String DRIVER_PATH;
 
     private static String DEFAULT_DRIVER_PATH = "drivers/";
 	
-	private static String DRIVER_SEPARATOR = ";";
-	
-	private static String INSTANCE_ID_INDICATOR_BEGIN = "(";
-	
-	private static String INSTANCE_ID_INDICATOR_END = ")";
-
 	private DriverManager driverManager;
 	
-	private ResourceBundle resourceBundle;
+	private InitialProperties properties;
 	
-	/**
-	 * Default Constructor
-	 * 
-	 * @param driverManager DriverManager which to load the drivers
-	 * @param resourceBundle ResourceBundle containing the information about the drivers to load 
-	 */
-	public DriverDeployer(DriverManager driverManager, ResourceBundle resourceBundle) {
+	public DriverDeployer(DriverManager driverManager, InitialProperties properties) {
 		this.driverManager = driverManager;
-		this.resourceBundle = resourceBundle;
+		this.properties = properties;
 	}
 	
 	/**
@@ -59,84 +45,24 @@ public class DriverDeployer {
 	 */
 	public void deployDrivers() throws DriverManagerException {
 		logger.info("Deploying Drivers.");
-		if (driverManager != null  && resourceBundle != null){
-			String deployList = null;
+		if (driverManager != null  && properties != null){
 			try {
-				if (!resourceBundle.containsKey(DRIVER_LIST_RESOURCE_KEY)){
-					logger.warning("No '"+DRIVER_LIST_RESOURCE_KEY+"' property defined. This implies on no drivers for this instance.");
-	    			return;
+				List<InitialProperties.Tuple<String, String>> driverList = properties.getDrivers();
+				if (driverList == null){
+					logger.warning("No Driver defined. This implies on no drivers for this instance.");
+					return;
 				}
-				deployList = resourceBundle.getString(DRIVER_LIST_RESOURCE_KEY);
+				for(InitialProperties.Tuple<String, String> t : driverList){
+					deployDriver(t.x, t.y);
+				}
 			} catch (Exception e) {
-				String errorMessage = "No "+DRIVER_LIST_RESOURCE_KEY+" specified.";
-				logger.log(Level.SEVERE,errorMessage,e);
-				throw new DriverManagerException(errorMessage,e);
-			}
-			
-			if (deployList != null && !deployList.isEmpty()){
-				String[] driversList = deployList.split(DRIVER_SEPARATOR);
-				
-				if (driversList != null && driversList.length != 0){
-					for (String driverData : driversList){
-						try {
-							deployDriverByProperty(driverData);
-						} catch (InterfaceValidationException e) {
-							String errorMessage = "The driver could not be deployed due to invalid interface specification.";
-							logger.log(Level.SEVERE,errorMessage,e);
-							throw new DriverManagerException(errorMessage,e);
-						}
-					}
-				}else{
-					logger.fine("Data specified for "+DRIVER_LIST_RESOURCE_KEY+" is empty.");
-				}
-			}else{
-				logger.fine("No "+DRIVER_LIST_RESOURCE_KEY+" specified.");
+				throw new DriverManagerException(e);
 			}
 		}else{
-			logger.fine("No parameters (DriverManager or ResourceBundle) informed to Deployer.");
+			logger.fine("No parameters informed to Deployer.");
 		}
 	}
 
-	/**
-	 * Method responsible for deploying a single driver based on the property description of it
-	 * 
-	 * @param driverData The property line configuration of the driver to be deployed
-	 * @return the Class of the informed driver.
-	 * @throws DriverManagerException
-	 * @throws DriverNotFoundException 
-	 */
-	private String deployDriverByProperty(String driverData)
-			throws DriverManagerException, InterfaceValidationException {
-		String driverClass;
-		String instanceId = null;
-		if (driverData.contains(INSTANCE_ID_INDICATOR_BEGIN) &&
-				driverData.contains(INSTANCE_ID_INDICATOR_END)){
-			// Driver data with specified instanceID
-			instanceId = driverData.substring(
-						driverData.indexOf(INSTANCE_ID_INDICATOR_BEGIN)+1,
-						driverData.indexOf(INSTANCE_ID_INDICATOR_END)
-						);
-			driverClass = driverData.substring(
-					0,
-					driverData.indexOf(INSTANCE_ID_INDICATOR_BEGIN)
-					);
-		}else{
-			if (driverData.contains(INSTANCE_ID_INDICATOR_BEGIN) ||
-					driverData.contains(INSTANCE_ID_INDICATOR_BEGIN)){
-				// Driver data with malformed specified instanceID
-				String erroMessage = "DriverData '"+driverData+"' in "+DRIVER_LIST_RESOURCE_KEY+" is malformed.";
-				logger.log(Level.SEVERE,erroMessage);
-				throw new DriverManagerException(erroMessage);
-			}else{
-				// Driver data without instanceId
-				driverClass = driverData;
-			}
-		}		
-
-		deployDriver(driverClass, instanceId);
-
-		return driverClass;
-	}
 
 	/**
 	 * 
@@ -149,9 +75,9 @@ public class DriverDeployer {
 	 */
 	private void deployDriver(String driverClass, String instanceId)
 			throws DriverManagerException, InterfaceValidationException {
-		try {
-			DRIVER_PATH = resourceBundle.getString(DRIVER_PATH_RESOURCE_KEY);
-		} catch (Exception e) {
+		if(properties.containsKey(DRIVER_PATH_RESOURCE_KEY)) {
+			DRIVER_PATH = properties.getString(DRIVER_PATH_RESOURCE_KEY);
+		} else {
 			DRIVER_PATH = DEFAULT_DRIVER_PATH;
 		}
 		
@@ -173,8 +99,7 @@ public class DriverDeployer {
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Problems Deploying driver",e);
-			// TODO Auto-generated catch block
-			new RuntimeException(e);
+			new DriverManagerException(e);
 		} 
 	}
 
@@ -198,7 +123,7 @@ public class DriverDeployer {
 		}
 		for (UpService ups : driverInstance.getDriver().getServices()){
 			try {
-				driverInstance.getClass().getDeclaredMethod(ups.getName(), ServiceCall.class , ServiceResponse.class, UOSMessageContext.class);
+				driverInstance.getClass().getDeclaredMethod(ups.getName(), Call.class , Response.class, CallContext.class);
 			} catch (SecurityException e) {
 				String erroMessage = "Service '"+ups.getName()+"' on DriverClass '"+driverInstance.getClass().getName()+"' has security acces issues.";
 				logger.log(Level.FINE,erroMessage,e);
@@ -211,5 +136,4 @@ public class DriverDeployer {
 		}
 		return true;
 	}
-	
 }

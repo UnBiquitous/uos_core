@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
@@ -16,22 +17,21 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  * @author Fabricio Nogueira Buzeto
  *
  */
-public class UOSMessageContext {
+public class CallContext {
 	
 	/**
 	 * Device Object representing the caller device of the request. 
 	 */
-	private NetworkDevice callerDevice;
-	
-	private List<DataInputStream> dataInputStream;
-	
+	private NetworkDevice	callerNetworkDevice;
+	private 	  UpDevice	callerDevice;
+	private  List<DataInputStream>	dataInputStream;
 	private List<DataOutputStream> dataOutputStream;
 
 	/**
 	 * This constructor is defined with a protected visibility level so only it's controller can 
 	 * instantiate it.
 	 */
-	public UOSMessageContext() {
+	public CallContext() {
 		this.dataInputStream = new ArrayList<DataInputStream>();
 		this.dataOutputStream = new ArrayList<DataOutputStream>();
 	}
@@ -40,14 +40,22 @@ public class UOSMessageContext {
 	 * Property Acessors                                                                      *
 	 * ************************************************************************************** */
 	
-	public NetworkDevice getCallerDevice() {
+	public NetworkDevice getCallerNetworkDevice() {
+		return callerNetworkDevice;
+	}
+	
+	public void setCallerNetworkDevice(NetworkDevice callerDevice) {
+		this.callerNetworkDevice = callerDevice;
+	}
+	
+	public UpDevice getCallerDevice() {
 		return callerDevice;
 	}
-	
-	public void setCallerDevice(NetworkDevice callerDevice) {
+
+	public void setCallerDevice(UpDevice callerDevice) {
 		this.callerDevice = callerDevice;
 	}
-	
+
 	public DataInputStream getDataInputStream() {
 		if(!dataInputStream.isEmpty()){
 			return dataInputStream.get(0);

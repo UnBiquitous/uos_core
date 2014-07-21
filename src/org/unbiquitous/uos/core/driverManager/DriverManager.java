@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.driverManager.drivers.DefaultDrivers;
@@ -22,8 +23,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * This Class is responsible for dealing with the installed drivers in this device. Here we handle its
@@ -77,13 +78,13 @@ public class DriverManager {
 			return findEquivalentDriver(treeNode.getChildren());
 		}
 		
-		return null;
+		return new ArrayList<DriverModel>();
 	}
 	
 	/**
-	 * @see ServiceCallHandler#handleServiceCall(ServiceCall)
+	 * @see ServiceCallHandler#handleServiceCall(Call)
 	 */
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext) throws DriverManagerException{
+	public Response handleServiceCall(Call serviceCall, CallContext messageContext) throws DriverManagerException{
 		//Handle named InstanceCall
 		DriverModel model = null;
 		if (serviceCall.getInstanceId() != null ){
@@ -128,7 +129,7 @@ public class DriverManager {
 	 * @return Response to return to the caller device.
 	 * @throws DriverManagerException
 	 */
-	private ServiceResponse callServiceOnDriver(ServiceCall serviceCall, Object instanceDriver, UOSMessageContext messageContext) throws DriverManagerException{
+	private Response callServiceOnDriver(Call serviceCall, Object instanceDriver, CallContext messageContext) throws DriverManagerException{
 		return serviceCaller.callServiceOnDriver(serviceCall, instanceDriver, messageContext);
 	}
 	
@@ -161,9 +162,9 @@ public class DriverManager {
 	public void deployDriver(UpDriver driver, Object instance, String instanceId) throws DriverManagerException, DriverNotFoundException {
 		if (instance instanceof UosDriver){      
 			
-			if(instanceId == null)
+			if(instanceId == null){
 				instanceId = driver.getName()+incDeployedDriversCount();
-			
+			}
 			UosDriver uDriver = (UosDriver) instance;
 			DriverModel model = new DriverModel(instanceId, uDriver.getDriver(), this.currentDevice.getName());
 			
@@ -309,7 +310,7 @@ public class DriverManager {
 	public List<UosDriver> listDrivers(){
 		List<DriverModel> list = driverDao.list(null,currentDevice.getName());
 		if (list.isEmpty())
-			return null;
+			return new ArrayList<UosDriver>();
 		
 		List<UosDriver> ret = new ArrayList<UosDriver>();
 		for (DriverModel m : list){
@@ -361,7 +362,7 @@ public class DriverManager {
 			baseSet.addAll(findAllEquivalentDrivers(equivalentDrivers));
 		}
 		if (baseSet == null || baseSet.isEmpty()){
-			return null;
+			return new ArrayList<DriverData>();
 		}
 		List<DriverData> ret = new ArrayList<DriverData>();
 		for (DriverModel dm : baseSet) {
@@ -374,7 +375,7 @@ public class DriverManager {
 	/**
 	 * Initializes the driver that are not initialized yet.
 	 */
-	public void initDrivers(Gateway gateway){
+	public void initDrivers(Gateway gateway, InitialProperties properties){
 		try {
 			if (driverDao.list("uos.DeviceDriver").isEmpty()){
 				
@@ -390,7 +391,7 @@ public class DriverManager {
 			String id = it.next();
 			DriverModel model = driverDao.retrieve(id,currentDevice.getName());
 			UosDriver driver = instances.get(model.rowid());
-			driver.init(gateway, id);
+			driver.init(gateway, properties, id);
 			it.remove();
 			logger.fine(String.format("Initialized Driver %s with id '%s'", 
 							model.driver().getName(),id));

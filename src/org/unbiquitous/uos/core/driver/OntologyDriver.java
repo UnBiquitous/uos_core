@@ -4,10 +4,10 @@
  */
 package org.unbiquitous.uos.core.driver;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosEventDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  *
@@ -31,40 +31,40 @@ public interface OntologyDriver extends UosEventDriver {
     public static final String DRIVER_NAME = "br.unb.unbiquitous.ubiquitos.uos.driver.OntologyDriver";
 
     /* Returns true if instance checking is correct. False otherwise. */
-    public void isInstanceOf(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void isInstanceOf(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns true if subClass axiom is entailed. False otherwise. */
-    public void isSubClassOf(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void isSubClassOf(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns true if ontology has object property assertion. False otherwise. */
-    public void hasObjectProperty(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void hasObjectProperty(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns instances from specified class. */
-    public void getInstancesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void getInstancesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns subClasses from specified class. */
-    public void getSubClassesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void getSubClassesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns superClasses from specified class. */
-    public void getSuperClassesFromClass(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void getSuperClassesFromClass(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns data property values from the specified instance. */
-    public void getDataPropertyValues(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void getDataPropertyValues(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns true if classes are disjoint. False otherwise. */
-    public void areDisjointClasses(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void areDisjointClasses(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     /* Returns true if classes are equivalent. False otherwise. */
-    public void areEquivalentClasses(ServiceCall serviceCall,
-            ServiceResponse serviceResponse, UOSMessageContext messageContext);
+    public void areEquivalentClasses(Call serviceCall,
+            Response serviceResponse, CallContext messageContext);
 
     public void notifyInstanceOfEvent(String messageType, String className,
             String instanceName);

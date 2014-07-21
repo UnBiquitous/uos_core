@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.DriverData;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyDeploy;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyUndeploy;
@@ -29,6 +30,9 @@ public class PingApp implements UosApplication, UosEventListener {
 		PingApp.instance = this;
 		try {
 			boolean started = false;
+			synchronized(PingApp.instance){
+				PingApp.instance.wait(5000);
+			}
 			while(run){
 				if (!gateway.getCurrentDevice().getName().equals("my.cell")){
 					throw new AssertionError("PingApp should run on 'my.cell' .");
@@ -39,7 +43,7 @@ public class PingApp implements UosApplication, UosEventListener {
 					testEcho(gateway, echoDriver);
 					
 					DriverData data = echoDriver.get(0);
-					gateway.registerForEvent(this, data.getDevice(), data.getDriver().getName(), "reminder");
+					gateway.register(this, data.getDevice(), data.getDriver().getName(), "reminder");
 					
 					run = false;
 				}
@@ -73,15 +77,17 @@ public class PingApp implements UosApplication, UosEventListener {
 	
 	public void testEcho(Gateway gateway, List<DriverData> echoDriver)
 			throws AssertionError, ServiceCallException {
-		if (echoDriver.size() != 1){
+		if (echoDriver.size() < 1){
+			throw new AssertionError("No EchoDriver found. Should be have 1.");
+		}else if (echoDriver.size() > 1){
 			throw new AssertionError("More than one EchoDriver found. Should be only 1.");
 		}else if (!echoDriver.get(0).getDevice().getName().equals("my.pc")){
 			throw new AssertionError("The driver must be on 'my.pc'");
 		}else{
 			DriverData data = echoDriver.get(0);
-			ServiceCall echoGo = new ServiceCall(data.getDriver().getName(), "echo");
+			Call echoGo = new Call(data.getDriver().getName(), "echo");
 						echoGo.addParameter("text", "my text");
-			ServiceResponse echoComeback = gateway.callService(data.getDevice(), echoGo);
+			Response echoComeback = gateway.callService(data.getDevice(), echoGo);
 			String echoMsg = echoComeback.getResponseString("text");
 			if (!echoMsg.equals("my text")){
 				throw new AssertionError("The returned message wasn't 'my text' it was '"+echoMsg+"'.");
@@ -91,7 +97,7 @@ public class PingApp implements UosApplication, UosEventListener {
 
 	public void stop() throws Exception {	run = false;	}
 
-	public void init(OntologyDeploy ontology, String appId) {}
+	public void init(OntologyDeploy ontology, InitialProperties props, String appId) {}
 
 	public void tearDown(OntologyUndeploy ontology) throws Exception {}
 

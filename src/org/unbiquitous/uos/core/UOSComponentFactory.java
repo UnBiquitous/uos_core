@@ -3,16 +3,15 @@ package org.unbiquitous.uos.core;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 
 public class UOSComponentFactory {
 	private Map<Class<?>, Object> instances = new HashMap<Class<?>, Object>();
-	private ResourceBundle properties;
+	private InitialProperties properties;
 	
-	public UOSComponentFactory(ResourceBundle properties) {
+	public UOSComponentFactory(InitialProperties properties) {
 		this.properties = properties;
 	}
 	
@@ -21,7 +20,7 @@ public class UOSComponentFactory {
 		if (!instances.containsKey(clazz)){
 			try {
 				try{
-					Constructor<T> propBuilder = clazz.getConstructor(ResourceBundle.class);
+					Constructor<T> propBuilder = clazz.getConstructor(InitialProperties.class);
 					instances.put(clazz, propBuilder.newInstance(properties));
 				}catch (NoSuchMethodException e) {
 					instances.put(clazz, clazz.newInstance());

@@ -17,6 +17,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.ontologyEngine.Ontology;
@@ -42,18 +43,18 @@ public class OntologyClassTest implements UosApplication{
     Ontology ontology;
     
     @Before public void setUp() throws IOException{
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
     
     @Before 
     public void setup() throws IOException{
         try {
-        	new File("resources/owl/uoscontext.owl").createNewFile();
-            ontology = new Ontology(resourceBundle);
+        	new File("resources/uoscontext.owl").createNewFile();
+            ontology = new Ontology(new InitialProperties(resourceBundle));
             ontology.initializeOntology();
         } catch (ReasonerNotDefinedException ex) {
             Logger.getLogger(OntologyChangeManagerTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -150,7 +151,7 @@ public class OntologyClassTest implements UosApplication{
     }
 
     @Override
-    public void init(OntologyDeploy ontology, String appId) {
+    public void init(OntologyDeploy ontology, InitialProperties props, String appId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

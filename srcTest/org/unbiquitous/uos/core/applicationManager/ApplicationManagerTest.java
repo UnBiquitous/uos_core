@@ -14,10 +14,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.ontology.OntologyReasonerTest;
 import org.unbiquitous.uos.core.ontologyEngine.api.OntologyStart;
 
@@ -26,34 +26,32 @@ public class ApplicationManagerTest {
 
 	private ApplicationManager manager;
 	private Gateway gateway;
+	private InitialProperties props;
 
+	@SuppressWarnings("serial")
 	@Before public void setUp() throws Exception{
 		gateway = mock(Gateway.class);
-		new File("resources/owl/uoscontext.owl").createNewFile();
-		ResourceBundle bundle = new ListResourceBundle() {
-			protected Object[][] getContents() {
-				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
-						{"ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName()},
-				};
-			}
-		};
-		manager = new ApplicationManager(bundle,gateway);
+		new File("resources/uoscontext.owl").createNewFile();
+		props= new InitialProperties() {{
+			put("ubiquitos.ontology.path","resources/uoscontext.owl");
+			put("ubiquitos.ontology.reasonerFactory",OntologyReasonerTest.class.getName());
+		}};
+		manager = new ApplicationManager(props,gateway,null);
 	}
 	
 	private void createOntologyDisabledManager() {
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+						{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 				};
 			}
 		};
-		manager = new ApplicationManager(bundle,gateway);
+		manager = new ApplicationManager(new InitialProperties(bundle),gateway,null);
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 	@Test public void addingAnApplicationDoesNothingToIt(){
@@ -109,13 +107,14 @@ public class ApplicationManagerTest {
 		assertThat(app.initOntology).isNull();
 	}
 
-	@Test public void startsTheAppWithTheProperOntologyAndGateway() throws InterruptedException{
+	@Test public void startsTheAppWithTheProperOntologyAndGatewayAndProperties() throws InterruptedException{
 		final DummyApp app = new DummyApp();
 		manager.add(app);
 		manager.startApplications();
 		waitToStart(app);
 		assertThat(app.startOntology).isNotNull();
 		assertThat(app.gateway).isSameAs(gateway);
+		assertThat(app.properties).isSameAs(props);
 	}
 	
 	@Test public void startsTheAppWithNoOntologyWhenDisableButStillWithGateway() throws InterruptedException{
@@ -236,21 +235,36 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
-		manager.handleServiceCall(serviceCall,new UOSMessageContext());
+		manager.handleServiceCall(serviceCall,new CallContext());
 		
 		assertThat(app.callbackMap).isSameAs(parameters);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceOnACommonSignature() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		Call serviceCall = new Call("app","commonCallback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		CallContext context = new CallContext();
+		manager.handleServiceCall(serviceCall,context);
+		
+		assertThat(app.serviceCall).isSameAs(serviceCall);
+		assertThat(app.context).isSameAs(context);
 	}
 	
 	@Test public void handleServiceReturnsMapAsResponse() throws Exception{
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback","myId")
+		Call call = new Call("app","callback","myId")
 		.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		Response r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 		.contains(MapEntry.entry("echo", "ping"));
@@ -261,9 +275,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback")
+		Call call = new Call("app","callback")
 									.addParameter("echo", "ping");
-		ServiceResponse r = manager.handleServiceCall(call,new UOSMessageContext());
+		Response r = manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(r.getResponseData())
 									.contains(MapEntry.entry("echo", "ping"));
@@ -274,9 +288,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","callback","NotMyId");
+		Call call = new Call("app","callback","NotMyId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -287,9 +301,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		Call call = new Call("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();
@@ -300,9 +314,9 @@ public class ApplicationManagerTest {
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
-		ServiceCall call = new ServiceCall("app","notCallback","myId");
+		Call call = new Call("app","notCallback","myId");
 		call.setParameters(new TreeMap());
-		ServiceResponse r =manager.handleServiceCall(call,new UOSMessageContext());
+		Response r =manager.handleServiceCall(call,new CallContext());
 		
 		assertThat(app.callbackMap).isNull();
 		assertThat(r.getError()).isNotNull();

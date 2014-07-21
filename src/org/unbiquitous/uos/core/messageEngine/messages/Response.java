@@ -3,16 +3,18 @@ package org.unbiquitous.uos.core.messageEngine.messages;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 
 
-public class ServiceResponse extends Message{
+public class Response extends Message{
 	
 	private Map<String,Object> responseData;
 	
-	private UOSMessageContext messageContext;
+	private CallContext messageContext;
 	
-	public ServiceResponse() {
+	public Response() {
 		setType(Message.Type.SERVICE_CALL_RESPONSE);
 	}
 
@@ -35,7 +37,7 @@ public class ServiceResponse extends Message{
 		this.responseData = responseData;
 	}
 	
-	public ServiceResponse addParameter(String key, Object value){
+	public Response addParameter(String key, Object value){
 		if (responseData == null){
 			responseData = new HashMap<String, Object>();
 		}
@@ -48,10 +50,10 @@ public class ServiceResponse extends Message{
 		if (obj == null){
 			return false;
 		}
-		if (!( obj instanceof ServiceResponse)){
+		if (!( obj instanceof Response)){
 			return false;
 		}
-		ServiceResponse temp = (ServiceResponse) obj; 
+		Response temp = (Response) obj; 
 		
 		if (	!( this.responseData == temp.responseData || (this.responseData != null && this.responseData.equals(temp.responseData)))){
 			return false;
@@ -66,19 +68,41 @@ public class ServiceResponse extends Message{
 		if (this.responseData != null){
 			hash += this.responseData.hashCode();
 		}
-			
-		if (hash != 0){
-			return hash;
-		}
-		
-		return super.hashCode();
+		return hash;
 	}
 
-	public UOSMessageContext getMessageContext() {
+	public CallContext getMessageContext() {
 		return messageContext;
 	}
 
-	public void setMessageContext(UOSMessageContext messageContext) {
+	public void setMessageContext(CallContext messageContext) {
 		this.messageContext = messageContext;
+	}
+	
+	@Override
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = super.toJSON();
+		if (this.responseData != null){
+			json.put("responseData", this.responseData);
+		}
+		return json;
+	}
+
+	public static Response fromJSON(JSONObject json) throws JSONException {
+		Response r = new Response();
+		Message.fromJSON(r, json);
+		if (json.has("responseData")){
+			r.responseData = json.optJSONObject("responseData").toMap();
+		}
+		return r;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
 	}
 }

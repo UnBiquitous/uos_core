@@ -1,7 +1,6 @@
 package org.unbiquitous.uos.core.network.connectionManager;
 
-import java.util.ResourceBundle;
-
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 /**
@@ -20,10 +19,11 @@ public interface ConnectionManager extends Runnable{
 	public void setConnectionManagerListener(ConnectionManagerListener connectionManagerListener);
 	
 	/**
-	 * A method for setting a ResourceBundle for the connection Manager
-	 * @param resource
+	 * A method for setting properties for the connection Manager
+	 * @param properties
 	 */
-	public void setResourceBundle(ResourceBundle resource);
+	public void init(InitialProperties properties);
+	public InitialProperties getProperties();
 	
 	/**
 	 * Finalize the Connection Manager.

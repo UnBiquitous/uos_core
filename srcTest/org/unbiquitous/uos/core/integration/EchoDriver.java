@@ -6,16 +6,17 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosEventDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 public class EchoDriver implements UosEventDriver {
@@ -39,7 +40,7 @@ public class EchoDriver implements UosEventDriver {
 		return driver;
 	}
 
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		EchoDriver.instance = this;
 		this.gateway = gateway;
 		this.id = instanceId;
@@ -48,21 +49,21 @@ public class EchoDriver implements UosEventDriver {
 	public void destroy() {
 	}
 
-	public void echo(ServiceCall call, ServiceResponse response,
-			UOSMessageContext ctx) {
+	public void echo(Call call, Response response,
+			CallContext ctx) {
 		response.addParameter("text", (String) call.getParameter("text"));
 	}
 
 	@Override
-	public void registerListener(ServiceCall call, ServiceResponse response,
-			final UOSMessageContext ctx) {
+	public void registerListener(Call call, Response response,
+			final CallContext ctx) {
 		// if (call.getParameter("event").equals(reminder)){ //TODO:Validate the event
 		new Thread() {
 			public void run() {
 				try {
 					Thread.sleep(100);// Wait a little bit
 					Notify reminder = new Notify("reminder","br.unbiquitous.Echo", id);
-					gateway.sendEventNotify(reminder, new UpDevice("dummy").addNetworkInterface(ctx.getCallerDevice().getNetworkDeviceName(), ctx.getCallerDevice().getNetworkDeviceType()));
+					gateway.notify(reminder, new UpDevice("dummy").addNetworkInterface(ctx.getCallerNetworkDevice().getNetworkDeviceName(), ctx.getCallerNetworkDevice().getNetworkDeviceType()));
 					Thread.sleep(100);// Wait a little bit
 				} catch (Exception e) {
 					logger.log(Level.SEVERE,"Problems registering listener",e);
@@ -73,8 +74,8 @@ public class EchoDriver implements UosEventDriver {
 	}
 
 	@Override
-	public void unregisterListener(ServiceCall call, ServiceResponse response,
-			UOSMessageContext ctx) {
+	public void unregisterListener(Call call, Response response,
+			CallContext ctx) {
 		// TODO Auto-generated method stub
 
 	}

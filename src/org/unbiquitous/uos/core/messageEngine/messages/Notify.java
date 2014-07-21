@@ -1,7 +1,12 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
 
 public class Notify extends Message {
 
@@ -61,6 +66,14 @@ public class Notify extends Message {
 	}
 	
 	public Notify addParameter(String key, String value){
+		return this.addParameter(key, (Object)value);
+	}
+	
+	public Notify addParameter(String key, Number value){
+		return this.addParameter(key, (Object)value);
+	}
+	
+	private Notify addParameter(String key, Object value){
 		if (parameters == null){
 			parameters = new HashMap<String, Object>();
 		}
@@ -85,12 +98,10 @@ public class Notify extends Message {
 		}
 		Notify temp = (Notify) obj; 
 		
-		if (	!( this.eventKey == temp.eventKey || (this.eventKey != null && this.eventKey.equals(temp.eventKey)))){
-			return false;
-		}
-		if (	!( this.parameters == temp.parameters || (this.parameters != null && this.parameters.equals(temp.parameters)))){
-			return false;
-		}
+		if(!compare(this.eventKey,temp.eventKey)) return false;
+		if(!compare(this.driver,temp.driver)) return false;
+		if(!compare(this.instanceId,temp.instanceId)) return false;
+		if(!compare(this.parameters,temp.parameters)) return false;
 		
 		return true;
 	}
@@ -101,15 +112,14 @@ public class Notify extends Message {
 		if (this.eventKey != null){
 			hash += this.eventKey.hashCode();
 		}
-		if (this.parameters != null){
-			hash += this.parameters.hashCode();
+		if (this.driver != null){
+			hash += this.driver.hashCode();
 		}
-			
-		if (hash != 0){
-			return hash;
+		if (this.instanceId != null){
+			hash += this.instanceId.hashCode();
 		}
 		
-		return super.hashCode();
+		return hash;
 	}
 
 	/**
@@ -138,5 +148,39 @@ public class Notify extends Message {
 	 */
 	public void setInstanceId(String instanceId) {
 		this.instanceId = instanceId;
+	}
+
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = super.toJSON();
+		
+		json.put("eventKey",this.eventKey);
+		json.put("driver",this.driver);
+		json.put("instanceId",this.instanceId);
+		if (this.parameters != null)
+			json.put("parameters",this.parameters);
+		return json;
+	}
+
+	public static Notify fromJSON(JSONObject json) throws JSONException {
+		Notify e = new Notify();
+		
+		Message.fromJSON(e, json);
+		
+		e.setEventKey(json.optString("eventKey",null));
+		e.setDriver(json.optString("driver",null));
+		e.setInstanceId(json.optString("instanceId",null));
+		if(json.has("parameters")){
+			e.parameters = json.optJSONObject("parameters").toMap();
+		}
+		return e;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			return super.toString();
+		}
 	}
 }

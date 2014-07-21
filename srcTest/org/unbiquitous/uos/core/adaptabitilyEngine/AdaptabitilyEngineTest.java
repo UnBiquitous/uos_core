@@ -1,15 +1,20 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -17,15 +22,20 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.applicationManager.DummyApp;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
+import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
+import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 
 
@@ -37,11 +47,11 @@ public class AdaptabitilyEngineTest {
 	
 	@Before public void setUp() throws IOException{
 		engine = new AdaptabilityEngine();
-		new File("resources/owl/uoscontext.owl").createNewFile();
+		new File("resources/uoscontext.owl").createNewFile();
 		properties = new ListResourceBundle() {
 			protected Object[][] getContents() {
 				return new Object[][] {
-						{"ubiquitos.ontology.path","resources/owl/uoscontext.owl"},
+						{"ubiquitos.ontology.path","resources/uoscontext.owl"},
 //						{"ubiquitos.ontology.reasonerFactory","br.unb.unbiquitous.ubiquitos.ontology.OntologyReasonerTest"},
 				};
 			}
@@ -49,7 +59,7 @@ public class AdaptabitilyEngineTest {
 	}
 	
 	@After public void tearDown(){
-		new File("resources/owl/uoscontext.owl").delete();
+		new File("resources/uoscontext.owl").delete();
 	}
 	
 //	public void init(
@@ -74,47 +84,68 @@ public class AdaptabitilyEngineTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void callService_shouldFailWithoutADriverSpecified() throws ServiceCallException{
-		engine.callService(null, new ServiceCall());
-		engine.callService(null, new ServiceCall("",null));
+		engine.callService(null, new Call());
+		engine.callService(null, new Call("",null));
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void callService_shouldFailWithoutAServiceSpecified() throws ServiceCallException{
-		engine.callService(null, new ServiceCall());
-		engine.callService(null, new ServiceCall(null,""));
+		engine.callService(null, new Call());
+		engine.callService(null, new Call(null,""));
 	}
 	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForNullDevice() throws Exception {
 		final DriverManager _driverManager = mock(DriverManager.class);
-		ServiceResponse response = new ServiceResponse();
-		when(_driverManager.handleServiceCall((ServiceCall)anyObject(), (UOSMessageContext)anyObject())).thenReturn(response);
-		
+		Response response = new Response();
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
+		ArgumentCaptor<CallContext> ctx = ArgumentCaptor.forClass(CallContext.class);
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.currentDevice = _currentDevice;
+				this.deviceManager = mock(DeviceManager.class);
+				when(this.deviceManager.retrieveDevice("addr", "type")).thenReturn(_currentDevice);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
+				NetworkDevice networkDevice = new NetworkDevice(){
+					public String getNetworkDeviceName() {
+						return "addr";
+					}
+					public String getNetworkDeviceType() {
+						return "type";
+					}};
+				when(this.connectionManagerControlCenter.getNetworkDevices()).thenReturn(Arrays.asList(networkDevice));
 			}
 		};
 		engine.init(null);
 		
-		ServiceCall call = new ServiceCall("my.driver","myService");
-		assertEquals(response,engine.callService(null, call));
+		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
+		Call call = new Call("my.driver","myService");
+		engine.callService(null, call);
+		verify(_driverManager).handleServiceCall(eq(call), ctx.capture());
+		assertThat(ctx.getValue().getCallerDevice()).isEqualTo(_currentDevice);
 	}
 	
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void callService_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null);
+		final ApplicationManager manager = new ApplicationManager(new InitialProperties(properties), null,null);
 		DummyApp app = new DummyApp();
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
 		manager.deploy(app, "myId");
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.applicationManager = manager;
+				this.currentDevice = _currentDevice;
+				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
 		engine.callService(null,serviceCall);
@@ -124,49 +155,57 @@ public class AdaptabitilyEngineTest {
 	
 	@Test public void callService_shouldRedirectLocalCallToDriverManagerForCurrentDevice() throws Exception {
 		final DriverManager _driverManager = mock(DriverManager.class);
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		final UpDevice _currentDevice = new UpDevice("me");
-		when(_driverManager.handleServiceCall((ServiceCall)anyObject(), (UOSMessageContext)anyObject())).thenReturn(response);
+		_currentDevice.addNetworkInterface("addr", "type");
+		when(_driverManager.handleServiceCall((Call)anyObject(), (CallContext)anyObject())).thenReturn(response);
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
 				this.currentDevice = _currentDevice;
+				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
 		
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		assertEquals(response,engine.callService(_currentDevice, call));
 	}
 	
 	@Test public void callService_shouldCreateAMessageContextLocalCallToDriverManager() throws Exception {
-		final UOSMessageContext[] ctx = {null};
+		final CallContext[] ctx = {null};
 		
 		final DriverManager _driverManager = new DriverManager(null,null,null,null){
-			public ServiceResponse handleServiceCall(ServiceCall call, UOSMessageContext c){
+			public Response handleServiceCall(Call call, CallContext c){
 				ctx[0] = c;
-				return new ServiceResponse();
+				return new Response();
 			}
 		};
+		final UpDevice _currentDevice = new UpDevice("me");
+		_currentDevice.addNetworkInterface("addr", "type");
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.currentDevice = _currentDevice;
+				this.deviceManager = mock(DeviceManager.class);
+				this.connectionManagerControlCenter = mock(ConnectionManagerControlCenter.class);
 			}
 		};
 		engine.init(null);
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		engine.callService(null, call);
 		
 		assertNotNull(ctx[0]);
 	}
 	
 
-	@Test public void callService_shouldRedirectRemoteCallToMessageEngibeForOtherDevice() throws Exception {
+	@Test public void callService_shouldRedirectRemoteCallToMessageEngineForOtherDevice() throws Exception {
 		final MessageEngine _messageEngine = mock(MessageEngine.class);
-		ServiceResponse response = new ServiceResponse();
+		Response response = new Response();
 		UpDevice callee = new UpDevice("other");
-		ServiceCall call = new ServiceCall("my.driver","myService");
+		Call call = new Call("my.driver","myService");
 		when(_messageEngine.callService(callee, call)).thenReturn(response);
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
@@ -176,6 +215,22 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		assertEquals(response,engine.callService(callee, call));
+	}
+	
+	@Test(expected=ServiceCallException.class) 
+	public void callService_RemoteCallMustHandleNullResponseAsAnError() throws Exception {
+		final MessageEngine _messageEngine = mock(MessageEngine.class);
+		UpDevice callee = new UpDevice("other");
+		Call call = new Call("my.driver","myService");
+		when(_messageEngine.callService(callee, call)).thenReturn(null);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.currentDevice = new UpDevice("me");
+				this.messageEngine = _messageEngine;
+			}
+		};
+		engine.init(null);
+		engine.callService(callee, call);
 	}
 	
 	//TODO : AdaptabilityEngine : callService : Test Stream Service (Local and Remote)
@@ -192,8 +247,8 @@ public class AdaptabitilyEngineTest {
 		
 		Notify notify = new Notify();
 		UpDevice device = new UpDevice();
-		engine.sendEventNotify(notify, device);
-		verify(_eventManager).sendEventNotify(notify, device);
+		engine.notify(notify, device);
+		verify(_eventManager).notify(notify, device);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManager() throws Exception{
@@ -206,8 +261,8 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", null, "eventKey");
+		engine.register(listener, device, "driver", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", null, "eventKey", null);
 	}
 	
 	@Test public void registerForEvent_shouldDelagateToEventManagerWithId() throws Exception{
@@ -220,8 +275,24 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.registerForEvent(listener, device, "driver", "id", "eventKey");
-		verify(_eventManager).registerForEvent(listener, device, "driver", "id", "eventKey");
+		engine.register(listener, device, "driver", "id", "eventKey");
+		verify(_eventManager).register(listener, device, "driver", "id", "eventKey", null);
+	}
+	
+	@Test public void registerForEvent_shouldDelagateToEventManagerWithParameters() throws Exception{
+		final EventManager _eventManager = mock(EventManager.class);
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.eventManager = _eventManager;
+			}
+		};
+		engine.init(null);
+		UosEventListener listener = mock(UosEventListener.class);
+		UpDevice device = new UpDevice();
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		engine.register(listener, device, "driver", "id", "eventKey",params);
+		verify(_eventManager).register(listener, device, "driver", "id", 
+				"eventKey", params);
 	}
 	
 	@Test public void unregisterForEvent_shouldDelagateToEventManager() throws Exception{
@@ -233,8 +304,8 @@ public class AdaptabitilyEngineTest {
 		};
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
-		engine.unregisterForEvent(listener);
-		verify(_eventManager).unregisterForEvent(listener, null, null, null, null);
+		engine.unregister(listener);
+		verify(_eventManager).unregister(listener, null, null, null, null);
 	}
 	
 	@Test public void unregisterForEvent_shouldDelagateToEventManagerWithId() throws Exception{
@@ -247,8 +318,8 @@ public class AdaptabitilyEngineTest {
 		engine.init(null);
 		UosEventListener listener = mock(UosEventListener.class);
 		UpDevice device = new UpDevice();
-		engine.unregisterForEvent(listener, device, "driver", "id", "eventKey");
-		verify(_eventManager).unregisterForEvent(listener, device, "driver", "id", "eventKey");
+		engine.unregister(listener, device, "driver", "id", "eventKey");
+		verify(_eventManager).unregister(listener, device, "driver", "id", "eventKey");
 	}
 	
 	@Test public void handleNofify_shouldDelagateToEventManager() throws Exception{
@@ -270,34 +341,61 @@ public class AdaptabitilyEngineTest {
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.driverManager = _driverManager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
-		ServiceCall serviceCall = new ServiceCall();
-		UOSMessageContext messageContext = new UOSMessageContext();
+		Call serviceCall = new Call();
+		CallContext messageContext = new CallContext();
 		engine.handleServiceCall(serviceCall,messageContext);
 		verify(_driverManager).handleServiceCall(serviceCall,messageContext);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test public void handleServiceCall_shouldCallMethodOnAppWhenDriverIsApp() throws Exception{
-		final ApplicationManager manager = new ApplicationManager(properties, null);
+		final ApplicationManager manager = new ApplicationManager(new InitialProperties(properties), null,null);
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");
 		
 		engine = new AdaptabilityEngine(){
 			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
 				this.applicationManager = manager;
+				this.deviceManager = mock(DeviceManager.class);
 			}
 		};
 		engine.init(null);
 		
-		ServiceCall serviceCall = new ServiceCall("app","callback","myId");
+		Call serviceCall = new Call("app","callback","myId");
 		TreeMap parameters = new TreeMap();
 		serviceCall.setParameters(parameters);
-		engine.handleServiceCall(serviceCall,new UOSMessageContext());
+		engine.handleServiceCall(serviceCall,new CallContext());
 		
 		assertThat(app.callbackMap).isSameAs(parameters);
 	}
 	
+	@Test public void handleServiceCall_setUpDeviceOnContext() throws Exception{
+		final DriverManager _driverManager = mock(DriverManager.class);
+		final DeviceManager _deviceManager = mock(DeviceManager.class);
+		
+		engine = new AdaptabilityEngine(){
+			public void init(org.unbiquitous.uos.core.UOSComponentFactory factory) {
+				this.driverManager = _driverManager;
+				this.deviceManager = _deviceManager;
+			}
+		};
+		when(_deviceManager.retrieveDevice("addr", "type"))
+			.thenReturn(new UpDevice("MyGuy"));
+		
+		engine.init(null);
+		CallContext ctx = new CallContext();
+		ctx.setCallerNetworkDevice(new NetworkDevice() {
+			public String getNetworkDeviceName() {	return "addr:port";	}
+			public String getNetworkDeviceType() {	return "type";	}
+		});
+		engine.handleServiceCall(new Call(),ctx);
+		assertThat(ctx.getCallerDevice()).isNotNull();
+		assertThat(ctx.getCallerDevice().getName()).isEqualTo("MyGuy");
+	}
+	
 }
+

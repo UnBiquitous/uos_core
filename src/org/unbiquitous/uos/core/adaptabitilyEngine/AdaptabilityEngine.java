@@ -1,16 +1,16 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.applicationManager.ApplicationManager;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
@@ -25,10 +25,10 @@ import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
 import org.unbiquitous.uos.core.messageEngine.ServiceCallHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -53,14 +53,13 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	protected MessageEngine messageEngine;
 	protected EventManager eventManager;
 	protected ConnectivityManager connectivityManager;
-	protected ResourceBundle properties;
+	protected InitialProperties properties;
 	protected ApplicationManager applicationManager;
-
-	private DeviceManager deviceManager;
+	protected DeviceManager deviceManager;
 
 
 	/**
-	 * Method responsible for creating a call for {@link AdaptabilityEngine#callService(String, ServiceCall)} with the following parameters.
+	 * Method responsible for creating a call for {@link AdaptabilityEngine#callService(String, Call)} with the following parameters.
 	 * 
 	 * @param deviceName Device providing the service to be called.
 	 * @param serviceName The name of the service to be called.
@@ -70,14 +69,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(
+	public Response callService(
 									UpDevice device,
 									String serviceName, 
 									String driverName, 
 									String instanceId,
 									String securityType,
 									Map<String,Object> parameters) throws ServiceCallException{
-		ServiceCall serviceCall = new ServiceCall();
+		Call serviceCall = new Call();
 		serviceCall.setDriver(driverName);
 		serviceCall.setInstanceId(instanceId);
 		serviceCall.setService(serviceName);
@@ -95,7 +94,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(UpDevice device, ServiceCall serviceCall) throws ServiceCallException{
+	public Response callService(UpDevice device, Call serviceCall) throws ServiceCallException{
 		if (	serviceCall == null ||
 				serviceCall.getDriver() == null || serviceCall.getDriver().isEmpty() ||
 				serviceCall.getService() == null || serviceCall.getService().isEmpty()){
@@ -104,8 +103,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
-		UOSMessageContext messageContext = new UOSMessageContext();
-		messageContext.setCallerDevice(new LoopbackDevice(1)); // FIXME: Tales - 21/07/2012 
+		CallContext messageContext = new CallContext();
+		messageContext.setCallerNetworkDevice(new LoopbackDevice(1)); // FIXME: Tales - 21/07/2012 
 																// Linha de codigo necessária para que o objeto 'messageContext' tenha um 'callerDevice'. 
 																// Caso prossiga sem o mesmo uma 'NullpointerException' é lançada.
 		
@@ -129,13 +128,17 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 				device.getName().equalsIgnoreCase(currentDevice.getName());
 	}
 
-	private ServiceResponse remoteServiceCall(UpDevice device,
-			ServiceCall serviceCall,
+	private Response remoteServiceCall(UpDevice device,
+			Call serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
-			UOSMessageContext messageContext) throws ServiceCallException {
+			CallContext messageContext) throws ServiceCallException {
 		// If not a local service call, delegate to the serviceHandler
 		try{
-			ServiceResponse response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			Response response = messageEngine.callService(device, serviceCall); // FIXME: Response can be null
+			if(response == null){
+				closeStreamChannels(streamConnectionThreadeds);
+				throw new ServiceCallException("No response received from call.");
+			}
 			response.setMessageContext(messageContext);
 			return response;
 		}catch (MessageEngineException e){
@@ -144,16 +147,19 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		}
 	}
 
-	private ServiceResponse localServiceCall(ServiceCall serviceCall,
+	private Response localServiceCall(Call serviceCall,
 			StreamConnectionThreaded[] streamConnectionThreadeds,
-			UOSMessageContext messageContext) throws ServiceCallException {
+			CallContext messageContext) throws ServiceCallException {
 		logger.info("Handling Local ServiceCall");
 		
 		try {
 			// in the case of a local service call, must inform that the current device is the same.
 			//FIXME : AdaptabilityEngine : Must set the local device  
-			//messageContext.setCallerDevice(callerDevice)
-			ServiceResponse response = handleServiceCall(serviceCall, messageContext);
+			messageContext.setCallerDevice(currentDevice);
+			String netType = currentDevice.getNetworks().get(0).getNetType();
+			NetworkDevice netDev = connectionManagerControlCenter.getNetworkDevice(netType);
+			messageContext.setCallerNetworkDevice(netDev);
+			Response response = handleServiceCall(serviceCall, messageContext);
 			response.setMessageContext(messageContext);
 			
 			return response;
@@ -187,12 +193,11 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @throws ServiceCallException
 	 */
 	private StreamConnectionThreaded[] openStreamChannel(UpDevice device,
-			ServiceCall serviceCall, UOSMessageContext messageContext)
+			Call serviceCall, CallContext messageContext)
 			throws ServiceCallException {
 		StreamConnectionThreaded[] streamConnectionThreadeds = null;
 		
 		try{
-			
 			//Channel type decision
 			String netType = null;
 			if(serviceCall.getChannelType() != null){
@@ -228,10 +233,10 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * Inner class for waiting a connection in case of stream service type.
 	 */
 	private class StreamConnectionThreaded extends Thread{
-		private UOSMessageContext msgContext;
+		private CallContext msgContext;
 		private NetworkDevice networkDevice;
 		
-		public StreamConnectionThreaded(UOSMessageContext msgContext, NetworkDevice networkDevice){
+		public StreamConnectionThreaded(CallContext msgContext, NetworkDevice networkDevice){
 			this.msgContext = msgContext;
 			this.networkDevice = networkDevice;
 		}
@@ -253,21 +258,22 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param device Device which is going to receive the notofy event
 	 * @throws MessageEngineException
 	 */
-	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException{
-		eventManager.sendEventNotify(notify,device);
+	public void notify(Notify notify, UpDevice device) throws NotifyException{
+		eventManager.notify(notify,device);
 	}
 	
 	/**
-	 * Register a Listener for a event, driver and device specified.
-	 * 
-	 * @param listener UosEventListener responsible for dealing with the event.
-	 * @param device Device which event must be listened
-	 * @param driver Driver responsible for the event.
-	 * @param eventKey EventKey that identifies the wanted event to be listened.
-	 * @throws NotifyException In case of an error.
+	 * @see AdaptabilityEngine#register(UosEventListener, UpDevice, String, String, String)
 	 */
-	public void registerForEvent(UosEventListener listener, UpDevice device, String driver, String eventKey) throws NotifyException{
-		eventManager.registerForEvent(listener, device, driver, null, eventKey);
+	public void register(UosEventListener listener, UpDevice device, String driver, String eventKey) throws NotifyException{
+		register(listener, device, driver, null, eventKey);
+	}
+	
+	/**
+	 * @see AdaptabilityEngine#register(UosEventListener, UpDevice, String, String, String, Map)
+	 */
+	public void register(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+		register(listener, device, driver, instanceId, eventKey, null);
 	}
 	
 	/**
@@ -278,10 +284,13 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param driver Driver responsible for the event.
 	 * @param instanceId Instance Identifier of the driver to be registered upon.
 	 * @param eventKey EventKey that identifies the wanted event to be listened.
+	 * @param parameters Extra parameters for the call.
 	 * @throws NotifyException In case of an error.
 	 */
-	public void registerForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
-		eventManager.registerForEvent(listener, device, driver, instanceId, eventKey);
+	public void register(UosEventListener listener, UpDevice device, String driver, 
+			String instanceId, String eventKey, Map<String, Object> parameters) 
+					throws NotifyException{
+		eventManager.register(listener, device, driver, instanceId, eventKey, parameters);
 	}
 	
 	/**
@@ -290,8 +299,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param listener Listener to be removed.
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener) throws NotifyException{
-		eventManager.unregisterForEvent(listener, null, null, null, null);
+	public void unregister(UosEventListener listener) throws NotifyException{
+		eventManager.unregister(listener, null, null, null, null);
 	}
 	
 	/**
@@ -303,8 +312,8 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * @param eventKey EventKey from which the listener must be removed (If not informed all events will be considered).
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
-		eventManager.unregisterForEvent(listener, device, driver, instanceId, eventKey);
+	public void unregister(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+		eventManager.unregister(listener, device, driver, instanceId, eventKey);
 	}
 	
 	/**
@@ -318,8 +327,20 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	 * ServiceCallHandler#handleServiceCall(ServiceCall)
 	 */
 	@Override
-	public ServiceResponse handleServiceCall(ServiceCall serviceCall, UOSMessageContext messageContext)
+	public Response handleServiceCall(Call serviceCall, CallContext messageContext)
 			throws DriverManagerException {
+		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
+		if (networkDevice != null){
+			NetworkDevice netDevice = messageContext.getCallerNetworkDevice();
+			String addr = netDevice.getNetworkDeviceName();
+			//TODO: This logic (splitting ports) is wide spread through the code, I think the port can be ignored for NetworkDevices since we only use the default port.
+			if (addr.contains(":")){
+				addr = addr.split(":")[0];
+			}
+			String type = networkDevice.getNetworkDeviceType();
+			UpDevice callerDevice = deviceManager.retrieveDevice(addr, type);
+			messageContext.setCallerDevice(callerDevice);
+		}
 		if (isApplicationCall(serviceCall)){
 			return applicationManager.handleServiceCall(serviceCall, messageContext);
 		}else{
@@ -327,7 +348,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		}
 	}
 
-	private boolean isApplicationCall(ServiceCall serviceCall) {
+	private boolean isApplicationCall(Call serviceCall) {
 		return serviceCall.getDriver() != null && serviceCall.getDriver().equals("app");
 	}
 	
@@ -335,7 +356,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 	/************************ USO Compoment ***************************/
 	
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;
 	}
 	@Override
@@ -372,14 +393,14 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 		connectionManagerControlCenter.radarControlCenter().setListener(deviceManager);
 		this.messageEngine.setDeviceManager(deviceManager);
 		
-		applicationManager = new ApplicationManager(properties,gateway);
+		applicationManager = new ApplicationManager(properties,gateway,connectionManagerControlCenter);
 		ApplicationDeployer applicationDeployer = new ApplicationDeployer(properties,applicationManager);
 		
 		initGateway(factory, gateway, applicationDeployer);
 		
 		applicationDeployer.deployApplications();
 		applicationManager.startApplications();
-		driverManager.initDrivers(gateway);
+		driverManager.initDrivers(gateway, properties);
 		
 		
 		

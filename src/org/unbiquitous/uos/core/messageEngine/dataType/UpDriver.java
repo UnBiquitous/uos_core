@@ -1,7 +1,13 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.unbiquitous.json.JSONArray;
+import org.unbiquitous.json.JSONException;
+import org.unbiquitous.json.JSONObject;
 
 public class UpDriver {
 
@@ -68,18 +74,21 @@ public class UpDriver {
 		if (obj == null || ! (obj instanceof UpDriver) ) return false;
 		
 		UpDriver d = (UpDriver) obj;
-		if (this == d) return true;
-		else {
-			if ((this.name != null && !this.name.equals(d.name)) || (this.name == null && d.name != null))
-				return false;
-			else if (this.services != null && !this.services.equals(d.services) || ((this.services == null) && (d.services != null)))
-				return false;
-			else if (this.events != null && !this.events.equals(d.events) || ((this.events == null) && (d.events != null)))
-				return false;
-		}
+		if(!compare(this.name,d.name)) return false;
+		if(!compare(this.services,d.services)) return false;
+		if(!compare(this.events,d.events)) return false;
+		
 		return true;
 	}
 
+	@Override
+	public int hashCode() {
+		if(name != null){
+			return name.hashCode();
+		}
+		return super.hashCode();
+	}
+	
 	public UpDriver addEvent(UpService event){
 		if (events == null){
 			events = new ArrayList<UpService>();
@@ -111,5 +120,76 @@ public class UpDriver {
 	public void setEvents(List<UpService> events) {
 		this.events = events;
 	}
-	
+
+	public JSONObject toJSON() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put("name", this.getName());
+		
+		addServices(json, "services", this.services);
+		addServices(json, "events", this.events);
+		addStrings(json, "equivalent_drivers", equivalentDrivers);
+		
+		return json;
+	}
+
+	private void addStrings(	JSONObject json, 
+										String propName, List<String> stringList) 
+			throws JSONException {
+		if (stringList != null){
+			JSONArray equivalent_drivers = new JSONArray();
+			json.put(propName,equivalent_drivers);
+			for(String eq: equivalentDrivers){
+				equivalent_drivers.put(eq);
+			}
+		}
+	}
+
+	private void addServices(JSONObject json, 
+							String propName, List<UpService> serviceList) 
+			throws JSONException {
+		if (serviceList != null){
+			JSONArray services = new JSONArray();
+			json.put(propName,services);
+			for(UpService s : serviceList){
+				services.put(s.toJSON());
+			}
+		}
+	}
+
+	public static UpDriver fromJSON(JSONObject json) throws JSONException {
+		UpDriver d = new UpDriver(json.optString("name",null));
+		
+		d.services = addServices(json, "services");
+		d.events = addServices(json, "events");
+		d.equivalentDrivers = addStrings(json, "equivalent_drivers");
+		
+		return d;
+	}
+
+	private static List<String> addStrings(JSONObject json, String propName)
+			throws JSONException {
+		JSONArray jsonArray = json.optJSONArray(propName);
+		if(jsonArray != null){
+			List<String> strings = new ArrayList<String>();
+			for( int i = 0 ; i < jsonArray.length(); i++){
+				strings.add( jsonArray.getString(i));
+			}
+			return strings;
+		}
+		return null;
+	}
+
+	private static List<UpService> addServices(JSONObject json, String propName)
+			throws JSONException {
+		JSONArray jsonArray = json.optJSONArray(propName);
+		if (jsonArray != null){
+			List<UpService> services = new ArrayList<UpService>();
+			for( int i = 0 ; i < jsonArray.length(); i++){
+				services.add(UpService.fromJSON(jsonArray.getJSONObject(i)));
+			}
+			return services;
+		}
+		return null;
+	}
+
 }

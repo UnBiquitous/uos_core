@@ -1,12 +1,13 @@
 package org.unbiquitous.uos.core.deviceManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 
@@ -17,8 +18,9 @@ public class DeviceDao {
 	private Map<String,List<UpDevice>> networkTypeMap;
 	private Map<String,List<UpDevice>> addressMap;
 	
-	public DeviceDao(ResourceBundle bundle) {
-		deviceMap		= new HashMap<String, UpDevice>();
+	public DeviceDao(InitialProperties bundle) {
+		
+		deviceMap		= Collections.synchronizedMap(new HashMap<String, UpDevice>());
 		interfaceMap	= new HashMap<String, UpDevice>();
 		networkTypeMap	= new HashMap<String, List<UpDevice>>();
 		addressMap	= new HashMap<String, List<UpDevice>>();
@@ -68,7 +70,11 @@ public class DeviceDao {
 	}
 	
 	public List<UpDevice> list() {
-		return new ArrayList<UpDevice>(deviceMap.values());
+		synchronized (deviceMap) {
+			List<UpDevice> devices = Collections.synchronizedList(new ArrayList<UpDevice>());
+			devices.addAll(deviceMap.values());
+			return devices;
+		}
 	}
 	
 	public List<UpDevice> list(String address, String networktype) {

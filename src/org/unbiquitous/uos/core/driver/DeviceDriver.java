@@ -11,10 +11,11 @@ import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
@@ -23,10 +24,8 @@ import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Driver responsible for providing information about the device.
@@ -71,7 +70,7 @@ public class DeviceDriver implements UosDriver {
 	}
 
 	@Override
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		this.gateway = gateway;
 	}
 
@@ -89,7 +88,7 @@ public class DeviceDriver implements UosDriver {
 	 * It responds in a single responseMap within the parameter 'driverList'
 	 */
 	@SuppressWarnings("unchecked")
-	public void listDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+	public void listDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		logger.info("Handling DeviceDriverImpl#listDrivers service");
 
 		List<DriverData> listDrivers = null;
@@ -117,9 +116,7 @@ public class DeviceDriver implements UosDriver {
 			for (DriverData driverData : listDrivers) {
 				
 				try {
-					JSONDriver jsonDriver = new JSONDriver(driverData.getDriver());
-					
-					driversList.put(driverData.getInstanceID(), jsonDriver);
+					driversList.put(driverData.getInstanceID(), driverData.getDriver().toJSON());
 				} catch (JSONException e) {
 					logger.log(Level.SEVERE,"Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
 				}
@@ -138,8 +135,8 @@ public class DeviceDriver implements UosDriver {
 	 * with multiple steps. 
 	 * The authentication algorithm is determined by the parameter 'securityType'.
 	 */
-	public void authenticate(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+	public void authenticate(Call serviceCall,
+			Response serviceResponse, CallContext messageContext) {
 		
 		String securityType = (String) serviceCall.getParameters().get(SECURITY_TYPE_KEY);
 		
@@ -160,7 +157,7 @@ public class DeviceDriver implements UosDriver {
 	 * This information must be informed in the parameter 'device'(<code>UpDevice</code>) by the caller device 
 	 * and will be returned in the same parameter with the information of the called device.
 	 */
-	public void handshake(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext){
+	public void handshake(Call serviceCall, Response serviceResponse, CallContext messageContext){
 		SmartSpaceGateway gtw = (SmartSpaceGateway)this.gateway;
 		DeviceManager deviceManager = gtw.getDeviceManager();
 		
@@ -171,21 +168,20 @@ public class DeviceDriver implements UosDriver {
 			return;
 		}
 		try {
-			UpDevice device = new JSONDevice(deviceParameter).getAsObject();
+			UpDevice device = UpDevice.fromJSON(new JSONObject(deviceParameter));
 			// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
 			deviceManager.registerDevice(device);
 			serviceResponse.addParameter(DEVICE_KEY, 
-								new JSONDevice(gateway.getCurrentDevice())
-									.toString()
+								gateway.getCurrentDevice().toJSON()
 									);
-			ServiceResponse driversResponse = 
-					gateway.callService(device, new ServiceCall("uos.DeviceDriver","listDrivers"));
+			Response driversResponse = 
+					gateway.callService(device, new Call("uos.DeviceDriver","listDrivers"));
 			Object driverList = driversResponse.getResponseData("driverList");
 			if (driverList != null){
 				Map<String, Object> driverMap = new JSONObject( driverList.toString()).toMap();
 				// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
 				for (String id : driverMap.keySet()){
-					UpDriver upDriver = new JSONDriver(driverMap.get(id).toString()).getAsObject();
+					UpDriver upDriver = UpDriver.fromJSON(new JSONObject(driverMap.get(id).toString()));
 					DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
 					gtw.getDriverManager().insert(driverModel);
 				}
@@ -200,19 +196,19 @@ public class DeviceDriver implements UosDriver {
 	 * This method is responsible for informing that the caller device is leaving the smart-space, so all its data 
 	 * must be removed.
 	 */
-	public void goodbye(ServiceCall serviceCall,ServiceResponse serviceResponse, UOSMessageContext messageContext) {
-		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerDevice());
+	public void goodbye(Call serviceCall,Response serviceResponse, CallContext messageContext) {
+		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerNetworkDevice());
 	}
 	
 	/**
 	 * This method is responsible for informing the unknown equivalent driverss.
 	 */
-	public void tellEquivalentDrivers(ServiceCall serviceCall, ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+	public void tellEquivalentDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		try {
 			
 			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);
 			JSONArray equivalentDriversJson = new JSONArray(equivalentDrivers);
-			List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+			List<JSONObject> jsonList = new ArrayList<JSONObject>();
 			Map<String,Object> responseData = new HashMap<String, Object>();
 			
 			for(int i = 0; i < equivalentDriversJson.length(); i++) {
@@ -230,7 +226,7 @@ public class DeviceDriver implements UosDriver {
 		}
 	}
 	
-	private void addToEquivalanceList(List<JSONDriver> jsonList, UpDriver upDriver) throws JSONException {
+	private void addToEquivalanceList(List<JSONObject> jsonList, UpDriver upDriver) throws JSONException {
 		
 		List<String> equivalentDrivers = upDriver.getEquivalentDrivers();
 		
@@ -242,7 +238,7 @@ public class DeviceDriver implements UosDriver {
 				}
 			}
 		}
-		jsonList.add(new JSONDriver(upDriver));
+		jsonList.add(upDriver.toJSON());
 	}
 
 }

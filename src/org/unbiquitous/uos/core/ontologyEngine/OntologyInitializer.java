@@ -1,17 +1,16 @@
 package org.unbiquitous.uos.core.ontologyEngine;
 
-import java.util.ResourceBundle;
-
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSComponent;
 import org.unbiquitous.uos.core.UOSComponentFactory;
 import org.unbiquitous.uos.core.ontologyEngine.exception.ReasonerNotDefinedException;
 
 public class OntologyInitializer implements UOSComponent{
 
-	private ResourceBundle properties;
+	private InitialProperties properties;
 
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;
 	}
 

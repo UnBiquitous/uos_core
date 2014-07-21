@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -42,9 +43,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -256,13 +256,15 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallAHandshakeWithIt() throws Exception {
+		when(gateway.callService((UpDevice)anyObject(), (Call)anyObject()))
+					.thenReturn(new Response().addParameter("device", new UpDevice("The Guy").toJSON()));
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
-		ArgumentCaptor<ServiceCall> scCacther = ArgumentCaptor
-				.forClass(ServiceCall.class);
+		ArgumentCaptor<Call> scCacther = ArgumentCaptor
+				.forClass(Call.class);
 		verify(gateway, times(2)).callService(any(UpDevice.class),
 				scCacther.capture());
-		ServiceCall parameter = scCacther.getAllValues().get(0);
+		Call parameter = scCacther.getAllValues().get(0);
 		assertEquals("handshake", parameter.getService());
 		assertEquals("uos.DeviceDriver",
 				parameter.getDriver());
@@ -279,7 +281,7 @@ public class DeviceManagerTest {
 				"127.255.255.666", "Ethernet:TFH");
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
@@ -294,7 +296,7 @@ public class DeviceManagerTest {
 			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
 		deviceManager.deviceEntered(enteree);
@@ -311,7 +313,7 @@ public class DeviceManagerTest {
 		deviceManager.deviceEntered(enteree);
 		when(gatewayHandshakeCall())
 		.thenReturn(
-				new ServiceResponse().addParameter("device",
+				new Response().addParameter("device",
 						newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
@@ -331,7 +333,7 @@ public class DeviceManagerTest {
 	public void IfTheHandShakeDoesNotWorksNothingHappens_NoData()
 			throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
-		when(gatewayHandshakeCall()).thenReturn(new ServiceResponse());
+		when(gatewayHandshakeCall()).thenReturn(new Response());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
 	}
@@ -340,7 +342,7 @@ public class DeviceManagerTest {
 	public void IfTheHandShakeDoesNotWorksNothingHappens_ErrorOnResponse()
 			throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
-		ServiceResponse error = new ServiceResponse();
+		Response error = new Response();
 		error.setError("Just Kidding");
 		when(gatewayHandshakeCall()).thenReturn(error);
 		deviceManager.deviceEntered(enteree);
@@ -363,10 +365,10 @@ public class DeviceManagerTest {
 	public void IfDontKnowTheDeviceCallListDriversOnIt() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		deviceManager.deviceEntered(enteree);
-		ServiceCall listDrivers = new ServiceCall(
+		Call listDrivers = new Call(
 				"uos.DeviceDriver",
 				"listDrivers", null);
 		verify(gateway, times(1)).callService(any(UpDevice.class),
@@ -377,7 +379,7 @@ public class DeviceManagerTest {
 	public void AfterListingTheDriverTheyMustBeRegistered() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		JSONObject driverList = new JSONObject();
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -385,17 +387,19 @@ public class DeviceManagerTest {
 				.addParameter("s1p2", ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", new JSONDriver(dummy));
-		driverList.put("id2", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
+		driverList.put("id2", dummy.toJSON());
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",driverList));
+				new Response().addParameter("driverList",driverList));
 		deviceManager.deviceEntered(enteree);
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(2, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertEquals(dummy, newGuyDrivers.get(0).driver());
+		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+								.isEqualTo(dummy.toJSON().toMap());
 		assertEquals("id2", newGuyDrivers.get(1).id());
-		assertEquals(dummy, newGuyDrivers.get(1).driver());
+		assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
+								.isEqualTo(dummy.toJSON().toMap());
 	}
 
 	@Test
@@ -406,7 +410,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -414,12 +418,12 @@ public class DeviceManagerTest {
 		dummy.addEquivalentDrivers("equivalentDriver");
 
 		JSONObject driverList = new JSONObject();
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 		
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList", driverList));
+				new Response().addParameter("driverList", driverList));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		
@@ -436,9 +440,9 @@ public class DeviceManagerTest {
 		UpService unregister = new UpService("unregisterListener").addParameter("eventKey", ParameterType.OPTIONAL);
 		equivalentDriver.addService(unregister);
 
-		jsonList.add(new JSONDriver(equivalentDriver));
+		jsonList.add(equivalentDriver.toJSON());
 		
-		when(gatewayTellEquivalentDriverCall()).thenReturn(new ServiceResponse().addParameter("interfaces",new JSONArray(jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall()).thenReturn(new Response().addParameter("interfaces",new JSONArray(jsonList).toString()));
 		
 		deviceManager.deviceEntered(enteree);
 
@@ -454,7 +458,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -462,10 +466,10 @@ public class DeviceManagerTest {
 		dummy.addEquivalentDrivers("equivalentDriver");
 
 		JSONObject driverList = new JSONObject();
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 		
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList", driverList.toString()));
+				new Response().addParameter("driverList", driverList.toString()));
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(null);
 		
@@ -483,7 +487,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -491,13 +495,13 @@ public class DeviceManagerTest {
 		dummy.addEquivalentDrivers("equivalentDriver");
 
 		JSONObject driverList = new JSONObject();
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 		
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList", driverList.toString()));
+				new Response().addParameter("driverList", driverList.toString()));
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", null));
+				new Response().addParameter("interfaces", null));
 		
 		deviceManager.deviceEntered(enteree);
 
@@ -513,7 +517,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -521,7 +525,7 @@ public class DeviceManagerTest {
 		dummy.addEquivalentDrivers(Pointer.DRIVER_NAME);
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList", new String("wrongJSONObject")));
+				new Response().addParameter("driverList", new String("wrongJSONObject")));
 
 		deviceManager.deviceEntered(enteree);
 
@@ -537,7 +541,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -545,10 +549,10 @@ public class DeviceManagerTest {
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers(Pointer.DRIVER_NAME);
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -565,7 +569,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -573,22 +577,22 @@ public class DeviceManagerTest {
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addEquivalentDrivers(Pointer.DRIVER_NAME);
 		equivalentDriver.addService("s1");
 
-		jsonList.add(new JSONDriver(equivalentDriver));
+		jsonList.add(equivalentDriver.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -605,7 +609,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -613,22 +617,22 @@ public class DeviceManagerTest {
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 		equivalentDriver.addEquivalentDrivers("notInformedEquivalentDriver");
 
-		jsonList.add(new JSONDriver(equivalentDriver));
+		jsonList.add(equivalentDriver.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -644,7 +648,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -653,13 +657,13 @@ public class DeviceManagerTest {
 		dummy.addEquivalentDrivers("equivalentDriver1");
 		dummy.addEquivalentDrivers("equivalentDriver2");
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver1 = new UpDriver("equivalentDriver1");
 		equivalentDriver1.addService("s1");
@@ -668,11 +672,11 @@ public class DeviceManagerTest {
 		equivalentDriver2.addEquivalentDrivers("notInformedEquivalentDriver2");
 		equivalentDriver2.addService("s1");
 
-		jsonList.add(new JSONDriver(equivalentDriver1));
-		jsonList.add(new JSONDriver(equivalentDriver2));
+		jsonList.add(equivalentDriver1.toJSON());
+		jsonList.add(equivalentDriver2.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -689,7 +693,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -697,21 +701,21 @@ public class DeviceManagerTest {
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 
-		jsonList.add(new JSONDriver(equivalentDriver));
+		jsonList.add(equivalentDriver.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -719,7 +723,8 @@ public class DeviceManagerTest {
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(1, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertEquals(dummy, newGuyDrivers.get(0).driver());
+		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+								.isEqualTo(dummy.toJSON().toMap());
 	}
 
 	@Test
@@ -730,7 +735,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -743,22 +748,22 @@ public class DeviceManagerTest {
 		dummy2.addService("s1");
 		dummy2.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("iddummy1", new JSONDriver(dummy1));
-		driverList.put("iddummy2", new JSONDriver(dummy2));
+		driverList.put("iddummy1", dummy1.toJSON());
+		driverList.put("iddummy2", dummy2.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 
-		jsonList.add(new JSONDriver(equivalentDriver));
+		jsonList.add(equivalentDriver.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -767,9 +772,11 @@ public class DeviceManagerTest {
 
 		assertEquals(2, newGuyDrivers.size());
 		assertEquals("iddummy1", newGuyDrivers.get(0).id());
-		assertEquals(dummy1, newGuyDrivers.get(0).driver());
+		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+								.isEqualTo(dummy1.toJSON().toMap());
 		assertEquals("iddummy2", newGuyDrivers.get(1).id());
-		assertEquals(dummy2, newGuyDrivers.get(1).driver());
+		assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
+								.isEqualTo(dummy2.toJSON().toMap());
 	}
 
 	@Test
@@ -780,7 +787,7 @@ public class DeviceManagerTest {
 
 		when(gatewayHandshakeCall())
 				.thenReturn(
-						new ServiceResponse().addParameter("device",
+						new Response().addParameter("device",
 								device.toString()));
 
 		JSONObject driverList = new JSONObject();
@@ -788,10 +795,10 @@ public class DeviceManagerTest {
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
 
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
@@ -803,12 +810,12 @@ public class DeviceManagerTest {
 				"equivalentToTheEquivalentDriver");
 		equivalentToTheEquivalentDriver.addService("s1");
 
-		List<JSONDriver> equivalentDrivers = new ArrayList<JSONDriver>();
-		equivalentDrivers.add(new JSONDriver(equivalentDriver));
-		equivalentDrivers.add(new JSONDriver(equivalentToTheEquivalentDriver));
+		List<JSONObject> equivalentDrivers = new ArrayList<JSONObject>();
+		equivalentDrivers.add(equivalentDriver.toJSON());
+		equivalentDrivers.add(equivalentToTheEquivalentDriver.toJSON());
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						equivalentDrivers).toString()));
 
 		deviceManager.deviceEntered(enteree);
@@ -817,7 +824,8 @@ public class DeviceManagerTest {
 		// verify(gatewayTellEquivalentDriverCall(), times(2));
 		assertEquals(1, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertEquals(dummy, newGuyDrivers.get(0).driver());
+		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+								.isEqualTo(dummy.toJSON().toMap());
 	}
 	
 	@Test
@@ -828,7 +836,7 @@ public class DeviceManagerTest {
 		
 		when(gatewayHandshakeCall())
 		.thenReturn(
-				new ServiceResponse().addParameter("device",
+				new Response().addParameter("device",
 						device.toString()));
 		
 		JSONObject driverList = new JSONObject();
@@ -841,14 +849,14 @@ public class DeviceManagerTest {
 		dummy2.addService("s1");
 		dummy2.addEquivalentDrivers("D3");
 		
-		driverList.put("iddummy1", new JSONDriver(dummy1));
-		driverList.put("iddummy2", new JSONDriver(dummy2));
+		driverList.put("iddummy1", dummy1.toJSON());
+		driverList.put("iddummy2", dummy2.toJSON());
 		
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 		
-		List<JSONDriver> jsonList = new ArrayList<JSONDriver>();
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
 		
 		UpDriver d0 = new UpDriver("D0");
 		d0.addService("s1");
@@ -861,12 +869,12 @@ public class DeviceManagerTest {
 		d3.addService("s1");
 		d3.addEquivalentDrivers(d2.getName());
 		
-		jsonList.add(new JSONDriver(d3));
-		jsonList.add(new JSONDriver(d0));
-		jsonList.add(new JSONDriver(d2));
+		jsonList.add(d3.toJSON());
+		jsonList.add(d0.toJSON());
+		jsonList.add(d2.toJSON());
 		
 		when(gatewayTellTwoEquivalentDrivers()).thenReturn(
-				new ServiceResponse().addParameter("interfaces", new JSONArray(
+				new Response().addParameter("interfaces", new JSONArray(
 						jsonList).toString()));
 		
 		deviceManager.deviceEntered(enteree);
@@ -877,14 +885,18 @@ public class DeviceManagerTest {
 		assertEquals(2, newGuyDrivers.size());
 		if (newGuyDrivers.get(0).id().equals("iddummy1")){
 			assertEquals("iddummy1", newGuyDrivers.get(0).id());
-			assertEquals(dummy1, newGuyDrivers.get(0).driver());
+			assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+									.isEqualTo(dummy1.toJSON().toMap());
 			assertEquals("iddummy2", newGuyDrivers.get(1).id());
-			assertEquals(dummy2, newGuyDrivers.get(1).driver());
+			assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
+									.isEqualTo(dummy2.toJSON().toMap());
 		}else{
 			assertEquals("iddummy2", newGuyDrivers.get(0).id());
-			assertEquals(dummy2, newGuyDrivers.get(0).driver());
+			assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
+									.isEqualTo(dummy2.toJSON().toMap());
 			assertEquals("iddummy1", newGuyDrivers.get(1).id());
-			assertEquals(dummy1, newGuyDrivers.get(1).driver());
+			assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
+									.isEqualTo(dummy1.toJSON().toMap());
 		}
 	}
 
@@ -893,7 +905,7 @@ public class DeviceManagerTest {
 			throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		when(gatewayListDriversCall()).thenReturn(null);
 		deviceManager.deviceEntered(enteree);
@@ -905,9 +917,9 @@ public class DeviceManagerTest {
 			throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
-		when(gatewayListDriversCall()).thenReturn(new ServiceResponse());
+		when(gatewayListDriversCall()).thenReturn(new Response());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(0, driverDao.list(null, "A").size());
 	}
@@ -923,7 +935,7 @@ public class DeviceManagerTest {
 		when(connManager.getHost("127.0.0.1:8080")).thenReturn("127.0.0.1");
 		when(connManager.getHost("127.0.0.1:80")).thenReturn("127.0.0.1");
 		deviceManager.deviceEntered(enteree);
-		verify(gateway, never()).callService((UpDevice)any(), (ServiceCall)any());
+		verify(gateway, never()).callService((UpDevice)any(), (Call)any());
 	}
 	
 
@@ -932,7 +944,7 @@ public class DeviceManagerTest {
 			throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		when(gatewayListDriversCall()).thenThrow(new RuntimeException());
 		deviceManager.deviceEntered(enteree);
@@ -946,25 +958,25 @@ public class DeviceManagerTest {
 		return enteree;
 	}
 
-	private ServiceResponse gatewayHandshakeCall() throws ServiceCallException {
-		ServiceCall handshake = new ServiceCall(
+	private Response gatewayHandshakeCall() throws ServiceCallException {
+		Call handshake = new Call(
 				"uos.DeviceDriver",
 				"handshake", null);
 		handshake.addParameter("device", currentDevice.toString());
 		return gateway.callService(any(UpDevice.class), eq(handshake));
 	}
 
-	private ServiceResponse gatewayListDriversCall()
+	private Response gatewayListDriversCall()
 			throws ServiceCallException {
-		ServiceCall listDrivers = new ServiceCall(
+		Call listDrivers = new Call(
 				"uos.DeviceDriver",
 				"listDrivers", null);
 		return gateway.callService(any(UpDevice.class), eq(listDrivers));
 	}
 
-	private ServiceResponse gatewayTellEquivalentDriverCall()
+	private Response gatewayTellEquivalentDriverCall()
 			throws ServiceCallException, JSONException {
-		ServiceCall tellEquivalentDriver = new ServiceCall(
+		Call tellEquivalentDriver = new Call(
 				"uos.DeviceDriver",
 				"tellEquivalentDrivers", null);
 		List<String> equivalents = new ArrayList<String>();
@@ -975,9 +987,9 @@ public class DeviceManagerTest {
 				eq(tellEquivalentDriver));
 	}
 
-	private ServiceResponse gatewayTellTwoEquivalentDrivers()
+	private Response gatewayTellTwoEquivalentDrivers()
 			throws ServiceCallException, JSONException {
-		ServiceCall tellEquivalentDriver = new ServiceCall(
+		Call tellEquivalentDriver = new Call(
 				"uos.DeviceDriver",
 				"tellEquivalentDrivers", null);
 		List<String> equivalents = new ArrayList<String>();
@@ -993,7 +1005,7 @@ public class DeviceManagerTest {
 	public void AfterListingIfProxyingIsEnabledRegisterIt() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		JSONObject driverList = new JSONObject();
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -1001,10 +1013,10 @@ public class DeviceManagerTest {
 				.addParameter("s1p2", ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", new JSONDriver(dummy));
-		driverList.put("id2", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
+		driverList.put("id2", dummy.toJSON());
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 		when(proxier.doProxying()).thenReturn(true);
 		deviceManager.deviceEntered(enteree);
@@ -1023,7 +1035,7 @@ public class DeviceManagerTest {
 	public void AfterListingIfProxyingIsNotEnabledDoNothing() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new ServiceResponse().addParameter("device", new UpDevice("A")
+				new Response().addParameter("device", new UpDevice("A")
 						.addNetworkInterface("A", "T").toString()));
 		JSONObject driverList = new JSONObject();
 		UpDriver dummy = new UpDriver("DummyDriver");
@@ -1031,10 +1043,10 @@ public class DeviceManagerTest {
 				.addParameter("s1p2", ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", new JSONDriver(dummy));
-		driverList.put("id2", new JSONDriver(dummy));
+		driverList.put("id1", dummy.toJSON());
+		driverList.put("id2", dummy.toJSON());
 		when(gatewayListDriversCall()).thenReturn(
-				new ServiceResponse().addParameter("driverList",
+				new Response().addParameter("driverList",
 						driverList.toString()));
 		when(proxier.doProxying()).thenReturn(false);
 		deviceManager.deviceEntered(enteree);

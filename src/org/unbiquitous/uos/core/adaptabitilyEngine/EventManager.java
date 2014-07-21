@@ -13,9 +13,9 @@ import org.unbiquitous.uos.core.messageEngine.MessageEngine;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.NotifyHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Class responsible for managing the events received and the event listeners in the current device.
@@ -55,12 +55,12 @@ public class EventManager implements NotifyHandler {
 	 * @param device Device which is going to receive the notofy event
 	 * @throws MessageEngineException
 	 */
-	public void sendEventNotify(Notify notify, UpDevice device) throws NotifyException{
+	public void notify(Notify notify, UpDevice device) throws NotifyException{
 		try {
 			if(device == null){
 				handleNofify(notify, device);
 			}else{
-				messageEngine.notifyEvent(notify, device);
+				messageEngine.notify(notify, device);
 			}
 		} catch (MessageEngineException e) {
 			throw new NotifyException(e);
@@ -102,15 +102,15 @@ public class EventManager implements NotifyHandler {
 	 * @param eventKey EventKey that identifies the wanted event to be listened.
 	 * @throws NotifyException In case of an error.
 	 */
-	public void registerForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+	public void register(UosEventListener listener, UpDevice device, 
+			String driver, String instanceId, String eventKey,
+			Map<String,Object> parameters) throws NotifyException{
 		
 		// If the listener is already registered it cannot be registered again
 		String eventIdentifier = getEventIdentifier(device, driver, instanceId, eventKey);
-		
 		logger.fine("Registering listener for event :"+eventIdentifier);
 		
 		if (findListener(listener, listenerMap.get(eventIdentifier))== null){
-			
 			ListenerInfo info = new ListenerInfo();
 			
 			info.driver = driver;
@@ -119,28 +119,72 @@ public class EventManager implements NotifyHandler {
 			info.listener = listener;
 			info.device = device;
 			
-			try {
-				if (device != null){
-					// Send the event register request to the called device
-					ServiceCall serviceCall = new ServiceCall(driver,REGISTER_LISTENER_SERVICE,instanceId);
-					serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, eventKey);
-					ServiceResponse response = messageEngine.callService(device, serviceCall);
-					if (response == null || (response.getError() != null && !response.getError().isEmpty())){
-						throw new NotifyException(response.getError());
-					}
-				}
-				// If the registry process goes ok, then add the listenner to the listener map
-				if (listenerMap.get(eventIdentifier) == null){
-					listenerMap.put(eventIdentifier,new ArrayList<ListenerInfo>());
-				}
-				
-				listenerMap.get(eventIdentifier).add(info);				
-				logger.fine("Registered listener for event :"+eventIdentifier);
-			} catch (MessageEngineException e) {
-				throw new NotifyException(e);
+			registerNewListener(device, parameters, eventIdentifier, info);
+		}
+	}
+
+	private void registerNewListener(UpDevice device,
+			Map<String, Object> parameters, String eventIdentifier,
+			ListenerInfo info) throws NotifyException {
+		try {
+			if (device != null){
+				sendRegister(device, parameters, info);
+			}
+			// If the registry process goes ok, then add the listenner to the listener map
+			addToListenerMap(eventIdentifier, info);				
+			logger.fine("Registered listener for event :"+eventIdentifier);
+		} catch (MessageEngineException e) {
+			throw new NotifyException(e);
+		}
+	}
+
+	private void sendRegister(UpDevice device, Map<String, Object> parameters,
+			ListenerInfo info) throws NotifyException {
+		// Send the event register request to the called device
+		Call serviceCall = buildRegisterCall(parameters, info);
+		Response response = messageEngine.callService(device, serviceCall);
+		handleErrors(response);
+	}
+
+	private void handleErrors(Response response) throws NotifyException {
+		if (response == null){
+			throw new NotifyException("No response received during register process.");
+		}else if(response.getError() != null && !response.getError().isEmpty()){
+			throw new NotifyException(response.getError());
+		}
+	}
+
+	private Call buildRegisterCall(Map<String, Object> parameters,
+			ListenerInfo info) throws NotifyException {
+		Call serviceCall = new Call(info.driver,REGISTER_LISTENER_SERVICE,info.instanceId);
+		serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, info.eventKey);
+		addExtraParameters(parameters, serviceCall);
+		return serviceCall;
+	}
+
+	private void addExtraParameters(Map<String, Object> parameters,
+			Call serviceCall) throws NotifyException {
+		if (parameters != null){
+			for(String key : parameters.keySet()){
+				checkIfKeyIsValid(key);
+				serviceCall.addParameter(key, parameters.get(key));
 			}
 		}
 	}
+
+	private void checkIfKeyIsValid(String key) throws NotifyException {
+		if (key.equalsIgnoreCase(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER)){
+			throw new NotifyException("Can't use reserved keys as parameters for registerForEvent");
+		}
+	}
+	
+	private void addToListenerMap(String eventIdentifier, ListenerInfo info) {
+		if (listenerMap.get(eventIdentifier) == null){
+			listenerMap.put(eventIdentifier,new ArrayList<ListenerInfo>());
+		}
+		listenerMap.get(eventIdentifier).add(info);
+	}
+
 	
 	/**
 	 * Removes a listener for receiving Notify events and notifies the event driver of its removal.
@@ -151,7 +195,7 @@ public class EventManager implements NotifyHandler {
 	 * @param eventKey EventKey from which the listener must be removed (If not informed all events will be considered).
 	 * @throws NotifyException
 	 */
-	public void unregisterForEvent(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
+	public void unregister(UosEventListener listener, UpDevice device, String driver, String instanceId, String eventKey) throws NotifyException{
 		
 		List<ListenerInfo> listeners = findListeners(	device, driver,
 														instanceId, eventKey);
@@ -232,12 +276,12 @@ public class EventManager implements NotifyHandler {
 	 */
 	private void unregisterForEvent(ListenerInfo listenerInfo) throws NotifyException{
 		// Send the event register request to the called device
-		ServiceCall serviceCall = new ServiceCall(listenerInfo.driver,UNREGISTER_LISTENER_SERVICE,listenerInfo.instanceId);
+		Call serviceCall = new Call(listenerInfo.driver,UNREGISTER_LISTENER_SERVICE,listenerInfo.instanceId);
 		
 		serviceCall.addParameter(REGISTER_EVENT_LISTENER_EVENT_KEY_PARAMETER, listenerInfo.eventKey);
 		
 		try {
-			ServiceResponse response = messageEngine.callService(listenerInfo.device, serviceCall);
+			Response response = messageEngine.callService(listenerInfo.device, serviceCall);
 			if (response == null || (response.getError() != null && !response.getError().isEmpty())){
 				throw new NotifyException(response.getError());
 			}

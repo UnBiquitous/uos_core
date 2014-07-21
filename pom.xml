@@ -6,7 +6,7 @@
 	<artifactId>uos-core</artifactId>
 	<name>uOS Core</name>
 	<packaging>jar</packaging>
-	<version>3.0.0</version>
+	<version>3.1.0</version>
 
 
 	<properties>
@@ -44,6 +44,8 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.9</version>
 				<configuration>
+					<skipTests>false</skipTests>
+					<forkMode>never</forkMode>
 					<excludes>
 						<!-- Suites desabilitadas -->
 						<exclude>**/UosCoreTestSuite.java</exclude>
@@ -62,12 +64,8 @@
 			<type>jar</type>
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.xeustechnologies</groupId>
-			<artifactId>jcl-core</artifactId>
-			<version>2.2.2</version>
-			<type>jar</type>
-		</dependency-->
+		<!-- dependency> <groupId>org.xeustechnologies</groupId> <artifactId>jcl-core</artifactId> 
+			<version>2.2.2</version> <type>jar</type> </dependency -->
 
 		<dependency>
 			<groupId>HermiT</groupId>
@@ -81,7 +79,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.9</version>
 			<scope>test</scope>
-			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -95,6 +92,13 @@
 			<version>2.0M8</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+			<scope>test</scope>
+		</dependency>
+
 
 	</dependencies>
 

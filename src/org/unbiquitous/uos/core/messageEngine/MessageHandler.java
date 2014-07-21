@@ -1,31 +1,26 @@
 package org.unbiquitous.uos.core.messageEngine;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
@@ -57,7 +52,7 @@ public class MessageHandler {
 	 *************************************/
 	
 	public MessageHandler(
-				ResourceBundle bundle,
+			InitialProperties bundle,
 				ConnectionManagerControlCenter connectionManagerControlCenter,
 				SecurityManager securityManager,
 				ConnectivityManager connectivityManager
@@ -65,16 +60,10 @@ public class MessageHandler {
 		this.connectionManagerControlCenter = connectionManagerControlCenter;
 		this.securityManager = securityManager;
 		this.connectivityManager = connectivityManager;
-		if (bundle != null && bundle.containsKey("ubiquitos.message.response.timeout")){
-			maxRetries = Integer.parseInt(bundle.getString("ubiquitos.message.response.timeout"));
-		}else{
-			maxRetries = 30;
+		if (bundle != null && bundle.getResponseTimeout() != null){
+			waitTime = (int)(((float)bundle.getResponseTimeout() )/ maxRetries);
 		}
-		if (bundle != null && bundle.containsKey("ubiquitos.message.response.retry")){
-			waitTime = Integer.parseInt(bundle.getString("ubiquitos.message.response.retry"));
-		}else{
-			waitTime = 100;
-		}
+		
 	}
 	
 	/**
@@ -85,7 +74,7 @@ public class MessageHandler {
 	 * @return Service Response for the called service.
 	 * @throws ServiceCallException
 	 */
-	public ServiceResponse callService(UpDevice device,ServiceCall serviceCall) throws MessageEngineException{
+	public Response callService(UpDevice device,Call serviceCall) throws MessageEngineException{
 		if (	device == null || serviceCall == null ||
 				serviceCall.getDriver() == null || serviceCall.getDriver().isEmpty() ||
 				serviceCall.getService() == null || serviceCall.getService().isEmpty()){
@@ -93,13 +82,14 @@ public class MessageHandler {
 		}
 		
 		try {
-			JSONObject  jsonCall = new JSONServiceCall(serviceCall);
+			JSONObject  jsonCall = serviceCall.toJSON();
 			if (serviceCall.getSecurityType() != null ){
-				return (new JSONServiceResponse(sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device))).getAsObject();
+				String data = sendEncapsulated(jsonCall.toString(), serviceCall.getSecurityType(), device);
+				return Response.fromJSON(new JSONObject(data));
 			}
 			String returnedMessage = send(jsonCall.toString(), device,true);
 			if (returnedMessage != null)
-				return (new JSONServiceResponse(returnedMessage)).getAsObject();
+				return Response.fromJSON(new JSONObject(returnedMessage));
 		} catch (Exception e) {
 			throw new MessageEngineException(e);
 		} 
@@ -121,10 +111,11 @@ public class MessageHandler {
 		logger.fine("Proceed to encode original message");
 
 		message = tHandler.encode(message, target.getName());
-		message = new JSONEncapsulatedMessage(new EncapsulatedMessage(securityType,message)).toString();
+		message = new Capsule(securityType,message).toJSON().toString();
 		message = send(message, target,true);
-			
-		return tHandler.decode(new JSONEncapsulatedMessage(message).getAsObject().getInnerMessage(), target.getName());
+		
+		Capsule e = Capsule.fromJSON(new JSONObject(message));
+		return tHandler.decode(e.getInnerMessage(), target.getName());
 	}
 	
 	/**
@@ -141,7 +132,7 @@ public class MessageHandler {
 			throw new IllegalArgumentException("Either the Device or Service is invalid.");
 		}
 		try {
-			String message = new JSONNotify(notify).toString();
+			String message = notify.toJSON().toString();
 			send(message, device,false);
 		} catch (Exception e) {
 			throw new MessageEngineException(e);
@@ -153,7 +144,9 @@ public class MessageHandler {
 	private String send(String message, UpDevice target, boolean waitForResponse) throws Exception{
 		UpNetworkInterface netInt = connectivityManager.getAppropriateInterface(target);
 		ClientConnection connection = connectionManagerControlCenter.openActiveConnection(netInt.getNetworkAddress(), netInt.getNetType());
+		
 		if (connection == null){
+			logger.warning(String.format("Not possible to stablish a connection with %s.", netInt));
 			return null;
 		}
 		OutputStream outputStream = connection.getDataOutputStream();
@@ -186,7 +179,7 @@ public class MessageHandler {
 	//FIXME: This is NetworkLayer work
 	private String sendReceive(String call,OutputStream outputStream, InputStream inputStream, boolean waitForResponse)
 			throws IOException, InterruptedException {
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+		OutputStreamWriter writer = new OutputStreamWriter(outputStream);
 		
 		writer.write(call);
 		writer.write('\n');
@@ -206,7 +199,7 @@ public class MessageHandler {
 				Thread.sleep(waitTime);
 			}
 			
-			logger.fine("Received message : " + builder);
+			logger.fine("Received message '" + builder+"'.");
 			return builder.toString();
 		}
 		return null;

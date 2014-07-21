@@ -1,3 +1,12 @@
+* 3.1.0:
+	- New Multicast Radar
+	- Applications have CallBacks (just like drivers services) #19
+	- Improved Class Names
+	- Better JSON handling
+	- Improved init Lifecycle
+	- A UpDevice is avaliable at CallContext
+	
+
 * 3.0.0:
 	- Gateway now have a listDevices method
 	- Applications can receive service calls, just like drivers

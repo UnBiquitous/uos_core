@@ -9,8 +9,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.unbiquitous.uos.core.driverManager.DriverDao;
-import org.unbiquitous.uos.core.driverManager.DriverModel;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
 
@@ -229,5 +227,14 @@ public class DriverDaoTest {
 		dao.insert(createDriver("id.a1","a", "Da"));
 		dao.insert(createDriver("id.b1","b", "Db"));
 		assertNull(dao.retrieve("id.a1","Dc"));
+	}
+	
+	@Test public void idColisionReturnsTheLocalOne(){
+		DriverModel d1 = createDriver("id","a", "Da");
+		dao.insert(d1);
+		DriverModel d2 = createDriver("id","a", "Db");
+		dao.insert(d2);
+		assertEquals(d1,dao.retrieve("id","Da"));
+		assertEquals(d2,dao.retrieve("id","Db"));
 	}
 }

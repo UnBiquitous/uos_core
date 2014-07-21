@@ -1,9 +1,9 @@
 package org.unbiquitous.uos.core.adaptabitilyEngine;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.fest.assertions.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,15 +11,12 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
-import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
 
 
 public class SmartSpaceGatewayTest {
@@ -41,7 +38,7 @@ public class SmartSpaceGatewayTest {
 	
 	@Test public void callServiceDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
-		ServiceCall call = new ServiceCall("d", "s");
+		Call call = new Call("d", "s");
 		gateway.callService(target, call);
 		verify(engine).callService(target, call);
 	}
@@ -58,35 +55,43 @@ public class SmartSpaceGatewayTest {
 	@Test public void registerForEventDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		UosEventListener listener = new EventListener();
-		gateway.registerForEvent(listener,target, "d", "e");
-		verify(engine).registerForEvent(listener, target, "d", null, "e");
+		gateway.register(listener,target, "d", "e");
+		verify(engine).register(listener, target, "d", null, "e",null);
 	}
 	
 	@Test public void registerForEventWithMultipleParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		UosEventListener listener = new EventListener();
-		gateway.registerForEvent(listener,target, "d", "i", "e");
-		verify(engine).registerForEvent(listener, target, "d", "i", "e");
+		gateway.register(listener,target, "d", "i", "e");
+		verify(engine).register(listener, target, "d", "i", "e",null);
+	}
+	
+	@Test public void registerForEventWithParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
+		UpDevice target = new UpDevice("a");
+		UosEventListener listener = new EventListener();
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		gateway.register(listener,target, "d", "i", "e",params);
+		verify(engine).register(listener, target, "d", "i", "e",params);
 	}
 	
 	@Test public void sendEventNotifyDelegatesToAdaptabilityEngine() throws Exception{
 		UpDevice target = new UpDevice("a");
 		Notify event = new Notify("d", "s");
-		gateway.sendEventNotify(event, target);
-		verify(engine).sendEventNotify(event, target);
+		gateway.notify(event, target);
+		verify(engine).notify(event, target);
 	}
 	
 	@Test public void unregisterForEventDelegatesToAdaptabilityEngine() throws Exception{
 		UosEventListener listener = new EventListener();
-		gateway.unregisterForEvent(listener);
-		verify(engine).unregisterForEvent(listener);
+		gateway.unregister(listener);
+		verify(engine).unregister(listener);
 	}
 	
 	@Test public void unregisterForEventWithMultipleParamsAlsoDelegatesToAdaptabilityEngine() throws Exception{
 		UosEventListener listener = new EventListener();
 		UpDevice target = new UpDevice("a");
-		gateway.unregisterForEvent(listener,target,"d","i","e");
-		verify(engine).unregisterForEvent(listener,target,"d","i","e");
+		gateway.unregister(listener,target,"d","i","e");
+		verify(engine).unregister(listener,target,"d","i","e");
 	}
 	
 	@Test public void listDriversDelegatesToDriverManagerConsideringAllDevices(){

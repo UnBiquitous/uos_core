@@ -1,9 +1,13 @@
 package org.unbiquitous.uos.core.messageEngine;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,21 +22,19 @@ import java.util.ResourceBundle;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
-import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
-import org.unbiquitous.uos.core.messageEngine.MessageHandler;
-import org.unbiquitous.uos.core.messageEngine.TranslationHandler;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.messages.EncapsulatedMessage;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Capsule;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONEncapsulatedMessage;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONNotify;
-import org.unbiquitous.uos.core.messageEngine.messages.json.JSONServiceCall;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
@@ -44,9 +46,16 @@ public class MessageHandlerTest {
 	private ConnectionManagerControlCenter controlCenter;
 	private SecurityManager securityManager;
 	
-	@Before public void setUp(){
+	@Before public void setUp() throws Exception{
 		connManager =  mock(ConnectivityManager.class);
 		controlCenter = mock(ConnectionManagerControlCenter.class);
+		when(controlCenter.sendControlMessage(anyString(), anyBoolean(), anyString(), anyString())).thenCallRealMethod();
+		doAnswer(new Answer<Void>() {
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				invocation.callRealMethod();
+				return null;
+			}
+		}).when(controlCenter).create(any(InitialProperties.class));
 		securityManager = mock(SecurityManager.class);
 		ResourceBundle bundle = new ListResourceBundle() {
 			protected Object[][] getContents() {
@@ -56,7 +65,9 @@ public class MessageHandlerTest {
 		        };
 			}
 		};
-		handler = new MessageHandler(bundle,controlCenter, securityManager, connManager);
+		InitialProperties props = new InitialProperties(bundle);
+		controlCenter.create(props);
+		handler = new MessageHandler(props,controlCenter, securityManager, connManager);
 	}
 	
 	// callService
@@ -65,31 +76,31 @@ public class MessageHandlerTest {
 		handler.callService(mock(UpDevice.class),null);
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectANullDevice() throws Exception{
-		handler.callService(null,new ServiceCall("d", "s"));
+		handler.callService(null,new Call("d", "s"));
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectNullDriverAndServiceOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall());
+		handler.callService(mock(UpDevice.class),new Call());
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectNullDriverOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall(null,"s"));
+		handler.callService(mock(UpDevice.class),new Call(null,"s"));
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectNullServiceOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall("d",null));
+		handler.callService(mock(UpDevice.class),new Call("d",null));
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectEmptyDriverAndServiceOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall("",""));
+		handler.callService(mock(UpDevice.class),new Call("",""));
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectEmptyDriverOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall("","s"));
+		handler.callService(mock(UpDevice.class),new Call("","s"));
 	}
 	@Test(expected=IllegalArgumentException.class) public void callService_ShouldRejectEmptyServiceOnCall() throws Exception{
-		handler.callService(mock(UpDevice.class),new ServiceCall("d",""));
+		handler.callService(mock(UpDevice.class),new Call("d",""));
 	}
 	
 	// CallServiceVariables
 	private class SnapshotScenario{
 		private UpDevice target;
-		private ServiceCall snapshot;
+		private Call snapshot;
 		private UpNetworkInterface wifi;
 		private PipedOutputStream wifiInterfaceIn;
 		private PipedInputStream wifiInterfaceOut;
@@ -97,7 +108,7 @@ public class MessageHandlerTest {
 		SnapshotScenario() throws Exception{
 			//Create Parameters for simulation of a snapshot service call
 			target = new UpDevice("my.cell");
-			snapshot = new ServiceCall("camera", "snapshot");
+			snapshot = new Call("camera", "snapshot");
 			snapshot.addParameter("resolution", "800x600");
 			wifi = new UpNetworkInterface("Etherenet:TCP", "127.0.0.66");
 			
@@ -134,17 +145,22 @@ public class MessageHandlerTest {
 			scenario.wifiInterfaceIn.write(c);
 		}
 		
-		ServiceResponse response = handler.callService(scenario.target, scenario.snapshot);
+		Response response = handler
+								.callService(scenario.target, scenario.snapshot);
 		
-		assertEquals("Should return the same response that was stimulated.","NotAvailable",response.getResponseData("pic"));
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.snapshot,new JSONServiceCall(scenario.grabSentString()).getAsObject());
+		assertEquals("Should return the same response that was stimulated.",
+						"NotAvailable",response.getResponseData("pic"));
+		assertThat(Call.fromJSON(new JSONObject(scenario.grabSentString())))
+			.isEqualTo(scenario.snapshot);
 	}
 
 	@Test public void callService_aSimpleCallMustBeSentButWhenNoResponseIsRetrievedNullShouldBeReturned() throws Exception{
 		SnapshotScenario scenario = new SnapshotScenario();
 		
-		assertNull("No response must be returned.", handler.callService(scenario.target, scenario.snapshot));
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.snapshot,new JSONServiceCall(scenario.grabSentString()).getAsObject());
+		assertNull("No response must be returned.", 
+				handler.callService(scenario.target, scenario.snapshot));
+		assertThat(Call.fromJSON(new JSONObject(scenario.grabSentString())))
+				.isEqualTo(scenario.snapshot);
 	}
 	
 	@Test public void callService_aSimpleCallMustBeSentButWhenNoConnectionIsPossibleNullShouldBeReturned() throws Exception{
@@ -185,14 +201,14 @@ public class MessageHandlerTest {
 		when(translator.decode(eq("Encoded Input Message"), eq(scenario.target.getName())))
 				.thenReturn("{type:\"SERVICE_CALL_RESPONSE\", responseData:{pic:\"StillNotAvailable\"}}");
 		
-		ServiceResponse response = handler.callService(scenario.target, scenario.snapshot);
+		Response response = handler.callService(scenario.target, scenario.snapshot);
 		
 		assertEquals("StillNotAvailable",response.getResponseData("pic"));
 		
 		//Should call for authentication before proceed with the encapsulation
 		verify(auth).authenticate(scenario.target, handler);
 		
-		EncapsulatedMessage sentMessage = new JSONEncapsulatedMessage(scenario.grabSentString()).getAsObject();
+		Capsule sentMessage = Capsule.fromJSON(new JSONObject(scenario.grabSentString()));
 		assertEquals("The security type should be unchanged.","Pig-Latin",sentMessage.getSecurityType());
 		assertEquals("Should have sent the encoded message.","Encoded Output Message",sentMessage.getInnerMessage());
 	}
@@ -300,7 +316,10 @@ public class MessageHandlerTest {
 		
 		handler.notifyEvent(scenario.userEntered,scenario.target);
 		
-		assertEquals("The JSON sent should be compatible with the snapshot created.",scenario.userEntered,new JSONNotify(scenario.grabSentString()).getAsObject());
+		assertEquals("The JSON sent should be compatible with the snapshot created.",
+				scenario.userEntered,
+				Notify.fromJSON(new JSONObject(scenario.grabSentString())));
+		
 	}
 	
 	@Test(expected=MessageEngineException.class) public void notifyEvent_ACallWithProblemsThrowsAnException() throws Exception{

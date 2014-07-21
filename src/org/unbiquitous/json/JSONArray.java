@@ -902,4 +902,8 @@ public class JSONArray {
            throw new JSONException(e);
         }
     }
+    
+    public ArrayList toArray(){
+    	return (ArrayList) myArrayList.clone();
+    }
 }

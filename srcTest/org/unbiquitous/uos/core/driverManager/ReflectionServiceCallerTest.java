@@ -15,16 +15,15 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.connectivity.proxying.ProxyDriver;
-import org.unbiquitous.uos.core.driverManager.DriverManagerException;
-import org.unbiquitous.uos.core.driverManager.ReflectionServiceCaller;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.loopback.LoopbackDevice;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
@@ -49,27 +48,27 @@ public class ReflectionServiceCallerTest {
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailOnAnNonExistantServiceMethod() throws Exception{
-		caller.callServiceOnDriver(new ServiceCall(null, "nonExistantService"), new DriverSpy(), null);
+		caller.callServiceOnDriver(new Call(null, "nonExistantService"), new DriverSpy(), null);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailOnAnNonPublicServiceMethod() throws Exception{
-		caller.callServiceOnDriver(new ServiceCall(null, "privateService"), new DriverSpy(), null);
+		caller.callServiceOnDriver(new Call(null, "privateService"), new DriverSpy(), null);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailForNoServiceInformed() throws Exception{
-		caller.callServiceOnDriver(new ServiceCall(), new DriverSpy(), null);
+		caller.callServiceOnDriver(new Call(), new DriverSpy(), null);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailOnAMethodWithoutACompliantInterface() throws Exception{
-		caller.callServiceOnDriver(new ServiceCall(null, "wrongService"), new DriverSpy(), null);
+		caller.callServiceOnDriver(new Call(null, "wrongService"), new DriverSpy(), null);
 	}
 	
 	@Test public void shouldCallASimpleCompliantServiceWhithTheRightParameters() throws Exception{
-		ServiceCall call = new ServiceCall(null, "myService");
-		UOSMessageContext msgCtx = new UOSMessageContext();
+		Call call = new Call(null, "myService");
+		CallContext msgCtx = new CallContext();
 		DriverSpy driver = new DriverSpy();
 		caller.callServiceOnDriver(call, driver, msgCtx);
 		assertEquals(call,driver.capturedCall);
@@ -79,8 +78,8 @@ public class ReflectionServiceCallerTest {
 	}
 	
 	@Test public void shouldCallASimpleCompliantServiceIgnoringCase() throws Exception{
-		ServiceCall call = new ServiceCall(null, "MySeRvIcE");
-		UOSMessageContext msgCtx = new UOSMessageContext();
+		Call call = new Call(null, "MySeRvIcE");
+		CallContext msgCtx = new CallContext();
 		DriverSpy driver = new DriverSpy();
 		caller.callServiceOnDriver(call, driver, msgCtx);
 		assertEquals(call,driver.capturedCall);
@@ -91,12 +90,12 @@ public class ReflectionServiceCallerTest {
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailWhenServiceFails() throws Exception{
-		caller.callServiceOnDriver(new ServiceCall(null, "failService"), new DriverSpy(), new UOSMessageContext());
+		caller.callServiceOnDriver(new Call(null, "failService"), new DriverSpy(), new CallContext());
 	}
 	
 	@Test public void shouldForwardServiceOnAProxyDriverMaintainingTheParameters() throws Exception{
-		ServiceCall call = new ServiceCall(null, "myService");
-		UOSMessageContext msgCtx = new UOSMessageContext();
+		Call call = new Call(null, "myService");
+		CallContext msgCtx = new CallContext();
 		ProxyDriverSpy driver = new ProxyDriverSpy();
 		caller.callServiceOnDriver(call, driver, msgCtx);
 		assertTrue(driver.forwardCalled);
@@ -110,8 +109,8 @@ public class ReflectionServiceCallerTest {
 	@Test public void shouldCreateTheAppropriateChannelsForAStreamService() throws Exception{
 		//Create Message Context to return a dummy device
 		final LoopbackDevice device = new LoopbackDevice(182);
-		UOSMessageContext msgCtx = new UOSMessageContext(){
-			public NetworkDevice getCallerDevice() {	return device; }
+		CallContext msgCtx = new CallContext(){
+			public NetworkDevice getCallerNetworkDevice() {	return device; }
 		};
 		
 		//Create a ConnectionManagerControlCenter that returns connections properly
@@ -124,7 +123,7 @@ public class ReflectionServiceCallerTest {
 		caller = new ReflectionServiceCaller(mockNet);
 		
 		//Create a Stream ServiceCall
-		ServiceCall call = new ServiceCall(null, "myService");
+		Call call = new Call(null, "myService");
 		call.setServiceType(ServiceType.STREAM);
 		call.setChannelType(device.getNetworkDeviceType());
 		call.setChannels(4); //TODO : ReflectionServiceCaller : Check why to have both data (ChannelID array and ChannelCount)?
@@ -145,16 +144,16 @@ public class ReflectionServiceCallerTest {
 	}
 	
 	public static class DriverSpy {
-		ServiceCall capturedCall; 
-		ServiceResponse capturedResponse; 
-		UOSMessageContext capturedContext;
+		Call capturedCall; 
+		Response capturedResponse; 
+		CallContext capturedContext;
 		
-		public void myService(ServiceCall sc, ServiceResponse r, UOSMessageContext ctx){
+		public void myService(Call sc, Response r, CallContext ctx){
 			capturedCall = sc;
 			capturedResponse = r;
 			capturedContext = ctx;
 		}
-		public void failService(ServiceCall sc, ServiceResponse r, UOSMessageContext ctx){
+		public void failService(Call sc, Response r, CallContext ctx){
 			throw new RuntimeException("Failed on purpose");
 		}
 		public void wrongService(){}
@@ -165,11 +164,11 @@ public class ReflectionServiceCallerTest {
 	public static class ProxyDriverSpy extends DriverSpy implements ProxyDriver {
 		boolean forwardCalled = false;
 		public UpDriver getDriver() {return null;}
-		public void init(Gateway gateway, String instanceId) {}
+		public void init(Gateway gateway, InitialProperties properties, String instanceId) {}
 		public void destroy() {}
-		public void forwardServiceCall(ServiceCall serviceCall,
-				ServiceResponse serviceResponse,
-				UOSMessageContext messageContext) {
+		public void forwardServiceCall(Call serviceCall,
+				Response serviceResponse,
+				CallContext messageContext) {
 			forwardCalled = true;
 			capturedCall = serviceCall;
 			capturedResponse = serviceResponse;

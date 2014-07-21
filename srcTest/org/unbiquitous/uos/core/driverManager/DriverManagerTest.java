@@ -14,16 +14,17 @@ import java.util.List;
 import org.fest.assertions.core.Condition;
 import org.junit.Before;
 import org.junit.Test;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceDao;
 import org.unbiquitous.uos.core.driver.DeviceDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 public class DriverManagerTest {
@@ -48,7 +49,7 @@ public class DriverManagerTest {
 	@Test
 	public void shouldCallServiceOnDriverUsingInstanceId() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException {
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		
 		assertTrue(driver.called);
 	}
@@ -61,41 +62,41 @@ public class DriverManagerTest {
 		driver.getParent().add(equivalentDriver);
 		
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		
 		assertTrue(driver.called);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverUsingAnInvalidInstanceId() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverFromOtherDevice() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		dao.insert(new DriverModel("id", new UpDriver("driver"), "otherDevice"));
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 	}
 	
 	@Test
 	public void shouldNotFailCallingServiceHomonymousDriverFromOtherDevice() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		dao.insert(new DriverModel("id", new UpDriver("driver"), "otherDevice"));
 		manager.deployDriver(driver.upDriver, driver,"id");
-		manager.handleServiceCall(new ServiceCall("driver","service","id"), null);
+		manager.handleServiceCall(new Call("driver","service","id"), null);
 		assertTrue(driver.called);
 	}
 	
 	@Test
 	public void shouldCallServiceOnDriverUsingDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		manager.deployDriver(driver.upDriver, driver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		
 		assertTrue(driver.called);
 	}
 	
 	@Test(expected=DriverManagerException.class)
 	public void shouldFailCallingServiceOnDriverUsingAnInvalidDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 	}
 	
 	@Test
@@ -104,7 +105,7 @@ public class DriverManagerTest {
 		DriverSpy equivalentDriver = new DriverSpy("Bumblebee");
 		equivalentDriver.upDriver.addEquivalentDrivers(driver.upDriver.getName());
 		manager.deployDriver(equivalentDriver.upDriver, equivalentDriver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		assertTrue(equivalentDriver.called);
 	}
 	
@@ -120,7 +121,7 @@ public class DriverManagerTest {
 		secondLevelEquivalentDriver.upDriver.addEquivalentDrivers(firstLevelEquivalentDriver.upDriver.getName());
 		
 		manager.deployDriver(secondLevelEquivalentDriver.upDriver, secondLevelEquivalentDriver);
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 		assertTrue(secondLevelEquivalentDriver.called);
 	}
 	
@@ -131,7 +132,7 @@ public class DriverManagerTest {
 		DriverSpy firstLevelEquivalentDriver = new DriverSpy("Ironhide");
 		firstLevelEquivalentDriver.upDriver.addEquivalentDrivers(driver.upDriver.getName());
 		manager.insert(new DriverModel("id2",firstLevelEquivalentDriver.upDriver,"my.SecondPhone"));
-		manager.handleServiceCall(new ServiceCall("driver","service"), null);
+		manager.handleServiceCall(new Call("driver","service"), null);
 	}
 	
 	@Test
@@ -144,7 +145,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListADeployedDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
 		assertEquals(1,manager.listDrivers().size());
 		assertEquals(driver,manager.listDrivers().get(0));
@@ -152,7 +153,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListAllDeployedDrivers() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
 		manager.deployDriver(driver.upDriver, new DriverSpy());
 		manager.deployDriver(driver.upDriver, new DriverSpy());
@@ -241,48 +242,48 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldAssignAnIdWhenNotInformed() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertNotNull(driver.id);
 	}
 	
 	@Test
 	public void shouldKeepIdWhenInformed() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();;
 		manager.deployDriver(driver.upDriver, driver, "id");
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertEquals("id",driver.id);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void shouldNotAcceptAnDriverThatIsNotAUosDriver() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, new Object(),"myId");
 	}
 	
 	@Test
 	public void shouldRemoveUndeployedDriver() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("id");
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
 	public void shouldRemoveUndeployedDriverEvenWithAnHomonymousOnAnotherDevice() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		dao.insert(new DriverModel("id", driver.getDriver(), "otherDevice"));
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("id");
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
 	public void shouldDoNothingUndeploingAnNonExistingDriver() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertNotNull(manager.listDrivers());
 		manager.undeployDriver("notMyId");
@@ -318,7 +319,7 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldListNullWhenNothingWasDeployed() throws Exception{
-		assertNull(manager.listDrivers());
+		assertThat(manager.listDrivers()).isEmpty();
 	}
 	
 	@Test
@@ -326,7 +327,7 @@ public class DriverManagerTest {
 		assertFalse(driver.inittiated);
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertFalse(driver.inittiated);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertTrue(driver.inittiated);
 	}
 	
@@ -336,7 +337,7 @@ public class DriverManagerTest {
 		dao.insert(new DriverModel("id", driver.getDriver(), "otherDevice"));
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertFalse(driver.inittiated);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertTrue(driver.inittiated);
 	}
 	
@@ -346,8 +347,11 @@ public class DriverManagerTest {
 		manager.deployDriver(driver.upDriver, driver, "id");
 		assertFalse(driver.inittiated);
 		Gateway gtw = mock(Gateway.class);
-		manager.initDrivers(gtw);
+		InitialProperties props= new InitialProperties();
+		props.put("a","abacate");
+		manager.initDrivers(gtw, props);
 		assertEquals(gtw,driver.gateway);
+		assertEquals(props,driver.properties);
 	}
 	
 	@Test
@@ -356,7 +360,7 @@ public class DriverManagerTest {
 		for (DriverSpy m : drivers){
 			manager.deployDriver(m.upDriver, m);
 		}
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		int i =0;
 		for (DriverSpy m : drivers){
 			assertTrue("driver["+i+++"]",m.inittiated);
@@ -368,7 +372,7 @@ public class DriverManagerTest {
 		// Init only one
 		DriverSpy drivers[] = new DriverSpy[]{new DriverSpy(),new DriverSpy(),new DriverSpy()};
 		manager.deployDriver(driver.upDriver, driver, "id");
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertTrue(driver.inittiated);
 		int i =0;
 		for (DriverSpy m : drivers){
@@ -378,7 +382,7 @@ public class DriverManagerTest {
 		for (DriverSpy m : drivers){
 			manager.deployDriver(m.upDriver, m);
 		}
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		i =0;
 		for (DriverSpy m : drivers){
 			assertTrue("driver["+i+++"]",m.inittiated);
@@ -392,13 +396,13 @@ public class DriverManagerTest {
 		DriverSpy after = new DriverSpy();
 		
 		manager.deployDriver(before.upDriver, before);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		
 		assertEquals(1, before.initCount);
 		assertEquals(0, after.initCount);
 		
 		manager.deployDriver(after.upDriver, after);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		
 		assertEquals(1, before.initCount);
 		assertEquals(1, after.initCount);
@@ -406,11 +410,11 @@ public class DriverManagerTest {
 	
 	@Test
 	public void shouldDoNothingWithoutDriversToInit() throws DriverManagerException, InterfaceValidationException{
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 	}
 	
 	@Test public void mustHaveADeviceDriverByDefault() throws Exception{
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertThat(manager.listDrivers())
 			.haveExactly(1, new Condition<UosDriver>() {
 				public boolean matches(UosDriver value) {
@@ -422,9 +426,9 @@ public class DriverManagerTest {
 	}
 	
 	@Test public void mustHaveADeviceDriverByDefaultNoMatterHowMuchTimesWeCallInit() throws Exception{
-		manager.initDrivers(null);
-		manager.initDrivers(null);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
+		manager.initDrivers(null, null);
+		manager.initDrivers(null, null);
 		assertThat(manager.listDrivers())
 			.haveExactly(1, new Condition<UosDriver>() {
 				public boolean matches(UosDriver value) {
@@ -438,7 +442,7 @@ public class DriverManagerTest {
 	@Test public void dontDeployANewDeviceDriverIfOneWasAlreadyDeclared() throws Exception{
 		DeviceDriver deviceDriver = new DeviceDriver();
 		manager.deployDriver(deviceDriver.getDriver(), deviceDriver,"my");
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertThat(manager.listDrivers())
 			.haveExactly(1, new Condition<UosDriver>() {
 				public boolean matches(UosDriver value) {
@@ -458,7 +462,7 @@ public class DriverManagerTest {
 	public void shouldTearDownTheDeployedDriver() throws Exception{
 		assertFalse(driver.destroyed);
 		manager.deployDriver(driver.upDriver, driver);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		assertFalse(driver.destroyed);
 		manager.tearDown();
 		assertTrue(driver.destroyed);
@@ -468,7 +472,7 @@ public class DriverManagerTest {
 	public void shouldTearDownAllDeployedDrivers() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		DriverSpy drivers[] = new DriverSpy[]{new DriverSpy(),new DriverSpy(),new DriverSpy()};
 		for (DriverSpy m : drivers) manager.deployDriver(m.upDriver, m);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		manager.tearDown();
 		int i =0;
 		for (DriverSpy m : drivers)	assertTrue("driver["+i+++"]",m.destroyed);
@@ -478,14 +482,14 @@ public class DriverManagerTest {
 	public void shouldNotTearDownADeployedDriverTwice() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		DriverSpy firstWave[] = new DriverSpy[]{new DriverSpy(),new DriverSpy(),new DriverSpy()};
 		for (DriverSpy m : firstWave)	manager.deployDriver(m.upDriver, m);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		manager.tearDown();
 		int i =0;
 		for (DriverSpy m : firstWave)	assertTrue("driver["+i+++"]",m.destroyed);
 		
 		DriverSpy secondWave[] = new DriverSpy[]{new DriverSpy(),new DriverSpy()};
 		for (DriverSpy m : secondWave)	manager.deployDriver(m.upDriver, m);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		manager.tearDown();
 		i =0;
 		for (DriverSpy m : secondWave)	assertTrue("driver["+i+++"]",m.destroyed);
@@ -496,7 +500,7 @@ public class DriverManagerTest {
 	@Test public void shouldNotTearDownUninitializedDrivers() throws DriverManagerException, InterfaceValidationException, DriverNotFoundException{
 		DriverSpy firstWave[] = new DriverSpy[]{new DriverSpy(),new DriverSpy(),new DriverSpy()};
 		for (DriverSpy m : firstWave) manager.deployDriver(m.upDriver, m);
-		manager.initDrivers(null);
+		manager.initDrivers(null, null);
 		DriverSpy secondeWave[] = new DriverSpy[]{new DriverSpy(),new DriverSpy()};
 		for (DriverSpy m : secondeWave) manager.deployDriver(m.upDriver, m);
 		manager.tearDown();
@@ -668,7 +672,7 @@ public class DriverManagerTest {
 	public void shouldNotRetrieveALocalDriverByWrongDriverName() throws DriverManagerException, DriverNotFoundException{
 		UpDriver driver = new UpDriver("d1");
 		manager.insert(new DriverModel("id1",driver,currentDevice.getName()));
-		assertNull(manager.listDrivers("d2", currentDevice.getName()));
+		assertThat(manager.listDrivers("d2", currentDevice.getName())).isEmpty();
 	}
 	
 	@Test 
@@ -697,7 +701,9 @@ public class DriverManagerTest {
 		UpDriver upDriver;
 		String id;
 		Gateway gateway;
+		InitialProperties properties;
 		List<UpDriver> parent;
+		
 		public DriverSpy() {
 			this("driver");
 		}
@@ -708,18 +714,19 @@ public class DriverManagerTest {
 			upDriver.addService(service);
 			parent = new ArrayList<UpDriver>();
 		}
-		public void init(Gateway gateway, String instanceId) {
+		public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 			inittiated = true;
 			initCount++;
 			id = instanceId;
 			this.gateway = gateway;
+			this.properties = properties;
 		}
 		public UpDriver getDriver() {return upDriver;}
 		public void destroy() {
 			destroyed = true;
 			destroyCount++;
 		}
-		public void service(ServiceCall s, ServiceResponse r, UOSMessageContext c){
+		public void service(Call s, Response r, CallContext c){
 			called = true;
 		}
 		@Override
@@ -727,4 +734,8 @@ public class DriverManagerTest {
 			return parent;
 		}
 	}
+	
+	//TODO: Multiple drivers of same type
+	//TODO: Multiple drivers with same id
+	//TODO: Multiple drivers with space trail (linefeeds)
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,10 +25,8 @@ import org.unbiquitous.uos.core.driverManager.InterfaceValidationException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerControlCenter;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.radar.RadarListener;
@@ -151,7 +150,9 @@ public class DeviceManager implements RadarListener {
 
 		if (upDevice == null){
 			upDevice = doHandshake(device, upDevice);
-			doDriversRegistry(device, upDevice); 
+			if (upDevice != null){
+				doDriversRegistry(device, upDevice); 
+			}
 		}else{
 			logger.fine("Already known device "+device.getNetworkDeviceName());
 		}
@@ -160,7 +161,7 @@ public class DeviceManager implements RadarListener {
 	@SuppressWarnings("unchecked")
 	private void doDriversRegistry(NetworkDevice device, UpDevice upDevice) {
 		try {
-			ServiceResponse response = gateway.callService(upDevice, new ServiceCall(DEVICE_DRIVER_NAME,"listDrivers"));
+			Response response = gateway.callService(upDevice, new Call(DEVICE_DRIVER_NAME,"listDrivers"));
 			if (response != null && response.getResponseData() != null && response.getResponseData("driverList") != null){
 				try {
 					JSONObject driversListMap = null;
@@ -189,7 +190,7 @@ public class DeviceManager implements RadarListener {
 	private void registerRemoteDriverInstances(UpDevice upDevice, JSONObject driversListMap, String[] instanceIds)throws JSONException {
 		for (String id : instanceIds){
 			
-			UpDriver upDriver = new JSONDriver(driversListMap.getString(id)).getAsObject();
+			UpDriver upDriver = UpDriver.fromJSON(new JSONObject(driversListMap.getString(id)));
 			DriverModel driverModel = new DriverModel(id, upDriver , upDevice.getName());
 			
 			try {
@@ -223,11 +224,11 @@ public class DeviceManager implements RadarListener {
 	 * @throws ServiceCallException
 	 */
 	private void findDrivers(Set<String> unknownDrivers, UpDevice upDevice) throws JSONException {
-		ServiceCall call = new ServiceCall(DEVICE_DRIVER_NAME, "tellEquivalentDrivers", null);
+		Call call = new Call(DEVICE_DRIVER_NAME, "tellEquivalentDrivers", null);
 		call.addParameter(DRIVERS_NAME_KEY, new JSONArray(unknownDrivers).toString());
 		
 		try {
-			ServiceResponse equivalentDriverResponse = gateway.callService(upDevice, call);
+			Response equivalentDriverResponse = gateway.callService(upDevice, call);
 			
 			if (equivalentDriverResponse != null && (equivalentDriverResponse.getError() == null || equivalentDriverResponse.getError().isEmpty())){
 				
@@ -239,7 +240,7 @@ public class DeviceManager implements RadarListener {
 					JSONArray interfacesJson = new JSONArray(interfaces);
 					
 					for(int i = 0; i < interfacesJson.length(); i++) {
-						UpDriver upDriver = new JSONDriver(interfacesJson.getString(i)).getAsObject();
+						UpDriver upDriver = UpDriver.fromJSON(new JSONObject(interfacesJson.getString(i)));
 						drivers.add(upDriver);
 					}
 					
@@ -279,15 +280,22 @@ public class DeviceManager implements RadarListener {
 			UpDevice dummyDevice = new UpDevice(device.getNetworkDeviceName())
 											.addNetworkInterface(device.getNetworkDeviceName(), device.getNetworkDeviceType());
 			
-			ServiceCall call = new ServiceCall(DEVICE_DRIVER_NAME, "handshake", null);
-			call.addParameter("device", new JSONDevice(currentDevice).toString());
+			Call call = new Call(DEVICE_DRIVER_NAME, "handshake", null);
+			call.addParameter("device", currentDevice.toJSON().toString());
 
-			ServiceResponse response = gateway.callService(dummyDevice, call);
+			Response response = gateway.callService(dummyDevice, call);
 			if (response != null && ( response.getError() == null || response.getError().isEmpty())){
 				// in case of a success greeting process, register the device in the neighborhood database
-				String responseDevice = response.getResponseString("device");
+				Object responseDevice = response.getResponseData("device");
 				if (responseDevice != null){
-					UpDevice remoteDevice = new JSONDevice(responseDevice).getAsObject();
+					UpDevice remoteDevice;
+					if(responseDevice instanceof String){
+						remoteDevice = UpDevice.fromJSON(new JSONObject((String)responseDevice));
+					}else if(responseDevice instanceof Map){
+						remoteDevice = UpDevice.fromJSON(new JSONObject((Map)responseDevice));
+					}else{
+						remoteDevice = UpDevice.fromJSON((JSONObject)responseDevice);
+					}
 					registerDevice(remoteDevice);
 					logger.info("Registered device "+remoteDevice.getName());
 					return remoteDevice;
@@ -296,7 +304,7 @@ public class DeviceManager implements RadarListener {
 				}
 			}else{
 				logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+
-						(response == null?": null": "': Cause : "+response.getError()));
+						(response == null?": No Response received.": "': Cause : "+response.getError()));
 			}
 		} catch (Exception e) {
 			logger.severe("Not possible to handshake with device '"+device.getNetworkDeviceName()+"'. "+e.getMessage());

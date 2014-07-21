@@ -27,10 +27,10 @@ import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall.ServiceType;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 
 @Ignore //FIXME: This test doesn't seems to make much sense
@@ -52,7 +52,7 @@ public class UserDriverTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		uosApplicationContext = new UOS();
-		uosApplicationContext.init("ubiquitos_test");
+		uosApplicationContext.start("ubiquitos_test");
 		// uosApplicationContext.init();
 		gateway = uosApplicationContext.getGateway();
 	}
@@ -72,7 +72,7 @@ public class UserDriverTest {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -85,7 +85,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException, JSONException {
 
 		DummyEventListener dummyNewEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
+		gateway.register(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
 
 		createUser(LABEL);
 
@@ -96,7 +96,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -114,7 +114,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException, JSONException {
 
 		DummyEventListener dummyEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
+		gateway.register(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
 
 		updateUser(LABEL, 0.99f, 1f, 2f, 3f);
 
@@ -125,7 +125,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -147,7 +147,7 @@ public class UserDriverTest {
 			NoSuchMethodException, ServiceCallException {
 
 		DummyEventListener dummyLostEventListener = new DummyEventListener();
-		gateway.registerForEvent(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
+		gateway.register(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
 
 		removeUser(LABEL);
 
@@ -158,7 +158,7 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -184,7 +184,7 @@ public class UserDriverTest {
 		parameters.put(UserDriver.LENGTH_IMAGE_PARAM, String.valueOf(imageData.length));
 
 		// request stream for save image
-		ServiceCall serviceCall = new ServiceCall();
+		Call serviceCall = new Call();
 		serviceCall.setDriver(UserDriver.USER_DRIVER);
 		serviceCall.setService("saveUserImage");
 		serviceCall.setInstanceId(INSTANCE_ID);
@@ -192,7 +192,7 @@ public class UserDriverTest {
 		serviceCall.setChannels(channel);
 		serviceCall.setParameters(parameters);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), serviceCall);
+		Response response = gateway.callService(gateway.getCurrentDevice(), serviceCall);
 
 		// write image data
 		DataOutputStream out = response.getMessageContext().getDataOutputStream(channel);
@@ -235,7 +235,7 @@ public class UserDriverTest {
 		parameters.put(UserDriver.NAME_PARAM, NAME);
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		ServiceResponse response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
 
 		Assert.assertNull(response.getError());
 
@@ -248,7 +248,7 @@ public class UserDriverTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		 uosApplicationContext.tearDown();
+		 uosApplicationContext.stop();
 	}
 
 	/**

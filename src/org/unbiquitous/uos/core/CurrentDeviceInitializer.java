@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -15,19 +14,18 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 public class CurrentDeviceInitializer implements UOSComponent{
 	private static final Logger logger = UOSLogging.getLogger();
-	private static final String DEVICE_NAME_KEY = "ubiquitos.uos.deviceName";
 	
-	private ResourceBundle properties;
+	private InitialProperties properties;
 	
 	@Override
-	public void create(ResourceBundle properties) {
+	public void create(InitialProperties properties) {
 		this.properties = properties;}
 
 	@Override
 	public void init(UOSComponentFactory factory) {
 		UpDevice currentDevice = factory.currentDevice(new UpDevice());
-		if (properties.containsKey(DEVICE_NAME_KEY)){
-			currentDevice.setName(properties.getString(DEVICE_NAME_KEY));
+		if (properties.getDeviceName() != null){
+			currentDevice.setName(properties.getDeviceName());
 		}else{
 			try {
 				currentDevice.setName(InetAddress.getLocalHost().getHostName());

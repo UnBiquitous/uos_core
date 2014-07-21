@@ -1,10 +1,10 @@
 package org.unbiquitous.uos.core.connectivity.proxying;
 
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Interface of a Proxy Driver. It masquerades some other proxy on some other device.
@@ -24,8 +24,8 @@ public interface ProxyDriver extends UosDriver {
 	 * @param serviceResponse The service response
 	 * @param messageContext Our message context of streams respective to the caller device
 	 */
-	public void forwardServiceCall(ServiceCall serviceCall, ServiceResponse serviceResponse, 
-			UOSMessageContext messageContext);
+	public void forwardServiceCall(Call serviceCall, Response serviceResponse, 
+			CallContext messageContext);
 	
 	/**
 	 * Gets the real provider of the driver we represent.

@@ -1,6 +1,7 @@
 package org.unbiquitous.uos.core.network.cache;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

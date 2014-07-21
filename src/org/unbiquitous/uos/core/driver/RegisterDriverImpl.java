@@ -13,17 +13,17 @@ import java.util.logging.Logger;
 import org.unbiquitous.json.JSONArray;
 import org.unbiquitous.json.JSONException;
 import org.unbiquitous.json.JSONObject;
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
-import org.unbiquitous.uos.core.applicationManager.UOSMessageContext;
+import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.driverManager.DriverData;
+import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService.ParameterType;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDevice;
-import org.unbiquitous.uos.core.messageEngine.dataType.json.JSONDriver;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceCall;
-import org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse;
+import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 /**
  * Default Implementation of the RegisterDriver.
@@ -42,11 +42,11 @@ public class RegisterDriverImpl implements RegisterDriver {
 	private Gateway gateway;
 	
 	/** 
-	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.ServiceCall, org.unbiquitous.uos.core.messageEngine.messages.ServiceResponse, br.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
+	 * @see org.unbiquitous.uos.core.driver.RegisterDriver#listDrivers(org.unbiquitous.uos.core.messageEngine.messages.Call, org.unbiquitous.uos.core.messageEngine.messages.Response, CallContext.unb.unbiquitous.ubiquitos.uos.context.UOSMessageContext)
 	 */
 	@Override
-	public void listDrivers(ServiceCall serviceCall,
-			ServiceResponse serviceResponse, UOSMessageContext messageContext) {
+	public void listDrivers(Call serviceCall,
+			Response serviceResponse, CallContext messageContext) {
 		
 		
 		// Parameters 
@@ -57,8 +57,8 @@ public class RegisterDriverImpl implements RegisterDriver {
 		
 		String deviceCaller = null;
 		try{
-			JSONDevice jsonDevice = new JSONDevice((String) serviceCall.getParameter("device"));
-			deviceCaller = (jsonDevice.getAsObject()).getName();
+			JSONObject jsonDevice = new JSONObject((String) serviceCall.getParameter("device"));
+			deviceCaller = UpDevice.fromJSON(jsonDevice).getName();
 		} catch (JSONException e) {
 			logger.log(Level.SEVERE,"Not possible to list devices.",e);
 		}
@@ -74,8 +74,8 @@ public class RegisterDriverImpl implements RegisterDriver {
 				try {
 					JSONObject json = new JSONObject();
 					
-					json.put("driver", new JSONDriver(rdd.getDriver()).toString());
-					json.put("device", new JSONDevice(rdd.getDevice()).toString());
+					json.put("driver", rdd.getDriver().toJSON().toString());
+					json.put("device", rdd.getDevice().toJSON().toString());
 					json.put("instanceID", rdd.getInstanceID());
 					
 					listJson.add(json);
@@ -110,10 +110,10 @@ public class RegisterDriverImpl implements RegisterDriver {
 	}
 
 	/** 
-	 * @see org.unbiquitous.uos.core.driverManager.UosDriver#init(br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext)
+	 * @see org.unbiquitous.uos.core.driverManager.UosDriver#start(br.unb.unbiquitous.ubiquitos.uos.context.UOSApplicationContext)
 	 */
 	@Override
-	public void init(Gateway gateway, String instanceId) {
+	public void init(Gateway gateway, InitialProperties properties, String instanceId) {
 		this.gateway = gateway;
 	}
 
