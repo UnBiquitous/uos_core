@@ -32,20 +32,43 @@ public class InitialProperties extends HashMap<String, Object> {
 		super(initMap);
 	}
 
-	public String getString(String key) {
-		if (!this.containsKey(key)) return null;
+	public String getString(String key){
+		return getString(key, null);
+	}
+	
+	public String getString(String key, String _default) {
+		if (!this.containsKey(key)) return _default;
 		return (String) get(key);
 	}
 	
-	public Integer getInt(String key) {
-		if (!this.containsKey(key)) return null;
+	public Integer getInt(String key){
+		return getInt(key, null);
+	}
+	
+	public Integer getInt(String key, Integer _default) {
+		if (!this.containsKey(key)) return _default;
 		Object value = get(key);
 		if (value instanceof Integer) return (Integer) value;
 		else return Integer.parseInt(value.toString());
 	}
 	
-	public Boolean getBool(String key) {
-		if (!this.containsKey(key)) return null;
+	public Integer getDouble(String key){
+		return getInt(key, null);
+	}
+	
+	public Double getDouble(String key, Double _default) {
+		if (!this.containsKey(key)) return _default;
+		Object value = get(key);
+		if (value instanceof Double) return (Double) value;
+		else return Double.parseDouble(value.toString());
+	}
+	
+	public Boolean getBool(String key){
+		return getBool(key, null);
+	}
+	
+	public Boolean getBool(String key, Boolean _default) {
+		if (!this.containsKey(key)) return _default;
 		Object value = get(key);
 		if (value instanceof Boolean) return (Boolean) value;
 		else return Boolean.parseBoolean(value.toString());

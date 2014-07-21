@@ -228,4 +228,13 @@ public class DriverDaoTest {
 		dao.insert(createDriver("id.b1","b", "Db"));
 		assertNull(dao.retrieve("id.a1","Dc"));
 	}
+	
+	@Test public void idColisionReturnsTheLocalOne(){
+		DriverModel d1 = createDriver("id","a", "Da");
+		dao.insert(d1);
+		DriverModel d2 = createDriver("id","a", "Db");
+		dao.insert(d2);
+		assertEquals(d1,dao.retrieve("id","Da"));
+		assertEquals(d2,dao.retrieve("id","Db"));
+	}
 }
