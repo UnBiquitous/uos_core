@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
+import org.unbiquitous.uos.core.driverManager.UosDriver;
+import org.unbiquitous.uos.core.integration.EchoDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
@@ -99,6 +101,13 @@ public class SmartSpaceGatewayTest {
 		when(driverManager.listDrivers("d", null)).thenReturn(data);
 		assertThat(gateway.listDrivers("d")).isSameAs(data);
 		verify(driverManager).listDrivers("d", null);
+	}
+	
+	@Test public void addADriverdelegatestoDriverManager() throws Exception{
+		UosDriver driver = new EchoDriver();
+		gateway.addDriver(driver);
+		verify(driverManager).deployDriver(driver.getDriver(), driver);
+		verify(driverManager).initDrivers(gateway, null);
 	}
 	
 	@Test public void listDevicesDelegatesToDeviceManager(){

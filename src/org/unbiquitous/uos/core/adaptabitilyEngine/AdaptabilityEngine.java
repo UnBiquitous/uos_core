@@ -421,6 +421,7 @@ public class AdaptabilityEngine implements ServiceCallHandler,
 					driverManager, 
 					applicationDeployer, 
 					ontology);
+			gateway.setProperties(properties);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -3,12 +3,14 @@ package org.unbiquitous.uos.core.adaptabitilyEngine;
 import java.util.List;
 import java.util.Map;
 
+import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.SecurityManager;
 import org.unbiquitous.uos.core.applicationManager.ApplicationDeployer;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.driverManager.DriverManager;
+import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
@@ -20,6 +22,7 @@ public class SmartSpaceGateway implements Gateway {
 
 	private AdaptabilityEngine adaptabilityEngine;
 	private UpDevice currentDevice;
+	private InitialProperties properties;
 
 	// These properties are used by advanced parts of the middleware
 	private SecurityManager securityManager;
@@ -136,4 +139,16 @@ public class SmartSpaceGateway implements Gateway {
 		return ontology;
 	}
 
+	public void addDriver(UosDriver driver) {
+		try {
+			driverManager.deployDriver(driver.getDriver(), driver);
+			driverManager.initDrivers(this, properties);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+	}
+	
+	public void setProperties(InitialProperties properties) {
+		this.properties = properties;
+	}
 }

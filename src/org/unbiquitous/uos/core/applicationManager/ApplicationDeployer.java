@@ -75,7 +75,7 @@ public class ApplicationDeployer {
 			
 			Class<?> clazz = classLoader.loadClass(applicationClass);
 			UosApplication applicationInstance = (UosApplication) clazz.newInstance();
-			logger.info("Deploying Application " + applicationInstance.getClass().getName());
+			logger.info("Deploying Application " + applicationInstance.getClass().getName()+" with id "+instanceId);
 //			deployApplication(applicationInstance,instanceId);
 			this.manager.add(applicationInstance, instanceId);
 		} catch (Exception e) {
