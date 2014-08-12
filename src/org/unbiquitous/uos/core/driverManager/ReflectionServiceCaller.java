@@ -138,10 +138,19 @@ public class ReflectionServiceCaller {
 				response.setResponseData(responseMap);
 				return response;
 			} catch (NoSuchMethodException e) {
-				Method method = app.getClass().getMethod(call.getService(), 
+				try {
+					Method method = app.getClass().getMethod(call.getService(), 
 													Call.class,
 													CallContext.class);
-				return (Response) method.invoke(app, call, context);
+					return (Response) method.invoke(app, call, context);
+				} catch (NoSuchMethodException ee) {
+					Method method = app.getClass().getMethod(call.getService(), 
+							Call.class,
+							Response.class,
+							CallContext.class);
+					method.invoke(app, call, response, context);
+					return response;
+				}
 			} 
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"Internal Failure", e);

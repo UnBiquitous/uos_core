@@ -258,6 +258,22 @@ public class ApplicationManagerTest {
 		assertThat(app.context).isSameAs(context);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test public void handleServiceOnAServiceLikeSignature() throws Exception{
+		DummyApp app = new DummyApp();
+		manager.deploy(app, "myId");
+		
+		Call serviceCall = new Call("app","serviceLikeCallback","myId");
+		TreeMap parameters = new TreeMap();
+		serviceCall.setParameters(parameters);
+		CallContext context = new CallContext();
+		manager.handleServiceCall(serviceCall,context);
+		
+		assertThat(app.serviceCall).isSameAs(serviceCall);
+		assertThat(app.context).isSameAs(context);
+		assertThat(app.response).isNotNull();
+	}
+	
 	@Test public void handleServiceReturnsMapAsResponse() throws Exception{
 		DummyApp app = new DummyApp();
 		manager.deploy(app, "myId");

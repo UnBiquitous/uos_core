@@ -28,6 +28,7 @@ public class DummyApp implements UosApplication{
 	public Gateway gateway;
 	public Map<String,Object> callbackMap;
 	public Call serviceCall;
+	public Response response;
 	public CallContext context;
 	public InitialProperties properties;
 	
@@ -72,6 +73,13 @@ public class DummyApp implements UosApplication{
 	
 	public Response commonCallback(Call call, CallContext ctx){
 		this.serviceCall = call;
+		this.context = ctx;
+		return null;
+	}
+	
+	public Response serviceLikeCallback(Call call, Response response, CallContext ctx){
+		this.serviceCall = call;
+		this.response = response;
 		this.context = ctx;
 		return null;
 	}
