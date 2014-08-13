@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unbiquitous.uos.core.driverManager.DriverData;
+import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.MessageEngineException;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
@@ -119,5 +120,10 @@ public interface Gateway {
 	 * Returns all known devices in the Smart Space.
 	 */
 	public List<UpDevice> listDevices();
+	
+	/**
+	 * Deploys a driver instance. 
+	 */
+	public void addDriver(UosDriver driver);
 
 }
