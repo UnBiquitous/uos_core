@@ -10,17 +10,11 @@ public class DriverModel {
 	public static String NAME = "name";
 	public static String DEVICE = "device";
 	
-	private Long rowid;
 	private String id;
 	private UpDriver driver;
 	private String device;
 	
 	public DriverModel(String id, UpDriver driver, String device) {
-		this(null,id,driver,device);
-	}
-
-	public DriverModel(Long rowid, String id, UpDriver driver, String device) {
-		this.rowid = rowid;
 		this.id = id;
 		this.driver = driver;
 		this.device = device;
@@ -38,14 +32,10 @@ public class DriverModel {
 		return device;
 	}
 
-	public Long rowid() {
-		return rowid;
+	public String rowid() {
+		return id +"@" + device;
 	}
 	
-	void rowid(Long rowid) {
-		this.rowid = rowid;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || ! (obj instanceof DriverModel) ){
@@ -53,7 +43,6 @@ public class DriverModel {
 		}
 		
 		DriverModel d = (DriverModel) obj;
-		
 		return this.driver.equals(d.driver) && this.device.equals(d.device) && this.id.equals(d.id);
 	}
 

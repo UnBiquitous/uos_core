@@ -1,15 +1,19 @@
 package org.unbiquitous.uos.core.integration;
 
+import static org.unbiquitous.uos.core.TestUtils.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.unbiquitous.uos.core.InitialProperties;
+import org.unbiquitous.uos.core.TestUtils.EventuallyAssert;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;
 import org.unbiquitous.uos.core.applicationManager.UosApplication;
 import org.unbiquitous.uos.core.driverManager.DriverData;
+import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
@@ -25,8 +29,10 @@ public class PingApp implements UosApplication, UosEventListener {
 	
 	boolean eventReceived;
 	static public PingApp instance;
+	private Gateway gateway;
 	
 	public void start(Gateway gateway, OntologyStart ontology) {
+		this.gateway = gateway;
 		PingApp.instance = this;
 		try {
 			boolean started = false;
@@ -95,6 +101,18 @@ public class PingApp implements UosApplication, UosEventListener {
 		}
 	}
 
+	
+	public void testOnTheFlyDriver(UpDevice target) throws Exception{
+//		assertEventuallyTrue("Must deploy driver on the fly", 1000, 
+//				new EventuallyAssert() {
+//					public boolean assertion() {
+//						return !gateway.listDrivers("br.unbiquitous.OnTheFly").isEmpty();
+//					}
+//				});
+		System.out.println(gateway.getCurrentDevice());
+		gateway.callService(target, new Call("br.unbiquitous.OnTheFly", "echo"));
+	}
+	
 	public void stop() throws Exception {	run = false;	}
 
 	public void init(OntologyDeploy ontology, InitialProperties props, String appId) {}

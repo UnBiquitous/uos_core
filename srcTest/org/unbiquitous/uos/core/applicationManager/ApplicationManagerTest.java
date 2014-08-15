@@ -1,8 +1,8 @@
 package org.unbiquitous.uos.core.applicationManager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.unbiquitous.uos.core.TestUtils.assertEventuallyTrue;
 
 import java.io.File;
 import java.util.ListResourceBundle;
@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.uos.core.InitialProperties;
+import org.unbiquitous.uos.core.TestUtils.EventuallyAssert;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
@@ -347,17 +348,5 @@ public class ApplicationManagerTest {
 				});
 	}
 	
-	static interface EventuallyAssert{
-		boolean assertion();
-	}
-	
-	private void assertEventuallyTrue(String msg, long wait, EventuallyAssert assertion) throws InterruptedException{
-		long time = 0;
-		while (time <= wait && !assertion.assertion()){
-			Thread.sleep(10);
-			time += 10;
-		}
-		assertTrue(msg,assertion.assertion());
-	}
 	
 }

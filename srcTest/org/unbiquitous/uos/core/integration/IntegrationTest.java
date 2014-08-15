@@ -29,6 +29,7 @@ public class IntegrationTest {
 	
 	//TODO: Better explain the purpose of this test
 	@Test public void execute() throws Exception{
+//		UOSLogging.setLevel(Level.ALL);
 		//Driver Side
 		// TODO: This bypass does not test how the middleware instantiates drivers and applications
 		String pcName = "my.pc";
@@ -72,6 +73,10 @@ public class IntegrationTest {
 		for (Entry<String, Boolean> e : echo.assertions.entrySet()){
 			assertTrue(e.getKey(),e.getValue());
 		}
+		
+		//check runtime deploy
+//		pc.getGateway().addDriver(new OnTheFlyDriver());
+//		PingApp.instance.testOnTheFlyDriver(pc.getGateway().getCurrentDevice());
 		
 		//Estimulate the deviceLeft
 		cell.getFactory().get(ConnectionManagerControlCenter.class).radarControlCenter().deviceLeft(new IntegrationDevice(pcName));
