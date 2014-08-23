@@ -1,5 +1,6 @@
 package org.unbiquitous.uos.core.driverManager;
 
+import static java.lang.String.*;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 
 public class DriverModel {
@@ -33,7 +34,7 @@ public class DriverModel {
 	}
 
 	public String rowid() {
-		return id +"@" + device;
+		return format("%s@%s",id,device);
 	}
 	
 	@Override
