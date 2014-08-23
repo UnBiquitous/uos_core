@@ -42,7 +42,7 @@ public class DriverManager {
 	private DriverDao driverDao;
 	private DeviceDao deviceDao;
 	private UpDevice currentDevice;
-	private Map<Long, UosDriver> instances;
+	private Map<String, UosDriver> instances;
 	private List<String> toInitialize;
 	private Map<String, TreeNode> driverHash;
 	private List<TreeNode> tree;
@@ -52,7 +52,7 @@ public class DriverManager {
 		this.deviceDao = deviceDao;
 		this.serviceCaller = serviceCaller;
 		this.currentDevice = currentDevice;
-		this.instances = new HashMap<Long, UosDriver>();
+		this.instances = new HashMap<String, UosDriver>();
 		this.toInitialize = new ArrayList<String>();
 		this.driverHash = new HashMap<String, TreeNode>();
 		this.treeInit();
