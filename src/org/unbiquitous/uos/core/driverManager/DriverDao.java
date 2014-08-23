@@ -14,22 +14,18 @@ public class DriverDao {
 	private HashMap<String, Integer> driverCount;
 	private HashMap<String, List<DriverModel>> driverByDeviceMap;
 	private HashMap<String, List<DriverModel>> driverByTypeMap;
-	private HashMap<Long, DriverModel> modelMap;
+	private HashMap<String, DriverModel> modelMap;
 	private HashMap<String, DriverModel> modelByIdMap;
 	
 	public DriverDao(InitialProperties bundle) {
 		createMaps();
 	}
 
-	private static long rowid = 0;
-	
-	private static synchronized long newId(){ return rowid ++; }
-
 	private void createMaps() {
 		driverMap = new HashMap<String, UpDriver>();
 		driverCount = new HashMap<String, Integer>();
 		driverByDeviceMap = new HashMap<String, List<DriverModel>>();
-		modelMap =  new HashMap<Long, DriverModel>();
+		modelMap =  new HashMap<String, DriverModel>();
 		driverByTypeMap = new HashMap<String, List<DriverModel>>();
 		modelByIdMap = new HashMap<String, DriverModel>();
 	}
@@ -40,7 +36,6 @@ public class DriverDao {
 		if (found != null){
 			removeFromMap(found);
 		}
-		driver.rowid(newId());
 		insertOnMap(driver);
 	}
 
