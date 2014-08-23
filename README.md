@@ -20,7 +20,7 @@ To use the middleware just add it to your `pom.xml` as follows.
 		<dependency>
 			<groupId>org.unbiquitous</groupId>
 			<artifactId>uos-core</artifactId>
-			<version>3.1.0</version>
+			<version>3.1.1</version>
 		</dependency>
 </dependencies>
 ```
