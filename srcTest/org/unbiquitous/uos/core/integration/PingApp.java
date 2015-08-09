@@ -1,13 +1,10 @@
 package org.unbiquitous.uos.core.integration;
 
-import static org.unbiquitous.uos.core.TestUtils.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.unbiquitous.uos.core.InitialProperties;
-import org.unbiquitous.uos.core.TestUtils.EventuallyAssert;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.UosEventListener;

@@ -1,26 +1,41 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.chainHashCode;
 import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.unbiquitous.json.JSONArray;
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UpDriver {
-
+	private static final ObjectMapper mapper = new ObjectMapper();
+	
+	// Ensuring JSON field names, in case these properties ever change for any
+	// reason...
+	@JsonProperty(value = "name")
+	@JsonInclude(Include.NON_NULL)
 	private String name;
 	
+	@JsonProperty(value = "services")
+	@JsonInclude(Include.NON_NULL)
 	private List<UpService> services;
 	
+	@JsonProperty(value = "events")
+	@JsonInclude(Include.NON_NULL)
 	private List<UpService> events;
 	
+	@JsonProperty(value = "equivalent_drivers")
+	@JsonInclude(Include.NON_NULL)
 	private List<String> equivalentDrivers;
-	
-	public UpDriver() {}
-	
+
+	public UpDriver() {
+	}
+
 	public UpDriver(String name) {
 		this.name = name;
 	}
@@ -40,73 +55,83 @@ public class UpDriver {
 	public void setServices(List<UpService> services) {
 		this.services = services;
 	}
-	
-	public UpService addService(UpService service){
-		if (services == null){
+
+	public UpService addService(UpService service) {
+		if (services == null) {
 			services = new ArrayList<UpService>();
 		}
 		services.add(service);
 		return service;
 	}
-	
-	public UpService addService(String serviceName){
+
+	public UpService addService(String serviceName) {
 		return addService(new UpService(serviceName));
 	}
-	
+
 	public List<String> getEquivalentDrivers() {
 		return equivalentDrivers;
 	}
-	
+
 	public void setEquivalentDrivers(List<String> equivalentDrivers) {
 		this.equivalentDrivers = equivalentDrivers;
 	}
-	
+
 	public List<String> addEquivalentDrivers(String driver) {
-		if(equivalentDrivers == null) {
+		if (equivalentDrivers == null) {
 			equivalentDrivers = new ArrayList<String>();
 		}
 		equivalentDrivers.add(driver);
 		return equivalentDrivers;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || ! (obj instanceof UpDriver) ) return false;
-		
-		UpDriver d = (UpDriver) obj;
-		if(!compare(this.name,d.name)) return false;
-		if(!compare(this.services,d.services)) return false;
-		if(!compare(this.events,d.events)) return false;
-		
-		return true;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof UpDriver))
+			return false;
+
+		UpDriver other = (UpDriver) obj;
+
+		return compare(getName(), other.getName()) && compare(getServices(), other.getServices())
+				&& compare(getEvents(), other.getEvents());
 	}
 
 	@Override
 	public int hashCode() {
-		if(name != null){
-			return name.hashCode();
-		}
-		return super.hashCode();
+		int hash = chainHashCode(0, getName());
+		hash = chainHashCode(hash, getServices());
+		hash = chainHashCode(hash, getEvents());
+		return hash;
 	}
 	
-	public UpDriver addEvent(UpService event){
-		if (events == null){
+	@Override
+	public String toString() {
+		try {
+			return mapper.writeValueAsString(this);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public UpDriver addEvent(UpService event) {
+		if (events == null) {
 			events = new ArrayList<UpService>();
 		}
 		events.add(event);
 		return this;
 	}
-	
-	public UpService addEvent(String event){
-		if (events == null){
+
+	public UpService addEvent(String event) {
+		if (events == null) {
 			events = new ArrayList<UpService>();
 		}
-		
+
 		UpService sEvent = new UpService(event);
 		events.add(sEvent);
 		return sEvent;
 	}
-	
+
 	/**
 	 * @return the events
 	 */
@@ -115,81 +140,10 @@ public class UpDriver {
 	}
 
 	/**
-	 * @param events the events to set
+	 * @param events
+	 *            the events to set
 	 */
 	public void setEvents(List<UpService> events) {
 		this.events = events;
 	}
-
-	public JSONObject toJSON() throws JSONException {
-		JSONObject json = new JSONObject();
-		json.put("name", this.getName());
-		
-		addServices(json, "services", this.services);
-		addServices(json, "events", this.events);
-		addStrings(json, "equivalent_drivers", equivalentDrivers);
-		
-		return json;
-	}
-
-	private void addStrings(	JSONObject json, 
-										String propName, List<String> stringList) 
-			throws JSONException {
-		if (stringList != null){
-			JSONArray equivalent_drivers = new JSONArray();
-			json.put(propName,equivalent_drivers);
-			for(String eq: equivalentDrivers){
-				equivalent_drivers.put(eq);
-			}
-		}
-	}
-
-	private void addServices(JSONObject json, 
-							String propName, List<UpService> serviceList) 
-			throws JSONException {
-		if (serviceList != null){
-			JSONArray services = new JSONArray();
-			json.put(propName,services);
-			for(UpService s : serviceList){
-				services.put(s.toJSON());
-			}
-		}
-	}
-
-	public static UpDriver fromJSON(JSONObject json) throws JSONException {
-		UpDriver d = new UpDriver(json.optString("name",null));
-		
-		d.services = addServices(json, "services");
-		d.events = addServices(json, "events");
-		d.equivalentDrivers = addStrings(json, "equivalent_drivers");
-		
-		return d;
-	}
-
-	private static List<String> addStrings(JSONObject json, String propName)
-			throws JSONException {
-		JSONArray jsonArray = json.optJSONArray(propName);
-		if(jsonArray != null){
-			List<String> strings = new ArrayList<String>();
-			for( int i = 0 ; i < jsonArray.length(); i++){
-				strings.add( jsonArray.getString(i));
-			}
-			return strings;
-		}
-		return null;
-	}
-
-	private static List<UpService> addServices(JSONObject json, String propName)
-			throws JSONException {
-		JSONArray jsonArray = json.optJSONArray(propName);
-		if (jsonArray != null){
-			List<UpService> services = new ArrayList<UpService>();
-			for( int i = 0 ; i < jsonArray.length(); i++){
-				services.add(UpService.fromJSON(jsonArray.getJSONObject(i)));
-			}
-			return services;
-		}
-		return null;
-	}
-
 }

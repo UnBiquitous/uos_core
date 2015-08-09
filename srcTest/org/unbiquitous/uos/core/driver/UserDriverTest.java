@@ -11,14 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.AdaptabilityEngine;
@@ -32,8 +28,12 @@ import org.unbiquitous.uos.core.messageEngine.messages.Call.ServiceType;
 import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Ignore //FIXME: This test doesn't seems to make much sense
+import junit.framework.Assert;
+
+@Ignore // FIXME: This test doesn't seems to make much sense
 public class UserDriverTest {
 
 	private static final String EMAIL = "talesap2@gmail.com";
@@ -44,6 +44,7 @@ public class UserDriverTest {
 	private int MAX_NOT_READY_TRIES = 100;
 
 	private static final Logger logger = UOSLogging.getLogger();
+	private static final ObjectMapper mapper = new ObjectMapper();
 
 	private static UOS uosApplicationContext;
 
@@ -59,7 +60,8 @@ public class UserDriverTest {
 
 	@Test
 	public void should_list_my_driver() throws Exception {
-		List<UosDriver> listDrivers = uosApplicationContext.getFactory().get(AdaptabilityEngine.class).driverManager().listDrivers();
+		List<UosDriver> listDrivers = uosApplicationContext.getFactory().get(AdaptabilityEngine.class).driverManager()
+				.listDrivers();
 
 		Assert.assertNotNull(listDrivers);
 		Assert.assertEquals(1, listDrivers.size());
@@ -72,7 +74,8 @@ public class UserDriverTest {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -81,11 +84,13 @@ public class UserDriverTest {
 	}
 
 	@Test
-	public void should_receive_user_added() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException, ServiceCallException, JSONException {
+	public void should_receive_user_added()
+			throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException, ServiceCallException, IOException {
 
 		DummyEventListener dummyNewEventListener = new DummyEventListener();
-		gateway.register(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.NEW_USER_EVENT_KEY);
+		gateway.register(dummyNewEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER,
+				UserDriver.NEW_USER_EVENT_KEY);
 
 		createUser(LABEL);
 
@@ -96,25 +101,28 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNotNull(string_user);
 
-		JSONObject jsonObject = new JSONObject(string_user);
+		JsonNode jsonObject = mapper.readTree(string_user);
 		Assert.assertEquals(EMAIL, jsonObject.get(UserDriver.EMAIL_PARAM));
 		Assert.assertEquals(NAME, jsonObject.get(UserDriver.NAME_PARAM));
 
 	}
 
 	@Test
-	public void should_receive_user_changed() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException, ServiceCallException, JSONException {
+	public void should_receive_user_changed()
+			throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException, ServiceCallException, IOException {
 
 		DummyEventListener dummyEventListener = new DummyEventListener();
-		gateway.register(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
+		gateway.register(dummyEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER,
+				UserDriver.CHANGE_INFORMATION_TO_USER_KEY);
 
 		updateUser(LABEL, 0.99f, 1f, 2f, 3f);
 
@@ -125,29 +133,31 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
 
 		String string_user = (String) response.getResponseData().get(UserDriver.USER_PARAM);
 		Assert.assertNotNull(string_user);
-		JSONObject jsonObject = new JSONObject(string_user);
+		JsonNode jsonObject = mapper.readTree(string_user);
 
 		Assert.assertEquals(EMAIL, jsonObject.get(UserDriver.EMAIL_PARAM));
 		Assert.assertEquals(NAME, jsonObject.get(UserDriver.NAME_PARAM));
-		Assert.assertEquals(0.99f, ((Double) jsonObject.get(UserDriver.CONFIDENCE_PARAM)).floatValue());
-		Assert.assertEquals(1.0, jsonObject.getDouble(UserDriver.POSITION_X_PARAM));
-		Assert.assertEquals(2.0, jsonObject.getDouble(UserDriver.POSITION_Y_PARAM));
-		Assert.assertEquals(3.0, jsonObject.getDouble(UserDriver.POSITION_Z_PARAM));
+		Assert.assertEquals(0.99f, new Double(jsonObject.get(UserDriver.CONFIDENCE_PARAM).asDouble()).floatValue());
+		Assert.assertEquals(1.0, jsonObject.get(UserDriver.POSITION_X_PARAM).asDouble());
+		Assert.assertEquals(2.0, jsonObject.get(UserDriver.POSITION_Y_PARAM).asDouble());
+		Assert.assertEquals(3.0, jsonObject.get(UserDriver.POSITION_Z_PARAM).asDouble());
 	}
 
 	@Test
-	public void should_receive_user_losted() throws NotifyException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException, ServiceCallException {
+	public void should_receive_user_losted() throws NotifyException, IllegalArgumentException, SecurityException,
+			IllegalAccessException, InvocationTargetException, NoSuchMethodException, ServiceCallException {
 
 		DummyEventListener dummyLostEventListener = new DummyEventListener();
-		gateway.register(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER, UserDriver.LOST_USER_EVENT_KEY);
+		gateway.register(dummyLostEventListener, gateway.getCurrentDevice(), UserDriver.USER_DRIVER,
+				UserDriver.LOST_USER_EVENT_KEY);
 
 		removeUser(LABEL);
 
@@ -158,7 +168,8 @@ public class UserDriverTest {
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
-		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "retrieveUserInfo", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getResponseData());
@@ -235,11 +246,13 @@ public class UserDriverTest {
 		parameters.put(UserDriver.NAME_PARAM, NAME);
 		parameters.put(UserDriver.EMAIL_PARAM, EMAIL);
 
-		Response response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		Response response = gateway.callService(gateway.getCurrentDevice(), "removeUserImages", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		Assert.assertNull(response.getError());
 
-		response = gateway.callService(gateway.getCurrentDevice(), "listKnownUsers", UserDriver.USER_DRIVER, INSTANCE_ID, null, parameters);
+		response = gateway.callService(gateway.getCurrentDevice(), "listKnownUsers", UserDriver.USER_DRIVER,
+				INSTANCE_ID, null, parameters);
 
 		String returnData = (String) response.getResponseData(UserDriver.RETURN_PARAM);
 		Assert.assertNotNull(returnData);
@@ -248,7 +261,7 @@ public class UserDriverTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		 uosApplicationContext.stop();
+		uosApplicationContext.stop();
 	}
 
 	/**
@@ -259,8 +272,10 @@ public class UserDriverTest {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	private void createUser(String user) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Method method = UserDriverImpl.class.getDeclaredMethod("registerNewUserEvent", String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE);
+	private void createUser(String user)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+		Method method = UserDriverImpl.class.getDeclaredMethod("registerNewUserEvent", String.class, Float.TYPE,
+				Float.TYPE, Float.TYPE, Float.TYPE);
 		method.setAccessible(true);
 		method.invoke(UserDriverImpl.getInstance(), user, 0.97f, 1.0f, 1.0f, 1.0f);
 	}
@@ -273,7 +288,8 @@ public class UserDriverTest {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	private void removeUser(String user) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+	private void removeUser(String user)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		Method method = UserDriverImpl.class.getDeclaredMethod("registerLostUserEvent", String.class);
 		method.setAccessible(true);
 		method.invoke(UserDriverImpl.getInstance(), user);
@@ -291,8 +307,10 @@ public class UserDriverTest {
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	private void updateUser(String user, float confidence, float x, float y, float z) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Method method = UserDriverImpl.class.getDeclaredMethod("registerRecheckUserEvent", String.class, String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE);
+	private void updateUser(String user, float confidence, float x, float y, float z)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+		Method method = UserDriverImpl.class.getDeclaredMethod("registerRecheckUserEvent", String.class, String.class,
+				Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE);
 		method.setAccessible(true);
 		method.invoke(UserDriverImpl.getInstance(), user, null, confidence, x, y, z);
 	}

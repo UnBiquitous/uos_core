@@ -1,17 +1,28 @@
 package org.unbiquitous.uos.core.messageEngine.messages;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.chainHashCode;
 import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
 
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
+import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Capsule extends Message {
+	private static final ObjectMapper mapper = new ObjectMapper();
 
+	// Ensuring JSON field names, in case these properties ever change for any
+	// reason...
+	@JsonProperty(value = "innerMessage")
+	@JsonInclude(Include.NON_NULL)
 	private String innerMessage;
-	
+
+	@JsonProperty(value = "securityType")
+	@JsonInclude(Include.NON_NULL)
 	private String securityType;
-	
+
 	public Capsule() {
 		setType(Type.ENCAPSULATED_MESSAGE);
 	}
@@ -21,7 +32,6 @@ public class Capsule extends Message {
 		this.securityType = securityType;
 		this.innerMessage = innerMessage;
 	}
-
 
 	public String getInnerMessage() {
 		return innerMessage;
@@ -38,43 +48,31 @@ public class Capsule extends Message {
 	public void setSecurityType(String securityType) {
 		this.securityType = securityType;
 	}
-	
+
 	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !( obj instanceof Capsule)){
-			return false;
-		}
-		Capsule temp = (Capsule) obj; 
-		
-		if(!compare(this.innerMessage,temp.innerMessage)) return false;
-		if(!compare(this.securityType,temp.securityType)) return false;
-		
-		return true;
-	}
-	
-	@Override
-	public JSONObject toJSON() throws JSONException {
-		JSONObject json = super.toJSON();
-		
-		json.put("innerMessage", this.innerMessage);
-		json.put("securityType", this.securityType);
-		return json;
+	public int hashCode() {
+		int hash = chainHashCode(0, innerMessage);
+		hash = chainHashCode(hash, securityType);
+		return hash;
 	}
 
-	public static Capsule fromJSON(JSONObject json) throws JSONException {
-		Capsule e = new Capsule();
-		Message.fromJSON(e, json);
-		e.innerMessage = json.optString("innerMessage",null);
-		e.securityType = json.optString("securityType",null);
-		return e;
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Capsule))
+			return false;
+		Capsule other = (Capsule) obj;
+
+		return compare(this.innerMessage, other.innerMessage) && compare(this.securityType, other.securityType);
 	}
-	
+
 	@Override
 	public String toString() {
 		try {
-			return toJSON().toString();
-		} catch (JSONException e) {
-			return super.toString();
+			return mapper.writeValueAsString(this);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

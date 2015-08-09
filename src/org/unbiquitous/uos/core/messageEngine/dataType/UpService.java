@@ -1,26 +1,40 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.chainHashCode;
+import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UpService {
-	
-	public enum ParameterType{MANDATORY,OPTIONAL}
-	
+	private static final ObjectMapper mapper = new ObjectMapper();
+
+	public enum ParameterType {
+		MANDATORY, OPTIONAL
+	}
+
+	// Ensuring JSON field names, in case these properties ever change for any
+	// reason...
+	@JsonProperty(value = "name")
+	@JsonInclude(Include.NON_NULL)
 	private String name;
 	
+	@JsonProperty(value = "parameters")
+	@JsonInclude(Include.NON_NULL)
 	private Map<String, ParameterType> parameters;
-	
-	public UpService() {}
-	
+
+	public UpService() {
+	}
+
 	public UpService(String name) {
 		this.name = name;
 	}
-	
 
 	public String getName() {
 		return name;
@@ -29,7 +43,7 @@ public class UpService {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * @return the parameters
 	 */
@@ -38,69 +52,46 @@ public class UpService {
 	}
 
 	/**
-	 * @param parameters the parameters to set
+	 * @param parameters
+	 *            the parameters to set
 	 */
 	public void setParameters(Map<String, ParameterType> parameters) {
 		this.parameters = parameters;
 	}
 
-	public UpService addParameter(String paramName, ParameterType paramType){
-		if (parameters == null){
+	public UpService addParameter(String paramName, ParameterType paramType) {
+		if (parameters == null) {
 			parameters = new HashMap<String, ParameterType>();
 		}
-		
+
 		parameters.put(paramName, paramType);
 		return this;
 	}
-	
+
 	@Override
-	public boolean equals(Object obj)
-	{
-		if (obj == null || ! (obj instanceof UpService))
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof UpService))
 			return false;
-		
-		UpService d = (UpService) obj;
-		return this.name == null ? d.name == null : this.name.equals(d.name);
+
+		UpService other = (UpService) obj;
+		return compare(this.name, other.name) && compare(this.parameters, other.parameters);
 	}
-	
+
 	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
+	public int hashCode() {
+		int hash = chainHashCode(0, this.name);
+		hash = chainHashCode(hash, parameters);
+		return hash;
 	}
 
-	public JSONObject toJSON() throws JSONException {
-		JSONObject json = new JSONObject();
-		json.put("name",this.getName());
-		
-		addParameters(json, "parameters", this.parameters);
-		return json;
-	}
-
-	private void addParameters(JSONObject json, String propName, Map<String, ParameterType> parameterMap) throws JSONException {
-		JSONObject parameters = new JSONObject();
-		json.put(propName, parameters);
-		if (parameterMap != null){
-			for (Entry<String, ParameterType> p:  this.parameters.entrySet()){
-				parameters.put(p.getKey(),p.getValue().name());
-			}
+	@Override
+	public String toString() {
+		try {
+			return mapper.writeValueAsString(this);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-	}
-	
-	public static UpService fromJSON(JSONObject s_json) throws JSONException {
-		UpService s = new UpService();
-		s.setName(s_json.getString("name"));
-		
-		JSONObject p_map = s_json.optJSONObject("parameters");
-		if (p_map != null){
-			for (Entry<String, Object> p:  p_map.toMap().entrySet()){
-				ParameterType parameterType = ParameterType.valueOf(p.getValue().toString());
-				s.addParameter(p.getKey(), parameterType);
-			}
-		}
-		return s;
 	}
 }
