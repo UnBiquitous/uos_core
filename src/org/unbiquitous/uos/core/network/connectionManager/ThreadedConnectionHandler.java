@@ -20,7 +20,6 @@ import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 public class ThreadedConnectionHandler extends Thread {
     
 	private static char MESSAGE_SEPARATOR = '\n';
-	private static int MAX_NOT_READY_TRIES = 300;
 	private static int NOT_READY_SLEEP_TIME = 100;
 	
 	/* *****************************

@@ -176,7 +176,12 @@ public class DeviceDriver implements UosDriver {
 			Response driversResponse = gateway.callService(device, new Call("uos.DeviceDriver", "listDrivers"));
 			Object driverList = driversResponse.getResponseData("driverList");
 			if (driverList != null) {
-				Map<String, Object> driverMap = mapper.readValue(driverList.toString(), Map.class);
+				Map<String, Object> driverMap;
+				if(driverList instanceof Map){
+					driverMap = (Map<String,Object>)driverList;
+				}else{
+					driverMap = mapper.readValue(driverList.toString(), Map.class);
+				}
 				// TODO: this is duplicated with
 				// DeviceManager.registerRemoteDriverInstances
 				for (String id : driverMap.keySet()) {
