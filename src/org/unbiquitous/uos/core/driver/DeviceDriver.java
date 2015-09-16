@@ -1,9 +1,11 @@
 package org.unbiquitous.uos.core.driver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +13,7 @@ import org.unbiquitous.uos.core.AuthenticationHandler;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
+import org.unbiquitous.uos.core.adaptabitilyEngine.NotifyException;
 import org.unbiquitous.uos.core.adaptabitilyEngine.SmartSpaceGateway;
 import org.unbiquitous.uos.core.applicationManager.CallContext;
 import org.unbiquitous.uos.core.deviceManager.DeviceManager;
@@ -20,9 +23,12 @@ import org.unbiquitous.uos.core.driverManager.DriverModel;
 import org.unbiquitous.uos.core.driverManager.UosDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
+import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
+import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
+import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -38,6 +44,9 @@ public class DeviceDriver implements UosDriver {
 	private static Logger logger = UOSLogging.getLogger();
 	private static final ObjectMapper mapper = new ObjectMapper();
 
+	public static final String DEVICE_ENTERED_EVENT_KEY = "deviceEntered";
+	public static final String DEVICE_LEFT_EVENT_KEY = "deviceLeft";
+	
 	private static final String DEVICE_KEY = "device";
 	private static final String SECURITY_TYPE_KEY = "securityType";
 	private static final String DRIVER_LIST_KEY = "driverList";
@@ -47,6 +56,7 @@ public class DeviceDriver implements UosDriver {
 
 	private Gateway gateway;
 	private final UpDriver driver;
+	private Map<String, UpDevice> listeners;
 
 	public DeviceDriver() {
 		driver = new UpDriver("uos.DeviceDriver");
@@ -60,6 +70,8 @@ public class DeviceDriver implements UosDriver {
 		driver.addService("handshake").addParameter(DEVICE_KEY, UpService.ParameterType.MANDATORY);
 
 		driver.addService("tellEquivalentDriver").addParameter(DRIVER_NAME_KEY, UpService.ParameterType.MANDATORY);
+		
+		listeners = new HashMap<String, UpDevice>();
 	}
 
 	@Override
@@ -242,5 +254,70 @@ public class DeviceDriver implements UosDriver {
 		}
 		jsonList.add(mapper.valueToTree(upDriver));
 	}
+	
+	public void registerListener(Call call, Response response, CallContext context) {
+		try {
+			UpNetworkInterface uni = getNetworkInterface(context);
 
+			String eventKey = call.getParameterString("eventKey");
+			List<String> keys = new ArrayList<String>();
+			if ((eventKey == null) || (eventKey.equalsIgnoreCase(DEVICE_ENTERED_EVENT_KEY)))
+				keys.add(DEVICE_ENTERED_EVENT_KEY);
+			if ((eventKey == null) || (eventKey.equalsIgnoreCase(DEVICE_LEFT_EVENT_KEY)))
+				keys.add(DEVICE_LEFT_EVENT_KEY);
+
+			if (keys.isEmpty())
+				response.setError("no valid event key provided for registration");
+			else {
+				for (String key : keys) {
+					String id = uni.toString() + "@" + key;
+					if (!listeners.containsKey(id))
+						listeners.put(id, context.getCallerDevice());
+				}
+			}
+		} catch (Exception e) {
+			response.setError(e.getMessage());
+			logger.log(Level.SEVERE, "Problems while registering for DeviceDriver event", e);
+		}
+	}
+
+	public void unregisterListener(Call call, Response response, CallContext context) {
+		try {
+			UpNetworkInterface uni = getNetworkInterface(context);
+
+			String eventKey = call.getParameterString("eventKey");
+			List<String> keys = new ArrayList<String>();
+			if ((eventKey == null) || (eventKey.equalsIgnoreCase(DEVICE_ENTERED_EVENT_KEY)))
+				keys.add(DEVICE_ENTERED_EVENT_KEY);
+			if ((eventKey == null) || (eventKey.equalsIgnoreCase(DEVICE_LEFT_EVENT_KEY)))
+				keys.add(DEVICE_LEFT_EVENT_KEY);
+
+			if (keys.isEmpty())
+				response.setError("no valid event key provided for deregistration");
+			else {
+				for (String key : keys) {
+					String id = uni.toString() + "@" + key;
+					listeners.remove(id);
+				}
+			}
+		} catch (Exception e) {
+			response.setError(e.getMessage());
+			logger.log(Level.SEVERE, "Problems while unregistering for DeviceDriver event", e);
+		}
+	}
+
+	private static UpNetworkInterface getNetworkInterface(CallContext context) {
+		NetworkDevice networkDevice = context.getCallerNetworkDevice();
+		String host = networkDevice.getNetworkDeviceName().split(":")[1];
+		return new UpNetworkInterface(networkDevice.getNetworkDeviceType(), host);
+	}
+
+	private void doNotify(String eventKey, UpDevice device) throws NotifyException {
+		Notify n = new Notify(eventKey, driver.getName(), null);
+		n.addParameter(DEVICE_KEY, device.toJSON().toString());
+		
+		for (Entry<String, UpDevice> entry : listeners.entrySet())
+			if (entry.getKey().endsWith(eventKey))
+				gateway.notify(n, entry.getValue());
+	}
 }
