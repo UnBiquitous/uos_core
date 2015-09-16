@@ -1,15 +1,12 @@
 package org.unbiquitous.uos.core.driver;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.unbiquitous.json.JSONArray;
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.AuthenticationHandler;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
@@ -27,6 +24,10 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpService;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 /**
  * Driver responsible for providing information about the device.
  * 
@@ -35,7 +36,8 @@ import org.unbiquitous.uos.core.messageEngine.messages.Response;
  */
 public class DeviceDriver implements UosDriver {
 	private static Logger logger = UOSLogging.getLogger();
-	
+	private static final ObjectMapper mapper = new ObjectMapper();
+
 	private static final String DEVICE_KEY = "device";
 	private static final String SECURITY_TYPE_KEY = "securityType";
 	private static final String DRIVER_LIST_KEY = "driverList";
@@ -45,28 +47,24 @@ public class DeviceDriver implements UosDriver {
 
 	private Gateway gateway;
 	private final UpDriver driver;
-	
+
 	public DeviceDriver() {
 		driver = new UpDriver("uos.DeviceDriver");
 
-		driver.addService("listDrivers")
-			.addParameter(DRIVER_NAME_KEY,UpService.ParameterType.OPTIONAL);
+		driver.addService("listDrivers").addParameter(DRIVER_NAME_KEY, UpService.ParameterType.OPTIONAL);
 
-		driver.addService("authenticate")
-			.addParameter(SECURITY_TYPE_KEY,UpService.ParameterType.MANDATORY);
+		driver.addService("authenticate").addParameter(SECURITY_TYPE_KEY, UpService.ParameterType.MANDATORY);
 
 		driver.addService("goodbye");
 
-		driver.addService("handshake")
-			.addParameter(DEVICE_KEY,UpService.ParameterType.MANDATORY);
+		driver.addService("handshake").addParameter(DEVICE_KEY, UpService.ParameterType.MANDATORY);
 
-		driver.addService("tellEquivalentDriver")
-			.addParameter(DRIVER_NAME_KEY,UpService.ParameterType.MANDATORY);
+		driver.addService("tellEquivalentDriver").addParameter(DRIVER_NAME_KEY, UpService.ParameterType.MANDATORY);
 	}
 
 	@Override
 	public UpDriver getDriver() {
-    	return driver;
+		return driver;
 	}
 
 	@Override
@@ -75,170 +73,174 @@ public class DeviceDriver implements UosDriver {
 	}
 
 	@Override
-	public void destroy() {}
+	public void destroy() {
+	}
 
 	@Override
 	public List<UpDriver> getParent() {
 		return null;
 	}
-	
+
 	/**
-	 * Service responsible for retrieving the list of Driver Instances present in the underlying device.
-	 * This listing service can have its result filtered with the use of the parameters 'serviceName' or 'driverName'.
-	 * It responds in a single responseMap within the parameter 'driverList'
+	 * Service responsible for retrieving the list of Driver Instances present
+	 * in the underlying device. This listing service can have its result
+	 * filtered with the use of the parameters 'serviceName' or 'driverName'. It
+	 * responds in a single responseMap within the parameter 'driverList'
 	 */
 	@SuppressWarnings("unchecked")
 	public void listDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		logger.info("Handling DeviceDriverImpl#listDrivers service");
 
 		List<DriverData> listDrivers = null;
-		
+
 		Map<String, Object> parameters = serviceCall.getParameters();
-		
-		//handle parameters to filter message
-		DriverManager driverManager = ((SmartSpaceGateway)this.gateway).getDriverManager();
-		if (parameters != null){
-			listDrivers = driverManager.listDrivers((String) parameters.get(DRIVER_NAME_KEY),this.gateway.getCurrentDevice().getName());
-		}else{
+
+		// handle parameters to filter message
+		DriverManager driverManager = ((SmartSpaceGateway) this.gateway).getDriverManager();
+		if (parameters != null) {
+			listDrivers = driverManager.listDrivers((String) parameters.get(DRIVER_NAME_KEY),
+					this.gateway.getCurrentDevice().getName());
+		} else {
 			// In case no parameters informed, list all drivers
-			listDrivers = driverManager.listDrivers(null,this.gateway.getCurrentDevice().getName());
+			listDrivers = driverManager.listDrivers(null, this.gateway.getCurrentDevice().getName());
 		}
-		
-		//If the current device is doing proxy, filter the list of drivers
-		if( ((SmartSpaceGateway)this.gateway).getConnectivityManager().doProxying() ){
-			((SmartSpaceGateway)this.gateway).getConnectivityManager().filterDriversList(listDrivers);
+
+		// If the current device is doing proxy, filter the list of drivers
+		if (((SmartSpaceGateway) this.gateway).getConnectivityManager().doProxying()) {
+			((SmartSpaceGateway) this.gateway).getConnectivityManager().filterDriversList(listDrivers);
 		}
-		
+
 		// Converts the list of DriverData into Parameters
-		
-		Map<String, JSONObject> driversList = new HashMap<String, JSONObject>();
-		if (listDrivers != null && !listDrivers.isEmpty()){
-			for (DriverData driverData : listDrivers) {
-				
-				try {
-					driversList.put(driverData.getInstanceID(), driverData.getDriver().toJSON());
-				} catch (JSONException e) {
-					logger.log(Level.SEVERE,"Cannot handle Driver with IntanceId : "+driverData.getInstanceID(),e);
-				}
-			}
+		ObjectNode driversList = mapper.getNodeFactory().objectNode();
+		if (listDrivers != null && !listDrivers.isEmpty()) {
+			for (DriverData driverData : listDrivers)
+				driversList.set(driverData.getInstanceID(), mapper.valueToTree(driverData.getDriver()));
 		}
 		@SuppressWarnings("rawtypes")
 		Map responseData = new HashMap();
-		
-		responseData.put(DRIVER_LIST_KEY, new JSONObject(driversList));
-		
+
+		responseData.put(DRIVER_LIST_KEY, driversList);
+
 		serviceResponse.setResponseData(responseData);
 	}
-	
+
 	/**
-	 * Service responsible for authenticating a device. This Service can be called multiple times for a authentication process
-	 * with multiple steps. 
-	 * The authentication algorithm is determined by the parameter 'securityType'.
+	 * Service responsible for authenticating a device. This Service can be
+	 * called multiple times for a authentication process with multiple steps.
+	 * The authentication algorithm is determined by the parameter
+	 * 'securityType'.
 	 */
-	public void authenticate(Call serviceCall,
-			Response serviceResponse, CallContext messageContext) {
-		
+	public void authenticate(Call serviceCall, Response serviceResponse, CallContext messageContext) {
+
 		String securityType = (String) serviceCall.getParameters().get(SECURITY_TYPE_KEY);
-		
-		// find the Authentication handler responsible for the requested securityType
-		AuthenticationHandler ah = ((SmartSpaceGateway) this.gateway).getSecurityManager().getAuthenticationHandler(securityType);
-		
-		// delegate the authentication process to the AuthenticationHandler responsible
-		if (ah != null){
+
+		// find the Authentication handler responsible for the requested
+		// securityType
+		AuthenticationHandler ah = ((SmartSpaceGateway) this.gateway).getSecurityManager()
+				.getAuthenticationHandler(securityType);
+
+		// delegate the authentication process to the AuthenticationHandler
+		// responsible
+		if (ah != null) {
 			ah.authenticate(serviceCall, serviceResponse, messageContext);
-		}else{
-			serviceResponse.setError("No AuthenticationHandler found for the security type : '"+securityType+"' .");
+		} else {
+			serviceResponse.setError("No AuthenticationHandler found for the security type : '" + securityType + "' .");
 		}
-		
+
 	}
-	
+
 	/**
-	 * This method is responsible for creating a mutual knowledge of two device about it's basic informations.
-	 * This information must be informed in the parameter 'device'(<code>UpDevice</code>) by the caller device 
-	 * and will be returned in the same parameter with the information of the called device.
+	 * This method is responsible for creating a mutual knowledge of two device
+	 * about it's basic informations. This information must be informed in the
+	 * parameter 'device'(<code>UpDevice</code>) by the caller device and will
+	 * be returned in the same parameter with the information of the called
+	 * device.
 	 */
-	public void handshake(Call serviceCall, Response serviceResponse, CallContext messageContext){
-		SmartSpaceGateway gtw = (SmartSpaceGateway)this.gateway;
+	@SuppressWarnings("unchecked")
+	public void handshake(Call serviceCall, Response serviceResponse, CallContext messageContext) {
+		SmartSpaceGateway gtw = (SmartSpaceGateway) this.gateway;
 		DeviceManager deviceManager = gtw.getDeviceManager();
-		
+
 		// Get and Convert the UpDevice Parameter
 		String deviceParameter = (String) serviceCall.getParameterString(DEVICE_KEY);
-		if (deviceParameter == null){
+		if (deviceParameter == null) {
 			serviceResponse.setError("No 'device' parameter informed.");
 			return;
 		}
 		try {
-			UpDevice device = UpDevice.fromJSON(new JSONObject(deviceParameter));
-			// TODO : DeviceDriver : validate if the device doing the handshake is the same that is in the parameter
+			UpDevice device = mapper.readValue(deviceParameter, UpDevice.class);
+			// TODO : DeviceDriver : validate if the device doing the handshake
+			// is the same that is in the parameter
 			deviceManager.registerDevice(device);
-			serviceResponse.addParameter(DEVICE_KEY, 
-								gateway.getCurrentDevice().toJSON()
-									);
-			Response driversResponse = 
-					gateway.callService(device, new Call("uos.DeviceDriver","listDrivers"));
+			serviceResponse.addParameter(DEVICE_KEY, mapper.valueToTree(gateway.getCurrentDevice()));
+			Response driversResponse = gateway.callService(device, new Call("uos.DeviceDriver", "listDrivers"));
 			Object driverList = driversResponse.getResponseData("driverList");
-			if (driverList != null){
-				Map<String, Object> driverMap = new JSONObject( driverList.toString()).toMap();
-				// TODO: this is duplicated with DeviceManager.registerRemoteDriverInstances
-				for (String id : driverMap.keySet()){
-					UpDriver upDriver = UpDriver.fromJSON(new JSONObject(driverMap.get(id).toString()));
-					DriverModel driverModel = new DriverModel(id, upDriver , device.getName());
+			if (driverList != null) {
+				Map<String, Object> driverMap;
+				if(driverList instanceof Map){
+					driverMap = (Map<String,Object>)driverList;
+				}else{
+					driverMap = mapper.readValue(driverList.toString(), Map.class);
+				}
+				// TODO: this is duplicated with
+				// DeviceManager.registerRemoteDriverInstances
+				for (String id : driverMap.keySet()) {
+					UpDriver upDriver = mapper.readValue(mapper.writeValueAsString(driverMap.get(id)), UpDriver.class);
+					DriverModel driverModel = new DriverModel(id, upDriver, device.getName());
 					gtw.getDriverManager().insert(driverModel);
 				}
 			}
 		} catch (Exception e) {
 			serviceResponse.setError(e.getMessage());
-			logger.log(Level.SEVERE,"Problems on handshake",e);
-		} 
+			logger.log(Level.SEVERE, "Problems on handshake", e);
+		}
 	}
-	
+
 	/**
-	 * This method is responsible for informing that the caller device is leaving the smart-space, so all its data 
-	 * must be removed.
+	 * This method is responsible for informing that the caller device is
+	 * leaving the smart-space, so all its data must be removed.
 	 */
-	public void goodbye(Call serviceCall,Response serviceResponse, CallContext messageContext) {
-		((SmartSpaceGateway)gateway).getDeviceManager().deviceLeft(messageContext.getCallerNetworkDevice());
+	public void goodbye(Call serviceCall, Response serviceResponse, CallContext messageContext) {
+		((SmartSpaceGateway) gateway).getDeviceManager().deviceLeft(messageContext.getCallerNetworkDevice());
 	}
-	
+
 	/**
 	 * This method is responsible for informing the unknown equivalent driverss.
 	 */
 	public void tellEquivalentDrivers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		try {
-			
+
 			String equivalentDrivers = (String) serviceCall.getParameter(DRIVERS_NAME_KEY);
-			JSONArray equivalentDriversJson = new JSONArray(equivalentDrivers);
-			List<JSONObject> jsonList = new ArrayList<JSONObject>();
-			Map<String,Object> responseData = new HashMap<String, Object>();
-			
-			for(int i = 0; i < equivalentDriversJson.length(); i++) {
-				String equivalentDriver = equivalentDriversJson.getString(i);
-				UpDriver driver = ((SmartSpaceGateway)gateway).getDriverManager().getDriverFromEquivalanceTree(equivalentDriver);
-				
-				if(driver != null) {
+			ArrayNode equivalentDriversJson = (ArrayNode) mapper.readTree(equivalentDrivers);
+			ArrayNode jsonList = mapper.getNodeFactory().arrayNode();
+			Map<String, Object> responseData = new HashMap<String, Object>();
+			for (int i = 0; i < equivalentDriversJson.size(); ++i) {
+				String equivalentDriver = equivalentDriversJson.get(i).asText();
+				UpDriver driver = ((SmartSpaceGateway) gateway).getDriverManager()
+						.getDriverFromEquivalanceTree(equivalentDriver);
+				if (driver != null) {
 					addToEquivalanceList(jsonList, driver);
-				}	
+				}
 			}
-			responseData.put(INTERFACES_KEY, new JSONArray(jsonList.toString()).toString());
-			serviceResponse.setResponseData(responseData);			
-		} catch (JSONException e) {
-			logger.log(Level.SEVERE,"Problems on equivalent drivers." ,e);
+			responseData.put(INTERFACES_KEY, jsonList.toString());
+			serviceResponse.setResponseData(responseData);
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "Problems on equivalent drivers.", e);
 		}
 	}
-	
-	private void addToEquivalanceList(List<JSONObject> jsonList, UpDriver upDriver) throws JSONException {
-		
+
+	private void addToEquivalanceList(ArrayNode jsonList, UpDriver upDriver) {
 		List<String> equivalentDrivers = upDriver.getEquivalentDrivers();
-		
-		if(equivalentDrivers != null) {
+		if (equivalentDrivers != null) {
 			for (String equivalentDriver : equivalentDrivers) {
-				UpDriver driver = ((SmartSpaceGateway)gateway).getDriverManager().getDriverFromEquivalanceTree(equivalentDriver);
-				if(driver != null) {
+				UpDriver driver = ((SmartSpaceGateway) gateway).getDriverManager()
+						.getDriverFromEquivalanceTree(equivalentDriver);
+				if (driver != null) {
 					addToEquivalanceList(jsonList, driver);
 				}
 			}
 		}
-		jsonList.add(upDriver.toJSON());
+		jsonList.add(mapper.valueToTree(upDriver));
 	}
 
 }

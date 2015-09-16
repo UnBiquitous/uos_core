@@ -1,19 +1,31 @@
 package org.unbiquitous.uos.core.messageEngine.dataType;
 
+import static org.unbiquitous.uos.core.ClassLoaderUtils.chainHashCode;
 import static org.unbiquitous.uos.core.ClassLoaderUtils.compare;
 
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
+import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UpNetworkInterface {
+	private static final ObjectMapper mapper = new ObjectMapper();
 
+	// Ensuring JSON field names, in case these properties ever change for any
+	// reason...
+	@JsonProperty(value = "netType")
+	@JsonInclude(Include.NON_NULL)
 	private String netType;
 	
+	@JsonProperty(value = "networkAddress")
+	@JsonInclude(Include.NON_NULL)
 	private String networkAddress;
-	
-	public UpNetworkInterface() {}
-	
+
+	public UpNetworkInterface() {
+	}
+
 	public UpNetworkInterface(String netType, String networkAddress) {
 		this.netType = netType;
 		this.networkAddress = networkAddress;
@@ -33,42 +45,32 @@ public class UpNetworkInterface {
 
 	public void setNetworkAddress(String networkAddress) {
 		this.networkAddress = networkAddress;
-	} 
-	
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = chainHashCode(0, networkAddress);
+		hash = chainHashCode(hash, netType);
+		return hash;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || ! (obj instanceof UpNetworkInterface) ){
+		if (obj == this)
+			return true;
+		if (!(obj instanceof UpNetworkInterface))
 			return false;
-		}
-		
-		UpNetworkInterface d = (UpNetworkInterface) obj;
-		
-		if(!compare(this.networkAddress,d.networkAddress)) return false;
-		if(!compare(this.netType,d.netType)) return false;
-		
-		return true;
+		UpNetworkInterface other = (UpNetworkInterface) obj;
+
+		return compare(this.networkAddress, other.networkAddress) && compare(this.netType, other.netType);
 	}
-	
-	public JSONObject toJSON() throws JSONException {
-		JSONObject ni_json = new JSONObject();
-		ni_json.put("networkAddress", this.getNetworkAddress());
-		ni_json.put("netType", this.getNetType());
-		return ni_json;
-	}
-	
-	public static UpNetworkInterface fromJSON(JSONObject json)
-			throws JSONException {
-		UpNetworkInterface ni =  new UpNetworkInterface();
-		ni.setNetworkAddress(json.getString("networkAddress"));
-		ni.setNetType(json.getString("netType"));
-		return ni;
-	}
-	
+
+	@Override
 	public String toString() {
 		try {
-			return toJSON().toString();
-		} catch (JSONException e) {
-			return super.toString();
+			return mapper.writeValueAsString(this);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

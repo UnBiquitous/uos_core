@@ -15,7 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +25,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.unbiquitous.json.JSONArray;
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
@@ -49,8 +46,15 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerContr
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class DeviceManagerTest {
+
+	private final JsonNodeFactory factory = JsonNodeFactory.instance;
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	private DeviceDao dao;
 	private DeviceManager deviceManager;
@@ -75,12 +79,9 @@ public class DeviceManagerTest {
 		});
 		gateway = mock(Gateway.class);
 		proxier = mock(ConnectivityManager.class);
-		currentDevice = new UpDevice("myDevice").addNetworkInterface(
-				"127.0.0.1:80", "Ethernet:TCP");
-		driverManager = new DriverManager(currentDevice, driverDao, dao,
-				new ReflectionServiceCaller(null));
-		deviceManager = new DeviceManager(currentDevice, dao, driverDao,
-				connManager, proxier, gateway, driverManager);
+		currentDevice = new UpDevice("myDevice").addNetworkInterface("127.0.0.1:80", "Ethernet:TCP");
+		driverManager = new DriverManager(currentDevice, driverDao, dao, new ReflectionServiceCaller(null));
+		deviceManager = new DeviceManager(currentDevice, dao, driverDao, connManager, proxier, gateway, driverManager);
 	}
 
 	@After
@@ -104,8 +105,7 @@ public class DeviceManagerTest {
 	// public void registerDevice(UpDevice device){
 	@Test
 	public void shouldSaveWhenRegistering() {
-		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface(
-				"127.0.0.2", "Ethernet:TCP");
+		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(toRegister);
 		List<UpDevice> devices = dao.list(null, null);
 		assertNotNull(devices);
@@ -116,8 +116,7 @@ public class DeviceManagerTest {
 	// public UpDevice retrieveDevice(String deviceName){
 	@Test
 	public void shouldRetrieveRegisteredDevice() {
-		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface(
-				"127.0.0.2", "Ethernet:TCP");
+		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(toRegister);
 		assertNotNull(deviceManager.retrieveDevice("aDevice"));
 		assertEquals(toRegister, deviceManager.retrieveDevice("aDevice"));
@@ -125,8 +124,7 @@ public class DeviceManagerTest {
 
 	@Test
 	public void shouldNotRetrieveAUnRegisteredDevice() {
-		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface(
-				"127.0.0.2", "Ethernet:TCP");
+		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(toRegister);
 		assertNull(deviceManager.retrieveDevice("NotDevice"));
 	}
@@ -135,48 +133,39 @@ public class DeviceManagerTest {
 	// networkType){
 	@Test
 	public void shouldRetrieveARegisteredDeviceByNetworkAddress() {
-		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface(
-				"127.0.0.2", "Ethernet:TCP");
+		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(toRegister);
 		assertNotNull(deviceManager.retrieveDevice("127.0.0.2", "Ethernet:TCP"));
-		assertEquals(toRegister,
-				deviceManager.retrieveDevice("127.0.0.2", "Ethernet:TCP"));
+		assertEquals(toRegister, deviceManager.retrieveDevice("127.0.0.2", "Ethernet:TCP"));
 	}
 
 	@Test
 	public void shouldNotRetrieveAUnRegisteredDeviceByNetworkAddress() {
-		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface(
-				"127.0.0.2", "Ethernet:TCP");
+		UpDevice toRegister = new UpDevice("aDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(toRegister);
 		assertNull(deviceManager.retrieveDevice("127.0.0.3", "Ethernet:TCP"));
 		assertNull(deviceManager.retrieveDevice("127.0.0.2", "Ethernet:UDP"));
 	}
 
-	
 	@Test
 	public void listsAllRegisteredDevices() {
-		UpDevice first = new UpDevice("firstDevice")
-						.addNetworkInterface("127.0.0.1", "Ethernet:TCP");
+		UpDevice first = new UpDevice("firstDevice").addNetworkInterface("127.0.0.1", "Ethernet:TCP");
 		deviceManager.registerDevice(first);
-		UpDevice second = new UpDevice("secondDevice")
-						.addNetworkInterface("127.0.0.2", "Ethernet:TCP");
+		UpDevice second = new UpDevice("secondDevice").addNetworkInterface("127.0.0.2", "Ethernet:TCP");
 		deviceManager.registerDevice(second);
-		assertThat(deviceManager.listDevices()).containsOnly(currentDevice,first,second);
+		assertThat(deviceManager.listDevices()).containsOnly(currentDevice, first, second);
 	}
-	
-	//TODO: two devices with the same name == trouble
-	
+
+	// TODO: two devices with the same name == trouble
+
 	@Test
-	public void shouldRetrieveMultipleInstancesByDriverName()
-			throws DriverManagerException, DriverNotFoundException {
+	public void shouldRetrieveMultipleInstancesByDriverName() throws DriverManagerException, DriverNotFoundException {
 		UpDriver driver = new UpDriver("d1");
 		UpDevice myPhone = new UpDevice("my.Phone");
 		deviceManager.registerDevice(myPhone);
 		driverManager.insert(new DriverModel("id1", driver, "my.Phone"));
-		driverManager.insert(new DriverModel("id2", driver, currentDevice
-				.getName()));
-		driverManager.insert(new DriverModel("id3", new UpDriver("d3"),
-				"my.tablet"));
+		driverManager.insert(new DriverModel("id2", driver, currentDevice.getName()));
+		driverManager.insert(new DriverModel("id3", new UpDriver("d3"), "my.tablet"));
 		List<DriverData> list = driverManager.listDrivers("d1", null);
 		assertNotNull(list);
 		assertEquals(2, list.size());
@@ -187,17 +176,15 @@ public class DeviceManagerTest {
 	}
 
 	@Test
-	public void shouldRetrieveMultipleInstancesByDeviceName()
-			throws DriverManagerException, DriverNotFoundException {
+	public void shouldRetrieveMultipleInstancesByDeviceName() throws DriverManagerException, DriverNotFoundException {
 		UpDriver driver = new UpDriver("d1");
-				 driver.addService("s1").addParameter("p1", ParameterType.MANDATORY);
+		driver.addService("s1").addParameter("p1", ParameterType.MANDATORY);
 		UpDriver driverD3 = new UpDriver("d3");
-				 driverD3.addEvent("e1");
+		driverD3.addEvent("e1");
 		UpDevice myPhone = new UpDevice("my.Phone");
 		deviceManager.registerDevice(myPhone);
 		driverManager.insert(new DriverModel("id1", driver, "my.Phone"));
-		driverManager.insert(new DriverModel("id2", driver, currentDevice
-				.getName()));
+		driverManager.insert(new DriverModel("id2", driver, currentDevice.getName()));
 		driverManager.insert(new DriverModel("id3", driverD3, "my.Phone"));
 		List<DriverData> list = driverManager.listDrivers(null, "my.Phone");
 		assertNotNull(list);
@@ -213,17 +200,15 @@ public class DeviceManagerTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void ifTheDeviceIsAlreadyKnownShouldDoNothing() throws Exception {
-		deviceManager.registerDevice(new UpDevice("IShouldKnow")
-				.addNetworkInterface("ADDR_KNOWN", "UNEXISTANT"));
+		deviceManager.registerDevice(new UpDevice("IShouldKnow").addNetworkInterface("ADDR_KNOWN", "UNEXISTANT"));
 		assertEquals(2, dao.list().size());
 		when(connManager.getHost(eq("ADDR_KNOWN"))).thenReturn("ADDR_KNOWN");
 		NetworkDevice enteree = mock(NetworkDevice.class);
 		when(enteree.getNetworkDeviceName()).thenReturn("ADDR_KNOWN");
 		when(enteree.getNetworkDeviceType()).thenReturn("UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
-		verify(gateway, never()).callService(any(UpDevice.class),
-				any(String.class), any(String.class), any(String.class),
-				any(String.class), any(Map.class));
+		verify(gateway, never()).callService(any(UpDevice.class), any(String.class), any(String.class),
+				any(String.class), any(String.class), any(Map.class));
 		assertEquals(2, dao.list().size());
 	}
 
@@ -233,9 +218,8 @@ public class DeviceManagerTest {
 	public void ifTheDeviceIsNullShouldDoNothing() throws Exception {
 		assertEquals(1, dao.list().size());
 		deviceManager.deviceEntered(null);
-		verify(gateway, never()).callService(any(UpDevice.class),
-				any(String.class), any(String.class), any(String.class),
-				any(String.class), any(Map.class));
+		verify(gateway, never()).callService(any(UpDevice.class), any(String.class), any(String.class),
+				any(String.class), any(String.class), any(Map.class));
 		assertEquals(1, dao.list().size());
 	}
 
@@ -244,9 +228,8 @@ public class DeviceManagerTest {
 	public void ifTheDeviceProvidesNoDatalShouldDoNothing() throws Exception {
 		assertEquals(1, dao.list().size());
 		deviceManager.deviceEntered(mock(NetworkDevice.class));
-		verify(gateway, never()).callService(any(UpDevice.class),
-				any(String.class), any(String.class), any(String.class),
-				any(String.class), any(Map.class));
+		verify(gateway, never()).callService(any(UpDevice.class), any(String.class), any(String.class),
+				any(String.class), any(String.class), any(Map.class));
 		assertEquals(1, dao.list().size());
 	}
 
@@ -256,18 +239,15 @@ public class DeviceManagerTest {
 
 	@Test
 	public void IfDontKnowTheDeviceCallAHandshakeWithIt() throws Exception {
-		when(gateway.callService((UpDevice)anyObject(), (Call)anyObject()))
-					.thenReturn(new Response().addParameter("device", new UpDevice("The Guy").toJSON()));
+		when(gateway.callService((UpDevice) anyObject(), (Call) anyObject()))
+				.thenReturn(new Response().addParameter("device", mapper.writeValueAsString(new UpDevice("The Guy"))));
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		deviceManager.deviceEntered(enteree);
-		ArgumentCaptor<Call> scCacther = ArgumentCaptor
-				.forClass(Call.class);
-		verify(gateway, times(2)).callService(any(UpDevice.class),
-				scCacther.capture());
+		ArgumentCaptor<Call> scCacther = ArgumentCaptor.forClass(Call.class);
+		verify(gateway, times(2)).callService(any(UpDevice.class), scCacther.capture());
 		Call parameter = scCacther.getAllValues().get(0);
 		assertEquals("handshake", parameter.getService());
-		assertEquals("uos.DeviceDriver",
-				parameter.getDriver());
+		assertEquals("uos.DeviceDriver", parameter.getDriver());
 		assertNull(parameter.getInstanceId());
 		assertNull(parameter.getSecurityType());
 		assertEquals(currentDevice.toString(), parameter.getParameter("device"));
@@ -276,53 +256,40 @@ public class DeviceManagerTest {
 	@Test
 	public void IfTheHandShakeWorksRegisterTheReturnedDevice() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
-		UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface(
-				"ADDR_UNKNOWN", "UNEXISTANT").addNetworkInterface(
-				"127.255.255.666", "Ethernet:TFH");
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								newGuy.toString()));
-		deviceManager.deviceEntered(enteree);
-		assertEquals(2, dao.list().size());
-		assertEquals(newGuy, dao.find(newGuy.getName()));
-	}
-	
-	@Test
-	public void IfTheHandShakeHappensTwiceDoNothing() throws Exception {
-		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
-		UpDevice newGuy = new UpDevice("TheNewGuy")
-			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
-			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								newGuy.toString()));
-		deviceManager.deviceEntered(enteree);
-		deviceManager.deviceEntered(enteree);
-		assertEquals(2, dao.list().size());
-		assertEquals(newGuy, dao.find(newGuy.getName()));
-	}
-	
-	@Test
-	public void IfTheSecondHandShakeSucceedsRegisterDevice() throws Exception {
-		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
-		UpDevice newGuy = new UpDevice("TheNewGuy")
-			.addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
-			.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
-		deviceManager.deviceEntered(enteree);
-		when(gatewayHandshakeCall())
-		.thenReturn(
-				new Response().addParameter("device",
-						newGuy.toString()));
+		UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+				.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", newGuy.toString()));
 		deviceManager.deviceEntered(enteree);
 		assertEquals(2, dao.list().size());
 		assertEquals(newGuy, dao.find(newGuy.getName()));
 	}
 
 	@Test
-	public void IfTheHandShakeDoesNotWorksNothingHappens_NoResponse()
-			throws Exception {
+	public void IfTheHandShakeHappensTwiceDoNothing() throws Exception {
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
+		UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+				.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
+		deviceManager.deviceEntered(enteree);
+		assertEquals(2, dao.list().size());
+		assertEquals(newGuy, dao.find(newGuy.getName()));
+	}
+
+	@Test
+	public void IfTheSecondHandShakeSucceedsRegisterDevice() throws Exception {
+		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
+		UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
+				.addNetworkInterface("127.255.255.666", "Ethernet:TFH");
+		deviceManager.deviceEntered(enteree);
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", newGuy.toString()));
+		deviceManager.deviceEntered(enteree);
+		assertEquals(2, dao.list().size());
+		assertEquals(newGuy, dao.find(newGuy.getName()));
+	}
+
+	@Test
+	public void IfTheHandShakeDoesNotWorksNothingHappens_NoResponse() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(null);
 		deviceManager.deviceEntered(enteree);
@@ -330,8 +297,7 @@ public class DeviceManagerTest {
 	}
 
 	@Test
-	public void IfTheHandShakeDoesNotWorksNothingHappens_NoData()
-			throws Exception {
+	public void IfTheHandShakeDoesNotWorksNothingHappens_NoData() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(new Response());
 		deviceManager.deviceEntered(enteree);
@@ -339,8 +305,7 @@ public class DeviceManagerTest {
 	}
 
 	@Test
-	public void IfTheHandShakeDoesNotWorksNothingHappens_ErrorOnResponse()
-			throws Exception {
+	public void IfTheHandShakeDoesNotWorksNothingHappens_ErrorOnResponse() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		Response error = new Response();
 		error.setError("Just Kidding");
@@ -348,10 +313,9 @@ public class DeviceManagerTest {
 		deviceManager.deviceEntered(enteree);
 		assertEquals(1, dao.list().size());
 	}
-	
+
 	@Test
-	public void IfTheHandShakeDoesNotWorksNothingHappens_Exception()
-			throws Exception {
+	public void IfTheHandShakeDoesNotWorksNothingHappens_Exception() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenThrow(new RuntimeException());
 		deviceManager.deviceEntered(enteree);
@@ -365,305 +329,252 @@ public class DeviceManagerTest {
 	public void IfDontKnowTheDeviceCallListDriversOnIt() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
 		deviceManager.deviceEntered(enteree);
-		Call listDrivers = new Call(
-				"uos.DeviceDriver",
-				"listDrivers", null);
-		verify(gateway, times(1)).callService(any(UpDevice.class),
-				eq(listDrivers));
+		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers", null);
+		verify(gateway, times(1)).callService(any(UpDevice.class), eq(listDrivers));
 	}
 
 	@Test
 	public void AfterListingTheDriverTheyMustBeRegistered() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
-		JSONObject driverList = new JSONObject();
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
-		dummy.addService("s1").addParameter("s1p1", ParameterType.MANDATORY)
-				.addParameter("s1p2", ParameterType.OPTIONAL);
+		dummy.addService("s1").addParameter("s1p1", ParameterType.MANDATORY).addParameter("s1p2",
+				ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", dummy.toJSON());
-		driverList.put("id2", dummy.toJSON());
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",driverList));
+		driverList.set("id1", mapper.valueToTree(dummy));
+		driverList.set("id2", mapper.valueToTree(dummy));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList));
 		deviceManager.deviceEntered(enteree);
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(2, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-								.isEqualTo(dummy.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy));
 		assertEquals("id2", newGuyDrivers.get(1).id());
-		assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
-								.isEqualTo(dummy.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(1).driver())).isEqualTo(mapper.valueToTree(dummy));
 	}
 
 	@Test
-	public void shouldNotRegisterADriverDueToInterfaceValidationError()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToInterfaceValidationError() throws ServiceCallException, IOException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		JSONObject driverList = new JSONObject();
-		driverList.put("id1", dummy.toJSON());
-		
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList", driverList));
+		ObjectNode driverList = factory.objectNode();
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList));
+
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
-		
+
 		equivalentDriver.addEquivalentDrivers(Pointer.DRIVER_NAME);
-		
+
 		UpService service = new UpService(Pointer.MOVE_EVENT);
 		service.addParameter(Pointer.AXIS_X, ParameterType.MANDATORY);
 		service.addParameter(Pointer.AXIS_Y, ParameterType.MANDATORY);
 		equivalentDriver.addEvent(service);
-		
+
 		UpService register = new UpService("registerListener").addParameter("eventKey", ParameterType.MANDATORY);
 		equivalentDriver.addService(register);
-		
+
 		UpService unregister = new UpService("unregisterListener").addParameter("eventKey", ParameterType.OPTIONAL);
 		equivalentDriver.addService(unregister);
 
-		jsonList.add(equivalentDriver.toJSON());
-		
-		when(gatewayTellEquivalentDriverCall()).thenReturn(new Response().addParameter("interfaces",new JSONArray(jsonList).toString()));
-		
+		jsonList.add(mapper.valueToTree(equivalentDriver));
+
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
+
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverDueToNullEquivalentDriverResponse()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToNullEquivalentDriverResponse() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		JSONObject driverList = new JSONObject();
-		driverList.put("id1", dummy.toJSON());
-		
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList", driverList.toString()));
+		ObjectNode driverList = factory.objectNode();
+		driverList.set("id1", mapper.valueToTree(dummy));
+
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
 		when(gatewayTellEquivalentDriverCall()).thenReturn(null);
-		
+
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverDueToInterfaceNotProvided()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToInterfaceNotProvided() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		JSONObject driverList = new JSONObject();
-		driverList.put("id1", dummy.toJSON());
-		
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList", driverList.toString()));
+		ObjectNode driverList = factory.objectNode();
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", null));
-		
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
+
+		when(gatewayTellEquivalentDriverCall()).thenReturn(new Response().addParameter("interfaces", null));
+
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverDueToWrongJSONObject()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToWrongJSONObject() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers(Pointer.DRIVER_NAME);
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList", new String("wrongJSONObject")));
+		when(gatewayListDriversCall())
+				.thenReturn(new Response().addParameter("driverList", new String("wrongJSONObject")));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverDueToMissingServer()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToMissingServer() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers(Pointer.DRIVER_NAME);
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverDueToEquivalentDriverInterfaceValidationError()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverDueToEquivalentDriverInterfaceValidationError() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addEquivalentDrivers(Pointer.DRIVER_NAME);
 		equivalentDriver.addService("s1");
 
-		jsonList.add(equivalentDriver.toJSON());
+		jsonList.add(mapper.valueToTree(equivalentDriver));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldNotRegisterADriverWithEquivalentDriverNotInformed()
-			throws ServiceCallException, JSONException {
+	public void shouldNotRegisterADriverWithEquivalentDriverNotInformed() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 		equivalentDriver.addEquivalentDrivers("notInformedEquivalentDriver");
 
-		jsonList.add(equivalentDriver.toJSON());
+		jsonList.add(mapper.valueToTree(equivalentDriver));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
-	public void shouldNotRegisterADriverWithTwoEquivalentDriversNotInformed()
-			throws ServiceCallException, JSONException {
+
+	public void shouldNotRegisterADriverWithTwoEquivalentDriversNotInformed() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver1");
 		dummy.addEquivalentDrivers("equivalentDriver2");
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver1 = new UpDriver("equivalentDriver1");
 		equivalentDriver1.addService("s1");
@@ -672,73 +583,60 @@ public class DeviceManagerTest {
 		equivalentDriver2.addEquivalentDrivers("notInformedEquivalentDriver2");
 		equivalentDriver2.addService("s1");
 
-		jsonList.add(equivalentDriver1.toJSON());
-		jsonList.add(equivalentDriver2.toJSON());
+		jsonList.add(mapper.valueToTree(equivalentDriver1));
+		jsonList.add(mapper.valueToTree(equivalentDriver2));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(0, newGuyDrivers.size());
 	}
-	
+
 	@Test
-	public void shouldRegisterADriverWithUnknownEquivalentDriver()
-			throws ServiceCallException, JSONException {
+	public void shouldRegisterADriverWithUnknownEquivalentDriver() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 
-		jsonList.add(equivalentDriver.toJSON());
+		jsonList.add(mapper.valueToTree(equivalentDriver));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
 		assertEquals(1, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-								.isEqualTo(dummy.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy));
 	}
 
 	@Test
-	public void shouldRegisterTwoDriversWithTheSameUnknownEquivalentDriver()
-			throws ServiceCallException, JSONException {
+	public void shouldRegisterTwoDriversWithTheSameUnknownEquivalentDriver() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 
 		UpDriver dummy1 = new UpDriver("DummyDriver1");
 		dummy1.addService("s1");
@@ -748,23 +646,20 @@ public class DeviceManagerTest {
 		dummy2.addService("s1");
 		dummy2.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("iddummy1", dummy1.toJSON());
-		driverList.put("iddummy2", dummy2.toJSON());
+		driverList.set("iddummy1", mapper.valueToTree(dummy1));
+		driverList.set("iddummy2", mapper.valueToTree(dummy2));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		ArrayNode jsonList = factory.arrayNode();
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
 
-		jsonList.add(equivalentDriver.toJSON());
+		jsonList.add(mapper.valueToTree(equivalentDriver));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
 
 		deviceManager.deviceEntered(enteree);
 
@@ -772,51 +667,40 @@ public class DeviceManagerTest {
 
 		assertEquals(2, newGuyDrivers.size());
 		assertEquals("iddummy1", newGuyDrivers.get(0).id());
-		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-								.isEqualTo(dummy1.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy1));
 		assertEquals("iddummy2", newGuyDrivers.get(1).id());
-		assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
-								.isEqualTo(dummy2.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(1).driver())).isEqualTo(mapper.valueToTree(dummy2));
 	}
 
 	@Test
-	public void shouldRegisterADriverWithTwoLevelsOfUnknownEquivalentDrivers()
-			throws ServiceCallException, JSONException {
+	public void shouldRegisterADriverWithTwoLevelsOfUnknownEquivalentDrivers() throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
 
-		when(gatewayHandshakeCall())
-				.thenReturn(
-						new Response().addParameter("device",
-								device.toString()));
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
 
-		JSONObject driverList = new JSONObject();
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
 		dummy.addService("s1");
 		dummy.addEquivalentDrivers("equivalentDriver");
 
-		driverList.put("id1", dummy.toJSON());
+		driverList.set("id1", mapper.valueToTree(dummy));
 
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 
 		UpDriver equivalentDriver = new UpDriver("equivalentDriver");
 		equivalentDriver.addService("s1");
-		equivalentDriver
-				.addEquivalentDrivers("equivalentToTheEquivalentDriver");
+		equivalentDriver.addEquivalentDrivers("equivalentToTheEquivalentDriver");
 
-		UpDriver equivalentToTheEquivalentDriver = new UpDriver(
-				"equivalentToTheEquivalentDriver");
+		UpDriver equivalentToTheEquivalentDriver = new UpDriver("equivalentToTheEquivalentDriver");
 		equivalentToTheEquivalentDriver.addService("s1");
 
-		List<JSONObject> equivalentDrivers = new ArrayList<JSONObject>();
-		equivalentDrivers.add(equivalentDriver.toJSON());
-		equivalentDrivers.add(equivalentToTheEquivalentDriver.toJSON());
+		ArrayNode equivalentDrivers = factory.arrayNode();
+		equivalentDrivers.add(mapper.valueToTree(equivalentDriver));
+		equivalentDrivers.add(mapper.valueToTree(equivalentToTheEquivalentDriver));
 
-		when(gatewayTellEquivalentDriverCall()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						equivalentDrivers).toString()));
+		when(gatewayTellEquivalentDriverCall())
+				.thenReturn(new Response().addParameter("interfaces", equivalentDrivers.toString()));
 
 		deviceManager.deviceEntered(enteree);
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
@@ -824,128 +708,109 @@ public class DeviceManagerTest {
 		// verify(gatewayTellEquivalentDriverCall(), times(2));
 		assertEquals(1, newGuyDrivers.size());
 		assertEquals("id1", newGuyDrivers.get(0).id());
-		assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-								.isEqualTo(dummy.toJSON().toMap());
+		assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy));
 	}
-	
+
 	@Test
 	public void shouldRegisterTwoDriversWithTheSameUnknownEquivalentDriverFromDifferentLevels()
-			throws ServiceCallException, JSONException {
+			throws ServiceCallException {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice device = new UpDevice("A").addNetworkInterface("A", "T");
-		
-		when(gatewayHandshakeCall())
-		.thenReturn(
-				new Response().addParameter("device",
-						device.toString()));
-		
-		JSONObject driverList = new JSONObject();
-		
+
+		when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", device.toString()));
+
+		ObjectNode driverList = factory.objectNode();
+
 		UpDriver dummy1 = new UpDriver("D1");
 		dummy1.addService("s1");
 		dummy1.addEquivalentDrivers("D0");
-		
+
 		UpDriver dummy2 = new UpDriver("D4");
 		dummy2.addService("s1");
 		dummy2.addEquivalentDrivers("D3");
-		
-		driverList.put("iddummy1", dummy1.toJSON());
-		driverList.put("iddummy2", dummy2.toJSON());
-		
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
-		
-		List<JSONObject> jsonList = new ArrayList<JSONObject>();
-		
+
+		driverList.set("iddummy1", mapper.valueToTree(dummy1));
+		driverList.set("iddummy2", mapper.valueToTree(dummy2));
+
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
+
+		ArrayNode jsonList = factory.arrayNode();
+
 		UpDriver d0 = new UpDriver("D0");
 		d0.addService("s1");
-		
+
 		UpDriver d2 = new UpDriver("D2");
 		d2.addService("s1");
 		d2.addEquivalentDrivers(d0.getName());
-		
+
 		UpDriver d3 = new UpDriver("D3");
 		d3.addService("s1");
 		d3.addEquivalentDrivers(d2.getName());
-		
-		jsonList.add(d3.toJSON());
-		jsonList.add(d0.toJSON());
-		jsonList.add(d2.toJSON());
-		
-		when(gatewayTellTwoEquivalentDrivers()).thenReturn(
-				new Response().addParameter("interfaces", new JSONArray(
-						jsonList).toString()));
-		
+
+		jsonList.add(mapper.valueToTree(d3));
+		jsonList.add(mapper.valueToTree(d0));
+		jsonList.add(mapper.valueToTree(d2));
+
+		when(gatewayTellTwoEquivalentDrivers())
+				.thenReturn(new Response().addParameter("interfaces", jsonList.toString()));
+
 		deviceManager.deviceEntered(enteree);
-		
+
 		List<DriverModel> newGuyDrivers = driverDao.list(null, "A");
-		
-		//TODO: This
+
+		// TODO: This
 		assertEquals(2, newGuyDrivers.size());
-		if (newGuyDrivers.get(0).id().equals("iddummy1")){
+		if (newGuyDrivers.get(0).id().equals("iddummy1")) {
 			assertEquals("iddummy1", newGuyDrivers.get(0).id());
-			assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-									.isEqualTo(dummy1.toJSON().toMap());
+			assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy1));
 			assertEquals("iddummy2", newGuyDrivers.get(1).id());
-			assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
-									.isEqualTo(dummy2.toJSON().toMap());
-		}else{
+			assertThat(mapper.valueToTree(newGuyDrivers.get(1).driver())).isEqualTo(mapper.valueToTree(dummy2));
+		} else {
 			assertEquals("iddummy2", newGuyDrivers.get(0).id());
-			assertThat(newGuyDrivers.get(0).driver().toJSON().toMap())
-									.isEqualTo(dummy2.toJSON().toMap());
+			assertThat(mapper.valueToTree(newGuyDrivers.get(0).driver())).isEqualTo(mapper.valueToTree(dummy2));
 			assertEquals("iddummy1", newGuyDrivers.get(1).id());
-			assertThat(newGuyDrivers.get(1).driver().toJSON().toMap())
-									.isEqualTo(dummy1.toJSON().toMap());
+			assertThat(mapper.valueToTree(newGuyDrivers.get(1).driver())).isEqualTo(mapper.valueToTree(dummy1));
 		}
 	}
 
 	@Test
-	public void IfTheListDriversDoesNotWorksNothingHappens_NoResponse()
-			throws Exception {
+	public void IfTheListDriversDoesNotWorksNothingHappens_NoResponse() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
 		when(gatewayListDriversCall()).thenReturn(null);
 		deviceManager.deviceEntered(enteree);
 		assertEquals(0, driverDao.list(null, "A").size());
 	}
 
 	@Test
-	public void IfTheListDriversDoesNotWorksNothingHappens_NoData()
-			throws Exception {
+	public void IfTheListDriversDoesNotWorksNothingHappens_NoData() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
 		when(gatewayListDriversCall()).thenReturn(new Response());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(0, driverDao.list(null, "A").size());
 	}
 
-	
-	//FIXME: [B&M] Sempre passa! Como testar caso de erro?!
+	// FIXME: [B&M] Sempre passa! Como testar caso de erro?!
 	@Test
-	public void shouldNotHandshakeWithItsSelf() throws NetworkException, ServiceCallException, JSONException {
+	public void shouldNotHandshakeWithItsSelf() throws NetworkException, ServiceCallException {
 		NetworkDevice enteree = mock(NetworkDevice.class);
-		
-		when(enteree.getNetworkDeviceName()).thenReturn("127.0.0.1:8080");		
+
+		when(enteree.getNetworkDeviceName()).thenReturn("127.0.0.1:8080");
 		when(enteree.getNetworkDeviceType()).thenReturn("Ethernet:TCP");
 		when(connManager.getHost("127.0.0.1:8080")).thenReturn("127.0.0.1");
 		when(connManager.getHost("127.0.0.1:80")).thenReturn("127.0.0.1");
 		deviceManager.deviceEntered(enteree);
-		verify(gateway, never()).callService((UpDevice)any(), (Call)any());
+		verify(gateway, never()).callService((UpDevice) any(), (Call) any());
 	}
-	
 
 	@Test
-	public void IfTheListDriversDoesNotWorksNothingHappens_ThrowingException()
-			throws Exception {
+	public void IfTheListDriversDoesNotWorksNothingHappens_ThrowingException() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
 		when(gatewayListDriversCall()).thenThrow(new RuntimeException());
 		deviceManager.deviceEntered(enteree);
 		assertEquals(0, driverDao.list(null, "A").size());
@@ -959,99 +824,79 @@ public class DeviceManagerTest {
 	}
 
 	private Response gatewayHandshakeCall() throws ServiceCallException {
-		Call handshake = new Call(
-				"uos.DeviceDriver",
-				"handshake", null);
+		Call handshake = new Call("uos.DeviceDriver", "handshake", null);
 		handshake.addParameter("device", currentDevice.toString());
 		return gateway.callService(any(UpDevice.class), eq(handshake));
 	}
 
-	private Response gatewayListDriversCall()
-			throws ServiceCallException {
-		Call listDrivers = new Call(
-				"uos.DeviceDriver",
-				"listDrivers", null);
+	private Response gatewayListDriversCall() throws ServiceCallException {
+		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers", null);
 		return gateway.callService(any(UpDevice.class), eq(listDrivers));
 	}
 
-	private Response gatewayTellEquivalentDriverCall()
-			throws ServiceCallException, JSONException {
-		Call tellEquivalentDriver = new Call(
-				"uos.DeviceDriver",
-				"tellEquivalentDrivers", null);
-		List<String> equivalents = new ArrayList<String>();
-		equivalents.add("equivalentDriver");
-		tellEquivalentDriver.addParameter("driversName", new JSONArray(
-				equivalents).toString());
-		return gateway.callService(any(UpDevice.class),
-				eq(tellEquivalentDriver));
+	private Response gatewayTellEquivalentDriverCall() throws ServiceCallException {
+		Call tellEquivalentDriver = new Call("uos.DeviceDriver", "tellEquivalentDrivers", null);
+		ArrayNode equivalents = factory.arrayNode();
+		equivalents.add(factory.textNode("equivalentDriver"));
+		tellEquivalentDriver.addParameter("driversName", equivalents.toString());
+		return gateway.callService(any(UpDevice.class), eq(tellEquivalentDriver));
 	}
 
-	private Response gatewayTellTwoEquivalentDrivers()
-			throws ServiceCallException, JSONException {
-		Call tellEquivalentDriver = new Call(
-				"uos.DeviceDriver",
-				"tellEquivalentDrivers", null);
-		List<String> equivalents = new ArrayList<String>();
-		equivalents.add("D3");
-		equivalents.add("D0");
-		tellEquivalentDriver.addParameter("driversName", new JSONArray(
-				equivalents).toString());
-		return gateway.callService(any(UpDevice.class),
-				eq(tellEquivalentDriver));
+	private Response gatewayTellTwoEquivalentDrivers() throws ServiceCallException {
+		Call tellEquivalentDriver = new Call("uos.DeviceDriver", "tellEquivalentDrivers", null);
+		ArrayNode equivalents = factory.arrayNode();
+		equivalents.add(factory.textNode("D0"));
+		equivalents.add(factory.textNode("D3"));
+		tellEquivalentDriver.addParameter("driversName", equivalents.toString());
+		return gateway.callService(any(UpDevice.class), eq(tellEquivalentDriver));
 	}
+
 	// TODO: What about proxying
 	@Test
 	public void AfterListingIfProxyingIsEnabledRegisterIt() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
-		JSONObject driverList = new JSONObject();
+				new Response()
+					.addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString())
+		);
+
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
-		dummy.addService("s1").addParameter("s1p1", ParameterType.MANDATORY)
-				.addParameter("s1p2", ParameterType.OPTIONAL);
+		dummy.addService("s1")
+			.addParameter("s1p1", ParameterType.MANDATORY)
+			.addParameter("s1p2", ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", dummy.toJSON());
-		driverList.put("id2", dummy.toJSON());
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		driverList.set("id1", mapper.valueToTree(dummy));
+		driverList.set("id2", mapper.valueToTree(dummy));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 		when(proxier.doProxying()).thenReturn(true);
 		deviceManager.deviceEntered(enteree);
-		ArgumentCaptor<UpDevice> deviceCatcher = ArgumentCaptor
-				.forClass(UpDevice.class);
-		ArgumentCaptor<String> idCatcher = ArgumentCaptor
-				.forClass(String.class);
-		verify(proxier, times(2)).registerProxyDriver(eq(dummy),
-				deviceCatcher.capture(), idCatcher.capture());
+		ArgumentCaptor<UpDevice> deviceCatcher = ArgumentCaptor.forClass(UpDevice.class);
+		ArgumentCaptor<String> idCatcher = ArgumentCaptor.forClass(String.class);
+		verify(proxier, times(2)).registerProxyDriver(eq(dummy), deviceCatcher.capture(), idCatcher.capture());
 		assertEquals("A", deviceCatcher.getValue().getName());
-		assertEquals("id2", idCatcher.getAllValues().get(0));
-		assertEquals("id1", idCatcher.getAllValues().get(1));
+		assertEquals("id1", idCatcher.getAllValues().get(0));
+		assertEquals("id2", idCatcher.getAllValues().get(1));
 	}
 
 	@Test
 	public void AfterListingIfProxyingIsNotEnabledDoNothing() throws Exception {
 		NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		when(gatewayHandshakeCall()).thenReturn(
-				new Response().addParameter("device", new UpDevice("A")
-						.addNetworkInterface("A", "T").toString()));
-		JSONObject driverList = new JSONObject();
+				new Response().addParameter("device", new UpDevice("A").addNetworkInterface("A", "T").toString()));
+		ObjectNode driverList = factory.objectNode();
 		UpDriver dummy = new UpDriver("DummyDriver");
-		dummy.addService("s1").addParameter("s1p1", ParameterType.MANDATORY)
-				.addParameter("s1p2", ParameterType.OPTIONAL);
+		dummy.addService("s1").addParameter("s1p1", ParameterType.MANDATORY).addParameter("s1p2",
+				ParameterType.OPTIONAL);
 		dummy.addService("s2").addParameter("s2p1", ParameterType.MANDATORY);
 
-		driverList.put("id1", dummy.toJSON());
-		driverList.put("id2", dummy.toJSON());
-		when(gatewayListDriversCall()).thenReturn(
-				new Response().addParameter("driverList",
-						driverList.toString()));
+		driverList.set("id1", mapper.valueToTree(dummy));
+		driverList.set("id2", mapper.valueToTree(dummy));
+		when(gatewayListDriversCall()).thenReturn(new Response().addParameter("driverList", driverList.toString()));
 		when(proxier.doProxying()).thenReturn(false);
 		deviceManager.deviceEntered(enteree);
-		verify(proxier, never()).registerProxyDriver(any(UpDriver.class),
-				any(UpDevice.class), any(String.class));
+		verify(proxier, never()).registerProxyDriver(any(UpDriver.class), any(UpDevice.class), any(String.class));
 	}
 
 	// public void deviceLeft(NetworkDevice device) {
@@ -1059,16 +904,14 @@ public class DeviceManagerTest {
 	public void removeTheDeviceFromDatabaseOnLeft() throws Exception {
 		NetworkDevice leavingCard = networkDevice("ADDR_UNKNOWN_A", "UNEXISTANT");
 		UpDevice leavingGuy = upDevice("leavingMan", leavingCard);
-		when(connManager.getHost(eq(leavingCard.getNetworkDeviceName())))
-										.thenReturn("ADDR_UNKNOWN_A");
+		when(connManager.getHost(eq(leavingCard.getNetworkDeviceName()))).thenReturn("ADDR_UNKNOWN_A");
 		deviceManager.registerDevice(leavingGuy);
-		
+
 		NetworkDevice stayingCard = networkDevice("ADDR_UNKNOWN_B", "UNEXISTANT");
 		UpDevice stayingGuy = upDevice("stayingMan", stayingCard);
-		when(connManager.getHost(eq(stayingCard.getNetworkDeviceName())))
-										.thenReturn("ADDR_UNKNOWN_B");
+		when(connManager.getHost(eq(stayingCard.getNetworkDeviceName()))).thenReturn("ADDR_UNKNOWN_B");
 		deviceManager.registerDevice(stayingGuy);
-		
+
 		assertEquals(3, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
 		driver.addService("s");
@@ -1084,17 +927,15 @@ public class DeviceManagerTest {
 	}
 
 	private UpDevice upDevice(String name, NetworkDevice networkCard) {
-		return new UpDevice(name).addNetworkInterface(
-									networkCard.getNetworkDeviceName(),
-									networkCard.getNetworkDeviceType());
+		return new UpDevice(name).addNetworkInterface(networkCard.getNetworkDeviceName(),
+				networkCard.getNetworkDeviceType());
 	}
 
 	@Test
 	public void doNothingWhenLeftingANullDevice() throws Exception {
 		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
 		UpDevice oldGuy = upDevice("OldMan", leavingGuy);
-		when(connManager.getHost(eq(leavingGuy.getNetworkDeviceName())))
-				.thenReturn("ADDR_UNKNOWN");
+		when(connManager.getHost(eq(leavingGuy.getNetworkDeviceName()))).thenReturn("ADDR_UNKNOWN");
 		deviceManager.registerDevice(oldGuy);
 		assertEquals(2, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
@@ -1133,32 +974,27 @@ public class DeviceManagerTest {
 		assertEquals(1, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
 		driver.addService("s");
-		driverDao
-				.insert(new DriverModel("id1", driver, currentDevice.getName()));
-		driverDao
-				.insert(new DriverModel("id2", driver, currentDevice.getName()));
+		driverDao.insert(new DriverModel("id1", driver, currentDevice.getName()));
+		driverDao.insert(new DriverModel("id2", driver, currentDevice.getName()));
 		assertEquals(2, driverDao.list().size());
 
 		deviceManager.deviceLeft(leavingGuy);
 		assertEquals(1, dao.list().size());
 		assertEquals(2, driverDao.list().size());
 	}
-	
+
 	@Test
 	public void doNothingWhenLeftingAnUnkownDevicexxxx() throws Exception {
 		NetworkDevice knownCard = networkDevice("ADDR_KNOWN", "THIS_ONE");
 		UpDevice knownGuy = upDevice("OldMan", knownCard);
 		deviceManager.registerDevice(knownGuy);
-		
-		
+
 		NetworkDevice leavingGuy = networkDevice("ADDR_UNKNOWN", "THIS_ONE");
 		assertEquals(2, dao.list().size());
 		UpDriver driver = new UpDriver("DD");
 		driver.addService("s");
-		driverDao
-				.insert(new DriverModel("id1", driver, currentDevice.getName()));
-		driverDao
-				.insert(new DriverModel("id2", driver, currentDevice.getName()));
+		driverDao.insert(new DriverModel("id1", driver, currentDevice.getName()));
+		driverDao.insert(new DriverModel("id2", driver, currentDevice.getName()));
 		assertEquals(2, driverDao.list().size());
 
 		deviceManager.deviceLeft(leavingGuy);

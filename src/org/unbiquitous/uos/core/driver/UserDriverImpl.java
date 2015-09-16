@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.unbiquitous.json.JSONException;
-import org.unbiquitous.json.JSONObject;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
@@ -26,6 +24,11 @@ import org.unbiquitous.uos.core.messageEngine.messages.Notify;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 /**
  * This class represents a user information from the middleware view.
  * 
@@ -37,12 +40,12 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
  * @since 2011.10.01
  */
 public class UserDriverImpl extends UserDriverNativeSupport {
-
 	private static Logger logger = UOSLogging.getLogger();
+	private static final ObjectMapper mapper = new ObjectMapper();
 
 	private volatile Tracker tracker;
 	private volatile Daemon daemon;
-	private volatile Map<String, JSONObject> labels;
+	private volatile Map<String, ObjectNode> labels;
 	private Gateway gateway;
 	private String instanceId;
 	private List<UpNetworkInterface> newUserListenerDevices;
@@ -71,7 +74,7 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 		this.newUserListenerDevices = new ArrayList<UpNetworkInterface>();
 		this.changeInformationListenerDevices = new ArrayList<UpNetworkInterface>();
 		this.lostUserListenerDevices = new ArrayList<UpNetworkInterface>();
-		this.labels = new HashMap<String, JSONObject>();
+		this.labels = new HashMap<String, ObjectNode>();
 
 		// starting the TRUE system
 		startTracker();
@@ -99,7 +102,8 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 		stopTracker();
 		this.tracker.end();
 		this.daemon.end();
-		// FIXME : UserDriver TRUE : message queue used to communicate the driver with the True
+		// FIXME : UserDriver TRUE : message queue used to communicate the
+		// driver with the True
 		// system in not being killed
 	}
 
@@ -110,16 +114,20 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	public UpDriver getDriver() {
 		UpDriver driver = new UpDriver(USER_DRIVER);
 
-		driver.addService("retrieveUserInfo").addParameter(EMAIL_PARAM, ParameterType.MANDATORY).addParameter(SPECIFIC_FIELD_PARAM, ParameterType.OPTIONAL);
+		driver.addService("retrieveUserInfo").addParameter(EMAIL_PARAM, ParameterType.MANDATORY)
+				.addParameter(SPECIFIC_FIELD_PARAM, ParameterType.OPTIONAL);
 
 		driver.addService("registerListener").addParameter(EVENT_KEY_PARAM, ParameterType.MANDATORY);
 
 		driver.addService("unregisterListener").addParameter(EVENT_KEY_PARAM, ParameterType.OPTIONAL);
 
-		driver.addService("saveUserImage").addParameter(NAME_PARAM, ParameterType.MANDATORY).addParameter(EMAIL_PARAM, ParameterType.MANDATORY)
-				.addParameter(INDEX_IMAGE_PARAM, ParameterType.MANDATORY).addParameter(LENGTH_IMAGE_PARAM, ParameterType.MANDATORY);
+		driver.addService("saveUserImage").addParameter(NAME_PARAM, ParameterType.MANDATORY)
+				.addParameter(EMAIL_PARAM, ParameterType.MANDATORY)
+				.addParameter(INDEX_IMAGE_PARAM, ParameterType.MANDATORY)
+				.addParameter(LENGTH_IMAGE_PARAM, ParameterType.MANDATORY);
 
-		driver.addService("removeUserImages").addParameter(NAME_PARAM, ParameterType.MANDATORY).addParameter(EMAIL_PARAM, ParameterType.MANDATORY);
+		driver.addService("removeUserImages").addParameter(NAME_PARAM, ParameterType.MANDATORY)
+				.addParameter(EMAIL_PARAM, ParameterType.MANDATORY);
 
 		driver.addService("listKnownUsers");
 
@@ -148,19 +156,12 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 
 		String email = (String) serviceCall.getParameter(EMAIL_PARAM);
 
-		JSONObject returned_user = null;
-
-		returned_user = labels.get(email);
+		ObjectNode returned_user = labels.get(email);
 		String specificField = (String) serviceCall.getParameter(SPECIFIC_FIELD_PARAM);
-
 		if (specificField != null && returned_user != null) {
-			try {
-				Object specificValue = returned_user.get(specificField);
-				returned_user = new JSONObject();
-				returned_user.put(specificField, specificValue);
-			} catch (JSONException e) {
-				throw new RuntimeException("Json Error", e);
-			}
+			JsonNode specificValue = returned_user.get(specificField);
+			returned_user = mapper.getNodeFactory().objectNode();
+			returned_user.set(specificField, specificValue);
 		}
 
 		if (returned_user == null)
@@ -217,21 +218,15 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 */
 	public void listKnownUsers(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		List<String> users = listUsers();
+		ArrayNode userJson = mapper.getNodeFactory().arrayNode();
+		for (String string : users) {
+			String[] split = string.split(SPECIAL_CHARACTER_SEPARATOR);
 
-		List<JSONObject> userJson = new ArrayList<JSONObject>(users.size());
+			ObjectNode jsonObject = mapper.getNodeFactory().objectNode();
+			jsonObject.put(NAME_PARAM, split[0]);
+			jsonObject.put(EMAIL_PARAM, split[1]);
 
-		try {
-			for (String string : users) {
-				String[] split = string.split(SPECIAL_CHARACTER_SEPARATOR);
-
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put(NAME_PARAM, split[0]);
-				jsonObject.put(EMAIL_PARAM, split[1]);
-
-				userJson.add(jsonObject);
-			}
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
+			userJson.add(jsonObject);
 		}
 
 		serviceResponse.addParameter(RETURN_PARAM, userJson.toString());
@@ -261,7 +256,8 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	@Override
 	public void registerListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
-		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
+		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(),
+				networkDevice.getNetworkDeviceName());
 
 		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
@@ -286,7 +282,8 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	@Override
 	public void unregisterListener(Call serviceCall, Response serviceResponse, CallContext messageContext) {
 		NetworkDevice networkDevice = messageContext.getCallerNetworkDevice();
-		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(), networkDevice.getNetworkDeviceName());
+		UpNetworkInterface networkInterface = new UpNetworkInterface(networkDevice.getNetworkDeviceType(),
+				networkDevice.getNetworkDeviceName());
 
 		String eventKey = (String) serviceCall.getParameter(EVENT_KEY_PARAM);
 
@@ -304,7 +301,9 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	}
 
 	/**
-	 * Used internally to update user information. If the user identity is changed, a new parameter containing the last label is added to the notification event generated.
+	 * Used internally to update user information. If the user identity is
+	 * changed, a new parameter containing the last label is added to the
+	 * notification event generated.
 	 * 
 	 * @param label
 	 * @param lastlabel
@@ -313,25 +312,22 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param positionY
 	 * @param positionZ
 	 */
-	synchronized protected void registerRecheckUserEvent(String label, String lastLabel, float confidence, float positionX, float positionY, float positionZ) {
-		try {
-			String name = extractNameFromLabel(label);
-			String email = extractEmailFromLabel(label);
+	synchronized protected void registerRecheckUserEvent(String label, String lastLabel, float confidence,
+			float positionX, float positionY, float positionZ) {
+		String name = extractNameFromLabel(label);
+		String email = extractEmailFromLabel(label);
 
-			JSONObject user = createJson(name, email, confidence, positionX, positionY, positionZ);
-			labels.put(email, user);
+		ObjectNode user = createJson(name, email, confidence, positionX, positionY, positionZ);
+		labels.put(email, user);
 
-			Notify notify = createNotify(CHANGE_INFORMATION_TO_USER_KEY, user);
-			if (lastLabel != null && !label.equals(lastLabel)) {
-				getUserDriver().labels.remove(email);
-				notify.addParameter(LAST_LABEL_NAME, extractNameFromLabel(lastLabel));
-				notify.addParameter(LAST_LABEL_EMAIL, extractEmailFromLabel(lastLabel));
-			}
-
-			getUserDriver().notifyAllListerners(notify);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
+		Notify notify = createNotify(CHANGE_INFORMATION_TO_USER_KEY, user);
+		if (lastLabel != null && !label.equals(lastLabel)) {
+			getUserDriver().labels.remove(email);
+			notify.addParameter(LAST_LABEL_NAME, extractNameFromLabel(lastLabel));
+			notify.addParameter(LAST_LABEL_EMAIL, extractEmailFromLabel(lastLabel));
 		}
+
+		getUserDriver().notifyAllListerners(notify);
 	}
 
 	/**
@@ -343,19 +339,16 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @param positionY
 	 * @param positionZ
 	 */
-	synchronized protected void registerNewUserEvent(String label, float confidence, float positionX, float positionY, float positionZ) {
-		try {
-			String name = extractNameFromLabel(label);
-			String email = extractEmailFromLabel(label);
+	synchronized protected void registerNewUserEvent(String label, float confidence, float positionX, float positionY,
+			float positionZ) {
+		String name = extractNameFromLabel(label);
+		String email = extractEmailFromLabel(label);
 
-			JSONObject user = createJson(name, email, confidence, positionX, positionY, positionZ);
-			labels.put(email, user);
+		ObjectNode user = createJson(name, email, confidence, positionX, positionY, positionZ);
+		labels.put(email, user);
 
-			Notify notify = createNotify(NEW_USER_EVENT_KEY, user);
-			getUserDriver().notifyAllListerners(notify);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+		Notify notify = createNotify(NEW_USER_EVENT_KEY, user);
+		getUserDriver().notifyAllListerners(notify);
 	}
 
 	/**
@@ -366,12 +359,8 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	synchronized protected void registerLostUserEvent(String label) {
 		String email = extractEmailFromLabel(label);
 
-		try {
-			Notify notify = createNotify(LOST_USER_EVENT_KEY, labels.remove(email));
-			getUserDriver().notifyAllListerners(notify);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+		Notify notify = createNotify(LOST_USER_EVENT_KEY, labels.remove(email));
+		getUserDriver().notifyAllListerners(notify);
 
 		labels.remove(email);
 	}
@@ -384,15 +373,15 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @return
 	 * @throws JSONException
 	 */
-	private Notify createNotify(String eventKey, JSONObject user) throws JSONException {
+	private Notify createNotify(String eventKey, ObjectNode user) {
 		Notify notify = new Notify(eventKey, USER_DRIVER, instanceId);
 
-		notify.addParameter(EMAIL_PARAM, user.getString(EMAIL_PARAM));
-		notify.addParameter(NAME_PARAM, user.getString(NAME_PARAM));
-		notify.addParameter(CONFIDENCE_PARAM, user.getString(CONFIDENCE_PARAM));
-		notify.addParameter(POSITION_X_PARAM, user.getString(POSITION_X_PARAM));
-		notify.addParameter(POSITION_Y_PARAM, user.getString(POSITION_Y_PARAM));
-		notify.addParameter(POSITION_Z_PARAM, user.getString(POSITION_Z_PARAM));
+		notify.addParameter(EMAIL_PARAM, user.get(EMAIL_PARAM).asText());
+		notify.addParameter(NAME_PARAM, user.get(NAME_PARAM).asText());
+		notify.addParameter(CONFIDENCE_PARAM, user.get(CONFIDENCE_PARAM).asText());
+		notify.addParameter(POSITION_X_PARAM, user.get(POSITION_X_PARAM).asText());
+		notify.addParameter(POSITION_Y_PARAM, user.get(POSITION_Y_PARAM).asText());
+		notify.addParameter(POSITION_Z_PARAM, user.get(POSITION_Z_PARAM).asText());
 
 		return notify;
 	}
@@ -469,8 +458,10 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	 * @return json object
 	 * @throws JSONException
 	 */
-	private JSONObject createJson(String name, String email, float confidence, float positionX, float positionY, float positionZ) throws JSONException {
-		JSONObject user = new JSONObject();
+	private ObjectNode createJson(String name, String email, float confidence, float positionX, float positionY,
+			float positionZ) {
+
+		ObjectNode user = mapper.getNodeFactory().objectNode();
 
 		user.put(NAME_PARAM, name);
 		user.put(EMAIL_PARAM, email);
@@ -548,5 +539,4 @@ public class UserDriverImpl extends UserDriverNativeSupport {
 	public List<UpDriver> getParent() {
 		return null;
 	}
-
 }
