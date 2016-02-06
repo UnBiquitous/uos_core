@@ -1011,56 +1011,33 @@ public class DeviceManagerTest {
     @Test
     public void shouldNotThrowIfRemovingInvalidDeviceListener() throws Exception {
         deviceManager.removeDeviceListener(null);
-        deviceManager.removeDeviceListener(new DeviceListenerSwitch());
+        deviceManager.removeDeviceListener(mock(DeviceListener.class));
     }
 
     @Test
     public void shouldCallDeviceEnteredOnListenersIfRegisteredSuccessfully() throws Exception {
-        DeviceListenerSwitch listener = new DeviceListenerSwitch();
+        DeviceListener listener = mock(DeviceListener.class);
         deviceManager.addDeviceListener(listener);
         NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
         UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
                 .addNetworkInterface("127.255.255.666", "Ethernet:TFH");
         when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", newGuy.toString()));
         deviceManager.deviceEntered(enteree);
-        assertEquals(1, listener.getEnteredCount(newGuy));
+        verify(listener, times(1)).deviceRegistered(newGuy);
     }
 
     @Test
     public void shouldCallDeviceLeftOnListenersIfKnownDeviceLeft() throws Exception {
-        DeviceListenerSwitch listener = new DeviceListenerSwitch();
+        DeviceListener listener = mock(DeviceListener.class);
         deviceManager.addDeviceListener(listener);
         NetworkDevice enteree = networkDevice("ADDR_UNKNOWN", "UNEXISTANT");
         UpDevice newGuy = new UpDevice("TheNewGuy").addNetworkInterface("ADDR_UNKNOWN", "UNEXISTANT")
                 .addNetworkInterface("127.255.255.666", "Ethernet:TFH");
         when(gatewayHandshakeCall()).thenReturn(new Response().addParameter("device", newGuy.toString()));
         deviceManager.deviceEntered(enteree);
-        assertEquals(1, listener.getEnteredCount(newGuy));
+        verify(listener, times(1)).deviceRegistered(newGuy);
         deviceManager.deviceLeft(enteree);
-        assertEquals(1, listener.getEnteredCount(newGuy));
-        assertEquals(1, listener.getLeftCount(newGuy));
-    }
-
-    private static class DeviceListenerSwitch implements DeviceListener {
-        private Map<UpDevice, Integer> enteredDevices = new HashMap<UpDevice, Integer>();
-        private Map<UpDevice, Integer> leftDevices = new HashMap<UpDevice, Integer>();
-
-        @Override
-        public void deviceRegistered(UpDevice device) {
-            enteredDevices.put(device, getEnteredCount(device) + 1);
-        }
-
-        @Override
-        public void deviceUnregistered(UpDevice device) {
-            leftDevices.put(device, getLeftCount(device) + 1);
-        }
-
-        public int getEnteredCount(UpDevice device) {
-            return enteredDevices.containsKey(device) ? enteredDevices.get(device) : 0;
-        }
-
-        public int getLeftCount(UpDevice device) {
-            return leftDevices.containsKey(device) ? leftDevices.get(device) : 0;
-        }
+        verify(listener, times(1)).deviceUnregistered(newGuy);
+        verify(listener, times(1)).deviceRegistered(newGuy);
     }
 }
