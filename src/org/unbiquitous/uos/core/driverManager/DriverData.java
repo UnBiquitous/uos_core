@@ -58,7 +58,7 @@ public class DriverData {
 
     @Override
     public int hashCode() {
-        int hash = chainHashCode(super.hashCode(), this.driver);
+        int hash = chainHashCode(0, this.driver);
         hash = chainHashCode(hash, this.instanceID);
         hash = chainHashCode(hash, this.device);
         return hash;
