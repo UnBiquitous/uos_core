@@ -1,26 +1,12 @@
 package org.unbiquitous.uos.core.deviceManager;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.adaptabitilyEngine.ServiceCallException;
 import org.unbiquitous.uos.core.connectivity.ConnectivityManager;
-import org.unbiquitous.uos.core.driverManager.DriverDao;
-import org.unbiquitous.uos.core.driverManager.DriverManager;
-import org.unbiquitous.uos.core.driverManager.DriverManagerException;
-import org.unbiquitous.uos.core.driverManager.DriverModel;
-import org.unbiquitous.uos.core.driverManager.DriverNotFoundException;
-import org.unbiquitous.uos.core.driverManager.InterfaceValidationException;
+import org.unbiquitous.uos.core.driverManager.*;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDriver;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpNetworkInterface;
@@ -30,10 +16,11 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerContr
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.radar.RadarListener;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class responsible for managing the devices in the neighborhood of the current
@@ -151,6 +138,7 @@ public class DeviceManager implements RadarListener {
             upDevice = doHandshake(device, upDevice);
             if (upDevice != null) {
                 doDriversRegistry(device, upDevice);
+                fireDeviceEvent(upDevice, DeviceEventType.ENTERED);
             }
         } else {
             logger.fine("Already known device " + device.getNetworkDeviceName());
@@ -160,40 +148,25 @@ public class DeviceManager implements RadarListener {
     private void doDriversRegistry(NetworkDevice device, UpDevice upDevice) {
         try {
             Response response = gateway.callService(upDevice, new Call(DEVICE_DRIVER_NAME, "listDrivers"));
-            if (response != null && response.getResponseData() != null
-                    && response.getResponseData("driverList") != null) {
+            if (response != null && response.getResponseData() != null && response.getResponseData("driverList") != null) {
                 try {
-                    ObjectNode driversListMap = null;
-                    Object temp = response.getResponseData("driverList");
-                    if (temp instanceof ObjectNode)
-                        driversListMap = (ObjectNode) temp; // TODO: Not tested, why?
-                    else
-                        driversListMap = (ObjectNode) mapper.readTree(temp.toString());
-
-                    List<String> ids = new ArrayList<String>();
-                    Iterator<String> it = driversListMap.fieldNames();
-                    while (it.hasNext())
-                        ids.add(it.next());
-
-                    registerRemoteDriverInstances(upDevice, driversListMap, ids);
+                    JavaType mapType = mapper.getTypeFactory().constructParametrizedType(Map.class, Map.class, String.class, UpDriver.class);
+                    Map<String, UpDriver> driverList = mapper.convertValue(response.getResponseData("driverList"), mapType);
+                    registerRemoteDriverInstances(upDevice, driverList);
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE,
-                            "Problems ocurred in the registering of drivers from device '" + upDevice.getName() + "' .",
-                            e);
+                    logger.log(Level.SEVERE, "Problems ocurred in the registering of drivers from device '" + upDevice.getName() + "' .", e);
                 }
             }
         } catch (Exception e) {
-            logger.severe("Not possible to discover services from device '" + device.getNetworkDeviceName()
-                    + "'. Possibly not a uOS Device");
+            logger.severe("Not possible to discover services from device '" + device.getNetworkDeviceName() + "'. Possibly not a uOS Device");
         }
     }
 
-    private void registerRemoteDriverInstances(UpDevice upDevice, ObjectNode driversListMap, List<String> instanceIds)
-            throws IOException {
-        for (String id : instanceIds) {
-            UpDriver upDriver = mapper.readValue(mapper.writeValueAsString(driversListMap.get(id)), UpDriver.class);
+    private void registerRemoteDriverInstances(UpDevice upDevice, Map<String, UpDriver> driversListMap) throws IOException {
+        for (Map.Entry<String, UpDriver> entry : driversListMap.entrySet()) {
+            String id = entry.getKey();
+            UpDriver upDriver = entry.getValue();
             DriverModel driverModel = new DriverModel(id, upDriver, upDevice.getName());
-
             try {
                 driverManager.insert(driverModel);
                 // TODO : DeviceManager : Save the device information
@@ -229,25 +202,16 @@ public class DeviceManager implements RadarListener {
      */
     private void findDrivers(Set<String> unknownDrivers, UpDevice upDevice) throws IOException {
         Call call = new Call(DEVICE_DRIVER_NAME, "tellEquivalentDrivers", null);
-        call.addParameter(DRIVERS_NAME_KEY, mapper.writeValueAsString(unknownDrivers.toArray()));
+        call.addParameter(DRIVERS_NAME_KEY, new ArrayList<String>(unknownDrivers));
 
         try {
             Response equivalentDriverResponse = gateway.callService(upDevice, call);
 
-            if (equivalentDriverResponse != null
-                    && (equivalentDriverResponse.getError() == null || equivalentDriverResponse.getError().isEmpty())) {
-
-                String interfaces = equivalentDriverResponse.getResponseString(INTERFACES_KEY);
-
+            if (equivalentDriverResponse != null && (equivalentDriverResponse.getError() == null || equivalentDriverResponse.getError().isEmpty())) {
+                Object interfaces = equivalentDriverResponse.getResponseData(INTERFACES_KEY);
                 if (interfaces != null) {
-
-                    List<UpDriver> drivers = new ArrayList<UpDriver>();
-
-                    ArrayNode interfacesJson = (ArrayNode) mapper.readTree(interfaces);
-                    for (JsonNode node : interfacesJson) {
-                        UpDriver upDriver = mapper.readValue(node.isTextual() ? node.asText() : node.toString(), UpDriver.class);
-                        drivers.add(upDriver);
-                    }
+                    JavaType listType = mapper.getTypeFactory().constructParametrizedType(List.class, List.class, UpDriver.class);
+                    List<UpDriver> drivers = mapper.convertValue(interfaces, listType);
 
                     try {
                         driverManager.addToEquivalenceTree(drivers);
@@ -263,21 +227,21 @@ public class DeviceManager implements RadarListener {
                                     "Problems ocurred in the registering of driver '" + dependent.driver().getName()
                                             + "' with instanceId '" + dependent.id() + "' in the device '"
                                             + upDevice.getName() + "' and it will not be registered.",
-                                    e);
+                                    e
+                            );
                         } catch (DriverNotFoundException e) {
-                            logger.severe("Not possible to register driver '" + dependent.driver().getName()
-                                    + "' due to unkwnown equivalent driver.");
+                            logger.severe("Not possible to register driver '" + dependent.driver().getName() + "' due to unkwnown equivalent driver.");
                         }
                     }
 
                 } else {
-                    logger.severe("Not possible to call service on device '" + upDevice.getName()
-                            + "' for no equivalent drivers on the service response.");
+                    logger.severe("Not possible to call service on device '" + upDevice.getName() + "' for no equivalent drivers on the service response.");
                 }
             } else {
-                logger.severe("Not possible to call service on device '" + upDevice.getName()
-                        + (equivalentDriverResponse == null ? ": null"
-                        : "': Cause : " + equivalentDriverResponse.getError()));
+                logger.severe("Not possible to call service on device '" + upDevice.getName() + (equivalentDriverResponse == null ?
+                        ": null"
+                        : "': Cause : " + equivalentDriverResponse.getError())
+                );
             }
         } catch (ServiceCallException e) {
             logger.severe("Not possible to call service on device '" + upDevice.getName());
@@ -293,7 +257,7 @@ public class DeviceManager implements RadarListener {
                     .addNetworkInterface(device.getNetworkDeviceName(), device.getNetworkDeviceType());
 
             Call call = new Call(DEVICE_DRIVER_NAME, "handshake", null);
-            call.addParameter("device", mapper.writeValueAsString(currentDevice));
+            call.addParameter("device", currentDevice);
 
             Response response = gateway.callService(dummyDevice, call);
             if (response != null && (response.getError() == null || response.getError().isEmpty())) {
@@ -301,16 +265,9 @@ public class DeviceManager implements RadarListener {
                 // the neighborhood database
                 Object responseDevice = response.getResponseData("device");
                 if (responseDevice != null) {
-                    UpDevice remoteDevice;
-                    if (responseDevice instanceof String) {
-                        remoteDevice = mapper.readValue((String) responseDevice, UpDevice.class);
-                    } else if (responseDevice instanceof Map) {
-                        remoteDevice = mapper.treeToValue(mapper.valueToTree((Map) responseDevice), UpDevice.class);
-                    } else {
-                        remoteDevice = mapper.treeToValue((JsonNode) responseDevice, UpDevice.class);
-                    }
+                    UpDevice remoteDevice = (responseDevice instanceof String) ?
+                        mapper.readValue((String) responseDevice, UpDevice.class) : mapper.convertValue(responseDevice, UpDevice.class);
                     registerDevice(remoteDevice);
-                    fireDeviceEvent(remoteDevice, DeviceEventType.ENTERED);
                     logger.info("Registered device " + remoteDevice.getName());
                     return remoteDevice;
                 } else {
