@@ -154,13 +154,15 @@ public class DeviceDriver implements UosDriver {
         DeviceManager deviceManager = gtw.getDeviceManager();
 
         // Get and Convert the UpDevice Parameter
-        String deviceParameter = (String) serviceCall.getParameterString(DEVICE_KEY);
+        Object deviceParameter = serviceCall.getParameter(DEVICE_KEY);
         if (deviceParameter == null) {
             serviceResponse.setError("No 'device' parameter informed.");
             return;
         }
         try {
-            UpDevice device = mapper.readValue(deviceParameter, UpDevice.class);
+            UpDevice device = deviceParameter instanceof String ?
+                    mapper.readValue((String) deviceParameter, UpDevice.class) :
+                    mapper.convertValue(deviceParameter, UpDevice.class);
             // TODO : DeviceDriver : validate if the device doing the handshake
             // is the same that is in the parameter
             deviceManager.registerDevice(device);
