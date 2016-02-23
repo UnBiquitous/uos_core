@@ -23,7 +23,7 @@ public class ClassLoaderUtils {
 
 		@Override
 		public ClassLoader getParentClassLoader() {
-			return ClassLoader.getSystemClassLoader();
+			return this.getClass().getClassLoader();
 		}
 	}
 

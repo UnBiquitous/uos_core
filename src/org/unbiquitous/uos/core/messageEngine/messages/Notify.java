@@ -86,7 +86,7 @@ public class Notify extends Message {
 		return this.addParameter(key, (Object) value);
 	}
 
-	private Notify addParameter(String key, Object value) {
+	public Notify addParameter(String key, Object value) {
 		if (parameters == null) {
 			parameters = new HashMap<String, Object>();
 		}

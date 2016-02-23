@@ -12,6 +12,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -121,5 +122,9 @@ public class UpDevice {
 
 	public void setMeta(Map<String, String> meta) {
 		this.meta = meta;
+	}
+	
+	public JsonNode toJSON()  {
+		return mapper.<JsonNode>valueToTree(this);
 	}
 }
