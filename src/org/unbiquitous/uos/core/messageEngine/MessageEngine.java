@@ -26,7 +26,6 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * This class is responsible for handling with messages received from other
@@ -58,7 +57,7 @@ public class MessageEngine implements MessageListener, UOSComponent {
 
 		try {
 			// TODO: This JSON Conversion can be done only once
-			ObjectNode json = (ObjectNode) mapper.readTree(message);
+			JsonNode json = (JsonNode) mapper.readTree(message);
 			Message.Type messageType = retrieveMessageType(json);
 			if (messageType != null) {
 				if (messageType == Message.Type.SERVICE_CALL_REQUEST) {
@@ -166,7 +165,7 @@ public class MessageEngine implements MessageListener, UOSComponent {
 	 *            JSONObject representing the message received.
 	 * @return Message.Type Object of the type for the message informed.
 	 */
-	private Message.Type retrieveMessageType(ObjectNode json) {
+	private Message.Type retrieveMessageType(JsonNode json) {
 		JsonNode type = json.get("type");
 		if (type != null) {
 			try {
